@@ -1,0 +1,85 @@
+Expected an expression derived from the grammar:
+program ->
+    | declaration * EOF
+declaration ->
+	| TypeDecl ";"
+	| statement
+statement ->
+    | ExStmt
+ExStmt ->
+	| expression ';'
+expression ->
+	| args { 
+		('>>' equality) | 
+		('->' (varname | TypeDecl))
+		}*
+args ->
+	| {equality}* { ',' {equality}* }*
+equality ->
+	| comp { ('==' | '!=') comp }*
+comp ->
+	| term { ('>' | '>=' | '<' | '<=') term }*
+term ->
+	| factor { ('+' | '-') factor }*
+factor ->
+	| unary { ('*' | '/') unary }*
+unary ->
+	| ('-'| '!') unary
+	| primary
+TypeDecl ->
+	| 'int' IDENTIFIER
+	| 'float' IDENTIFIER
+	| 'string' IDENTIFIER
+	| 'bool' IDENTIFIER
+primary ->
+	| varname
+	| STRING
+	| NUMBER
+	| 'true'
+	| 'false'
+	| 'nil'
+	| '(' expression ')'
+varname ->
+	| IDENTIFIER
+	| '(' varname ')'
+
+
+function int a >> int f {
+	a + 1 >> return;
+}
+
+int x = 4 >> f;
+
+1 >> f >> f -> int x, int y;
+(1, 2) >> addOneBoth >> add -> x >> minOne -> int y;
+
+// lambdas
+function g  = \(int x, int y) >> x + y;
+
+OR 
+
+function g;
+\(int x, int y) >> {x + y} -> function g;
+
+1 >> g -> x -> y >> f -> z;
+
+1 >> f, 2 >> g;
+
+x[i] = 1;
+
+1 -> x[1];
+"hello" -> x["world"];
+
+dict<int, int> d;
+
+1 -> d[1];
+
+1 >> (2 >> f);
+equivalent to:
+2, 1 >> f;
+
+1, 2 >> g, f >> h -> x >>  ;
+
+h(g(1, 2), f(1, 2))
+
+1, 2, 3 >> f >> g;
