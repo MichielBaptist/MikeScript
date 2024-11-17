@@ -1,4 +1,4 @@
-package main
+package token
 
 type TokenType uint8
 
@@ -24,7 +24,8 @@ const(
 	MINUS							// - 
 	MULT							// * 
 	SLASH							// / 
-	SEMICOLON						// ; 
+	SEMICOLON						// ;
+	COLON							// :
 	PERCENT							// % 
 	EXCLAMATION						// ! 
 	LESS							// < 
@@ -53,10 +54,10 @@ const(
 	NUMBER_FLOAT					// Number literal (with dot)
 
 	// Keywords
-	AND 							// and
-	OR 								// or
 	FALSE 							// false
 	TRUE 							// true
+	IF								// if
+	ELSE 							// else
 	XIF 							// xif
 	OTHERWISE 						// otherwise
 	FOR 							// for
@@ -64,13 +65,14 @@ const(
 	FUNCTION 						// function
 	RETURN 							// return
 	PRINT 							// print
+	CONTINUE 						// continue
+	BREAK 							// break
 
 	// Types
 	INT_TYPE 						// int (64)
 	FLOAT_TYPE 						// float (64)
 	STRING_TYPE 					// string
 	BOOLEAN_TYPE 					// boolean
-	VOID_TYPE 						// nothing
 	STRUCT 							// struct
 
 	// End of file
@@ -94,6 +96,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	MULT: "*",
 	SLASH: "/",
 	SEMICOLON: ";",
+	COLON: ":",
 	PERCENT: "%",
 	EXCLAMATION: "!",
 	LESS: "<",
@@ -113,11 +116,11 @@ var stmp map[TokenType]string = map[TokenType]string{
 	STRING: "STRING",
 	NUMBER_INT: "int",
 	NUMBER_FLOAT: "float",
-	AND: "and",
-	OR: "or",
 	FALSE: "false",
 	TRUE: "true",
 	XIF: "xif",
+	IF: "if",
+	ELSE: "else",
 	OTHERWISE: "otherwise",
 	FOR: "for",
 	WHILE: "while",
@@ -128,18 +131,19 @@ var stmp map[TokenType]string = map[TokenType]string{
 	FLOAT_TYPE: "float",
 	STRING_TYPE: "string",
 	BOOLEAN_TYPE: "bool",
-	VOID_TYPE: "void",
 	EOF: "EOF",
 	UNKNOWN: "UNKNOWN",
+	CONTINUE: "continue",
+	BREAK: "break",
 }
 
 // Map of keywords
-var keywords map[string]TokenType = map[string]TokenType{
-	"and": AND,
-	"or": OR,
+var Keywords map[string]TokenType = map[string]TokenType{
 	"false": FALSE,
 	"true": TRUE,
 	"xif": XIF,
+	"if": IF,
+	"else": ELSE,
 	"otherwise": OTHERWISE,
 	"for": FOR,
 	"while": WHILE,
@@ -149,9 +153,9 @@ var keywords map[string]TokenType = map[string]TokenType{
 	"float": FLOAT_TYPE,
 	"string": STRING_TYPE,
 	"bool": BOOLEAN_TYPE,
-	"nothing": VOID_TYPE,
+	"continue": CONTINUE,
+	"break": BREAK,
 }
-
 
 // implement stringer
 func (t TokenType) String() string {

@@ -5,14 +5,24 @@ declaration ->
 	| TypeDecl ";"
 	| statement
 statement ->
+	| ifStmt
+	| while
+	| block
+	| break ";"
+	| continue ";"
     | ExStmt
+ifStmt ->
+	| "if" expression ":" statement { "else" ":" statement } *
+block ->
+	| "{" declaration * "}"
 ExStmt ->
 	| expression ';'
 expression ->
-	| args { 
-		('>>' equality) | 
-		('->' (varname | TypeDecl))
-		}*
+	| land { "||" land }*
+land ->
+	| funccall { "&&" funccall }*
+funccall ->
+	| args { ('>>' | '->') equality }*
 args ->
 	| {equality}* { ',' {equality}* }*
 equality ->
@@ -22,7 +32,7 @@ comp ->
 term ->
 	| factor { ('+' | '-') factor }*
 factor ->
-	| unary { ('*' | '/') unary }*
+	| unary { ('*' | '/' | '%') unary }*
 unary ->
 	| ('-'| '!') unary
 	| primary
@@ -39,6 +49,7 @@ primary ->
 	| 'false'
 	| 'nil'
 	| '(' expression ')'
+	| TypeDecl
 varname ->
 	| IDENTIFIER
 	| '(' varname ')'
@@ -83,3 +94,65 @@ equivalent to:
 h(g(1, 2), f(1, 2))
 
 1, 2, 3 >> f >> g;
+
+1 -> x, y, z;
+
+1 -> x -> y -> z;
+
+
+xif {
+	> exp1 {
+
+	}
+	> exp2 {
+
+	}
+}
+
+
+when {
+	| exp1 >> {
+
+	}
+	| exp2 >> {
+
+	}
+}
+
+when {
+	a {
+
+	};
+	not a {};
+	otherwise {}
+}
+
+true -> bool a;
+
+if a {
+	1 >> print;
+} else {
+	2 >> print;
+}
+
+arg1 >> isfinal && arg2 >> isfinal;
+
+if arg >> isfinal:
+	1 >> print;
+else:
+	2 >> print;
+
+if (arg >> isfinal) {
+	1 >> print;
+} else {
+	2 >> print;
+}
+
+xif:
+| arg >> isfinal: 1 >> print
+| otherwise: 2 >> print
+
+
+while (x + 1 -> x) < 10 {
+	x >> print;
+}

@@ -1,6 +1,8 @@
-package main
+package ast
 
 import "fmt"
+import "mikescript/src/token"
+import "mikescript/src/utils"
 
 // Add statements and replace "ASTNode" with "Expression"
 // Add "ASTNode" interface
@@ -25,19 +27,46 @@ type Program struct {
 	Statements []StmtNodeI
 }
 
+type BlockNodeS struct {
+	Statements []StmtNodeI
+}
+
 type DeclarationNodeS struct {
 	Identifier 	VariableExpNodeS
-	Vartype 	Token
+	Vartype 	token.Token
 }
 
 type ExStmtNodeS struct {
 	Ex ExpNodeI
 }
 
+type IfNodeS struct {
+	Condition 	ExpNodeI
+	ThenStmt 	StmtNodeI
+	ElseStmt 	StmtNodeI
+}
+
+type WhileNodeS struct {
+	Condition 	ExpNodeI
+	Body 		BlockNodeS
+}
+
+type ContinueNodeS struct {
+	Tk token.Token
+}
+type BreakNodeS struct {
+	Tk token.Token
+}
+
 // forces possible structs for StmtNode
 func (Program) statmentPlaceholder() {}
+func (BlockNodeS) statmentPlaceholder() {}
 func (DeclarationNodeS) statmentPlaceholder() {}
 func (ExStmtNodeS) statmentPlaceholder() {}
+func (IfNodeS) statmentPlaceholder() {}
+func (WhileNodeS) statmentPlaceholder() {}
+func (ContinueNodeS) statmentPlaceholder() {}
+func (BreakNodeS) statmentPlaceholder() {}
 
 ////////////////////////////////////////
 // Expressios
@@ -50,32 +79,38 @@ type AssignmentNodeS struct {
 
 type FuncAppNodeS struct {
 	Args 	[]ExpNodeI
-	fun		ExpNodeI
+	Fun		ExpNodeI
 }
 
 type BinaryExpNodeS struct {
 	Left  ExpNodeI
-	Op    Token
+	Op    token.Token
+	Right ExpNodeI
+}
+
+type LogicalExpNodeS struct {
+	Left  ExpNodeI
+	Op    token.Token
 	Right ExpNodeI
 }
 
 type UnaryExpNodeS struct {
-	Op   Token
+	Op   token.Token
 	Node ExpNodeI
 }
 
 type LiteralExpNodeS struct {
-	Tk Token
+	Tk token.Token
 }
 
 type VariableExpNodeS struct {
-	Name Token
+	Name token.Token
 }
 
 type GroupExpNodeS struct {
 	Node       ExpNodeI
-	TokenLeft  Token
-	TokenRight Token
+	TokenLeft  token.Token
+	TokenRight token.Token
 }
 
 // forces possible structs for ExpNode
@@ -86,6 +121,7 @@ func (UnaryExpNodeS) expressionPlaceholder() {}
 func (LiteralExpNodeS) expressionPlaceholder() {}
 func (GroupExpNodeS) expressionPlaceholder() {}
 func (VariableExpNodeS) expressionPlaceholder() {}
+func (LogicalExpNodeS) expressionPlaceholder() {}
 
 
 ////////////////////////////////////////
@@ -106,6 +142,12 @@ func (node ExStmtNodeS) String() string {
 }
 
 func (node BinaryExpNodeS) String() string {
+	switch node.Op.Type {
+	case token.GREATER_GREATER:
+		return fmt.Sprintf("%v(%v)", node.Right, node.Left)
+	case token.COMMA:
+		return fmt.Sprintf("%v, %v", node.Left, node.Right)
+	}
 	return fmt.Sprintf("(%v %v %v)", node.Left, node.Op.Lexeme, node.Right)
 }
 
@@ -132,45 +174,59 @@ func (node AssignmentNodeS) String() string {
 func (node FuncAppNodeS) String() string {
 	
 	// map array to strings
-	args := mapArrayString(node.Args)
+	args := utils.MapArrayString(node.Args)
 
 	// join the strings
-	argsStr := strJoin(args, ", ")
+	argsStr := utils.StrJoin(args, ", ")
 	
 	for _, arg := range node.Args {
 		fmt.Println(arg)
 	}
 
-	return fmt.Sprintf("%v(%v)", node.fun, argsStr)
+	return fmt.Sprintf("%v(%v)", node.Fun, argsStr)
 }
 
 func (node VariableExpNodeS) String() string {
 	return "Var: " + node.Name.Lexeme
 }
 
+func (node BlockNodeS) String() string {
+	s := "{\n"
+	for _, stmt := range node.Statements {
+		s += fmt.Sprintf("%v\n", stmt)
+	}
+	s += "}"
+	return s
+}
+
+func (node IfNodeS) String() string {
+	s := fmt.Sprintf("if %v %v", node.Condition, node.ThenStmt)
+	if node.ElseStmt != nil {
+		s += fmt.Sprintf(" else %v", node.ElseStmt)
+	}
+	return s
+}
+
+func (node LogicalExpNodeS) String() string {
+	return fmt.Sprintf("(%v %v %v)", node.Left, node.Op.Lexeme, node.Right)
+}
+
+func (node WhileNodeS) String() string {
+	return fmt.Sprintf("while %v %v", node.Condition, node.Body)
+}
+
+func (node ContinueNodeS) String() string {
+	return "continue"
+}
+
+func (node BreakNodeS) String() string {
+	return "break"
+}
+
+
 ////////////////////////////////////////
 // Helper functions
 ////////////////////////////////////////
-func fmap[T any, F any](a []T, f func(T) F) []F {
-	fs := make([]F, len(a))
-	for i, v := range a {
-		fs[i] = f(v)
-	}
-	return fs
-}
 
-func mapArrayString[T any](a []T) []string {
-	return fmap[T, string](a, func(v T) string { return fmt.Sprint(v) })
-}
 
-func strJoin(a []string, sep string) string {
-	out := ""
-	for i, s := range a {
-		if i > 0 {
-			out += sep
-		}
-		out += s
-	}
-	return out
-}
 

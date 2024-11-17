@@ -1,7 +1,9 @@
-package main
+package scanner
 
 import (
 	"fmt"
+	token "mikescript/src/token"
+	utils "mikescript/src/utils"
 )
 
 
@@ -13,7 +15,7 @@ const(
 )
 
 type Scanner interface {
-	Scan(input string) []Token
+	Scan(input string) []token.Token
 }
 
 type MSScanner struct {
@@ -23,14 +25,14 @@ type MSScanner struct {
 	n int 			// Length of source code
 
 	// scanner state
-	tokens []Token 	// Tokens found in source code
+	tokens []token.Token 	// token.Tokens found in source code
 	l int 			// Start of current token
 	r int 			// Current position in source code
 	line int 		// Current line number
 	col int 		// Current column number
 
 	// error information
-	errors []ScannerError
+	Errors []ScannerError
 }
 
 type ScannerError struct {
@@ -74,14 +76,14 @@ func (scanner *MSScanner) atr() byte {
 }
 
 func (scanner *MSScanner) atrIsDigit() bool {
-	return IsDigit(scanner.atr())
+	return utils.IsDigit(scanner.atr())
 }
 
 ////////////////////////////////////////////////////////////////
 // 							Scan
 ////////////////////////////////////////////////////////////////
 
-func (scanner *MSScanner) Scan(input string) []Token {
+func (scanner *MSScanner) Scan(input string) []token.Token {
 	scanner.reset()
 	scanner.setSrc(input)
 	scanner.scanTokens()
@@ -97,15 +99,15 @@ func (scanner *MSScanner) scanTokens() {
 	}
 
 	// finish with EOF token
-	scanner.addToken(Token{EOF, "", scanner.line, scanner.col})
+	scanner.addToken(token.Token{Type: token.EOF, Lexeme: "", Line: scanner.line, Col: scanner.col})
 }
 
-func (scanner *MSScanner) nextToken() (Token, bool) {
+func (scanner *MSScanner) nextToken() (token.Token, bool) {
 
 	// get current char and advance r to next character
 	c := scanner.advance()
 
-	var tok Token      	// nil token
+	var tok token.Token      	// nil token
 	var ok bool = true	// valid token
 
 	switch {
@@ -117,46 +119,48 @@ func (scanner *MSScanner) nextToken() (Token, bool) {
 		ok = false
 		scanner.newline()
 	// handle single character tokens
-	case c == '(': tok = Token{LEFT_PAREN, "(", scanner.line, scanner.col}
-	case c == ')': tok = Token{RIGHT_PAREN, ")", scanner.line, scanner.col}
-	case c == '{': tok = Token{LEFT_BRACE, "{", scanner.line, scanner.col}
-	case c == '}': tok = Token{RIGHT_BRACE, "}", scanner.line, scanner.col}
-	case c == '[': tok = Token{LEFT_SQUARE, "[", scanner.line, scanner.col}
-	case c == ']': tok = Token{RIGHT_SQUARE, "]", scanner.line, scanner.col}
-	case c == ',': tok = Token{COMMA, ",", scanner.line, scanner.col}
-	case c == '+': tok = Token{PLUS, "+", scanner.line, scanner.col}
-	case c == '*': tok = Token{MULT, "*", scanner.line, scanner.col}
-	case c == ';': tok = Token{SEMICOLON, ";", scanner.line, scanner.col}
-	case c == '%': tok = Token{PERCENT, "%", scanner.line, scanner.col}
+	case c == '(': tok = token.Token{Type: token.LEFT_PAREN, Lexeme: "(", Line: scanner.line, Col: scanner.col}
+	case c == ')': tok = token.Token{Type: token.RIGHT_PAREN, Lexeme: ")", Line: scanner.line, Col: scanner.col}
+	case c == '{': tok = token.Token{Type: token.LEFT_BRACE, Lexeme: "{", Line: scanner.line, Col: scanner.col}
+	case c == '}': tok = token.Token{Type: token.RIGHT_BRACE, Lexeme: "}", Line: scanner.line, Col: scanner.col}
+	case c == '[': tok = token.Token{Type: token.LEFT_SQUARE, Lexeme: "[", Line: scanner.line, Col: scanner.col}
+	case c == ']': tok = token.Token{Type: token.RIGHT_SQUARE, Lexeme: "]", Line: scanner.line, Col: scanner.col}
+	case c == ',': tok = token.Token{Type: token.COMMA, Lexeme: ",", Line: scanner.line, Col: scanner.col}
+	case c == '+': tok = token.Token{Type: token.PLUS, Lexeme: "+", Line: scanner.line, Col: scanner.col}
+	case c == '*': tok = token.Token{Type: token.MULT, Lexeme: "*", Line: scanner.line, Col: scanner.col}
+	case c == ';': tok = token.Token{Type: token.SEMICOLON, Lexeme: ";", Line: scanner.line, Col: scanner.col}
+	case c == ':': tok = token.Token{Type: token.COLON, Lexeme: ":", Line: scanner.line, Col: scanner.col}
+	case c == '%': tok = token.Token{Type: token.PERCENT, Lexeme: "%", Line: scanner.line, Col: scanner.col}
 	// handle two character tokens
-	case c == '-' && scanner.advanceIfAtr('>'): tok = Token{MINUS_GREAT, "<-", scanner.line, scanner.col}
-	case c == '-': 								tok = Token{MINUS, "-", scanner.line, scanner.col}
+	case c == '-' && scanner.advanceIfAtr('>'): tok = token.Token{Type: token.MINUS_GREAT, Lexeme: "<-", Line: scanner.line, Col: scanner.col}
+	case c == '-': 								tok = token.Token{Type: token.MINUS, Lexeme: "-", Line: scanner.line, Col: scanner.col}
 	case c == '/' && scanner.advanceIfAtr('/'):	ok, tok = scanner.skipComment()
-	case c == '/':								tok = Token{SLASH, "/", scanner.line, scanner.col}
-	case c == '<' && scanner.advanceIfAtr('='):	tok = Token{LESS_EQ, "<=", scanner.line, scanner.col}
-	case c == '<' && scanner.advanceIfAtr('<'):	tok = Token{LESS_LESS, "<<", scanner.line, scanner.col}
-	case c == '<' && scanner.advanceIfAtr('-'): tok = Token{LESS_MINUS, "<-", scanner.line, scanner.col}
-	case c == '<':								tok = Token{LESS, "<", scanner.line, scanner.col}
-	case c == '>' && scanner.advanceIfAtr('='):	tok = Token{GREATER_EQ, ">=", scanner.line, scanner.col}
-	case c == '>' && scanner.advanceIfAtr('>'):	tok = Token{GREATER_GREATER, ">>", scanner.line, scanner.col}
-	case c == '>':								tok = Token{GREATER, ">", scanner.line, scanner.col}
-	case c == '|' && scanner.advanceIfAtr('|'):	tok = Token{BAR_BAR, "||", scanner.line, scanner.col}
-	case c == '|':								tok = Token{BAR, "|", scanner.line, scanner.col}
-	case c == '!' && scanner.advanceIfAtr('='):	tok = Token{EXCLAMATION_EQ, "!=", scanner.line, scanner.col}
-	case c == '!':								tok = Token{EXCLAMATION, "!", scanner.line, scanner.col}
-	case c == '=' && scanner.advanceIfAtr('='):	tok = Token{EQ_EQ, "==", scanner.line, scanner.col}
-	case c == '=':								tok = Token{EQ, "=", scanner.line, scanner.col}
+	case c == '/':								tok = token.Token{Type: token.SLASH, Lexeme: "/", Line: scanner.line, Col: scanner.col}
+	case c == '<' && scanner.advanceIfAtr('='):	tok = token.Token{Type: token.LESS_EQ, Lexeme: "<=", Line: scanner.line, Col: scanner.col}
+	case c == '<' && scanner.advanceIfAtr('<'):	tok = token.Token{Type: token.LESS_LESS, Lexeme: "<<", Line: scanner.line, Col: scanner.col}
+	case c == '<' && scanner.advanceIfAtr('-'): tok = token.Token{Type: token.LESS_MINUS, Lexeme: "<-", Line: scanner.line, Col: scanner.col}
+	case c == '<':								tok = token.Token{Type: token.LESS, Lexeme: "<", Line: scanner.line, Col: scanner.col}
+	case c == '>' && scanner.advanceIfAtr('='):	tok = token.Token{Type: token.GREATER_EQ, Lexeme: ">=", Line: scanner.line, Col: scanner.col}
+	case c == '>' && scanner.advanceIfAtr('>'):	tok = token.Token{Type: token.GREATER_GREATER, Lexeme: ">>", Line: scanner.line, Col: scanner.col}
+	case c == '>':								tok = token.Token{Type: token.GREATER, Lexeme: ">", Line: scanner.line, Col: scanner.col}
+	case c == '|' && scanner.advanceIfAtr('|'):	tok = token.Token{Type: token.BAR_BAR, Lexeme: "||", Line: scanner.line, Col: scanner.col}
+	case c == '|':								tok = token.Token{Type: token.BAR, Lexeme: "|", Line: scanner.line, Col: scanner.col}
+	case c == '&' && scanner.advanceIfAtr('&'):	tok = token.Token{Type: token.AMP_AMP, Lexeme: "&&", Line: scanner.line, Col: scanner.col}
+	case c == '!' && scanner.advanceIfAtr('='):	tok = token.Token{Type: token.EXCLAMATION_EQ, Lexeme: "!=", Line: scanner.line, Col: scanner.col}
+	case c == '!':								tok = token.Token{Type: token.EXCLAMATION, Lexeme: "!", Line: scanner.line, Col: scanner.col}
+	case c == '=' && scanner.advanceIfAtr('='):	tok = token.Token{Type: token.EQ_EQ, Lexeme: "==", Line: scanner.line, Col: scanner.col}
+	case c == '=':								tok = token.Token{Type: token.EQ, Lexeme: "=", Line: scanner.line, Col: scanner.col}
 	// handle string literals
 	case c == '"':								ok, tok = scanner.scanString()
 	// handle numbers
-	case c == '.' && scanner.advanceIfAtr('.'):	tok = Token{DOT_DOT, "..", scanner.line, scanner.col}
+	case c == '.' && scanner.advanceIfAtr('.'):	tok = token.Token{Type: token.DOT_DOT, Lexeme: "..", Line: scanner.line, Col: scanner.col}
 	case c == '.' && scanner.atrIsDigit():		ok, tok = scanner.scanNumber()
-	case c == '.':								tok = Token{DOT, ".", scanner.line, scanner.col}
-	case IsDigit(c):							ok, tok = scanner.scanNumber()
+	case c == '.':								tok = token.Token{Type: token.DOT, Lexeme: ".", Line: scanner.line, Col: scanner.col}
+	case utils.IsDigit(c):							ok, tok = scanner.scanNumber()
 	// handle identifiers
-	case IsAlpha(c):							ok, tok = scanner.scanIdentifierOrKeyword()
+	case utils.IsAlpha(c):							ok, tok = scanner.scanIdentifierOrKeyword()
 	default:
-		ok, tok = false, Token{UNKNOWN, "UNK", scanner.line, scanner.col}
+		ok, tok = false, token.Token{Type: token.UNKNOWN, Lexeme: "UNK", Line: scanner.line, Col: scanner.col}
 		scanner.error("Unrecognized character", scanner.line, scanner.col)
 	}
 
@@ -166,9 +170,9 @@ func (scanner *MSScanner) nextToken() (Token, bool) {
 	return tok, ok
 }
 
-func (scanner *MSScanner) scanIdentifierOrKeyword() (bool, Token) {
+func (scanner *MSScanner) scanIdentifierOrKeyword() (bool, token.Token) {
 
-	for !scanner.atEnd() && (IsAlpha(scanner.atr()) || IsDigit(scanner.atr())) {
+	for !scanner.atEnd() && (utils.IsAlpha(scanner.atr()) || utils.IsDigit(scanner.atr())) {
 		scanner.advance()
 	}
 
@@ -176,16 +180,16 @@ func (scanner *MSScanner) scanIdentifierOrKeyword() (bool, Token) {
 	str := scanner.src[scanner.l:scanner.r]
 
 	// check if the string is a keyword
-	if tt, ok := keywords[str]; ok {
-		return true, Token{tt, str, scanner.line, scanner.col}
+	if tt, ok := token.Keywords[str]; ok {
+		return true, token.Token{Type: tt, Lexeme: str, Line: scanner.line, Col: scanner.col}
 	}
 
 	// not a keyword, so it is an identifier
-	return true, Token{IDENTIFIER, str, scanner.line, scanner.col}
+	return true, token.Token{Type: token.IDENTIFIER, Lexeme: str, Line: scanner.line, Col: scanner.col}
 
 }
 
-func (scanner *MSScanner) scanString() (bool, Token) {
+func (scanner *MSScanner) scanString() (bool, token.Token) {
 	// advance r untill we find the matching "
 	// make sure we don't go past the end of the file
 	// also make sure to increment newlines occuring
@@ -197,12 +201,12 @@ func (scanner *MSScanner) scanString() (bool, Token) {
 	// Check cause of loop exit, if from EOF we have an error
 	if scanner.atEnd() {
 		scanner.error("No matching \" found for string", scanner.line, scanner.col)
-		return false, Token{}
+		return false, token.Token{}
 	}
 	
 	// Found the closing quote, add the string token
 	str := scanner.src[scanner.l+1:scanner.r]
-	tok := Token{STRING, str, scanner.line, scanner.col}
+	tok := token.Token{Type: token.STRING, Lexeme: str, Line: scanner.line, Col: scanner.col}
 
 	// advance past the closing quote
 	scanner.advance()
@@ -210,7 +214,7 @@ func (scanner *MSScanner) scanString() (bool, Token) {
 	return true, tok
 }
 
-func (scanner *MSScanner) scanNumber() (bool, Token) {
+func (scanner *MSScanner) scanNumber() (bool, token.Token) {
 
 	// scanner.l points to either the first digit or the dot
 	// scanner.r points to next character after the first digit or dot
@@ -236,12 +240,12 @@ func (scanner *MSScanner) scanNumber() (bool, Token) {
 			ndot = ndot + 1
 		} else if scanner.atr() == SPACE || scanner.atr() == TAB {
 			break
-		} else if IsAlpha(scanner.atr()) {
+		} else if utils.IsAlpha(scanner.atr()) {
 			// Found a non-digit character, we have an error
 			// And we know it is not a space, tab or newline
 			// But we still continue the loop to find the end of the number
 			valid = false
-		} else if !IsDigit(scanner.atr()) {
+		} else if !utils.IsDigit(scanner.atr()) {
 			// Not a digit, space, tab or newline, but also not
 			// an alpha character, so this is still a valid number
 			// Example: {123}; is valid and 42; is valid
@@ -256,38 +260,38 @@ func (scanner *MSScanner) scanNumber() (bool, Token) {
 	// if it does, we have an error
 	if ndot > 1 {
 		scanner.error("Invalid number literal", scanner.line, scanner.col)
-		return false, Token{}
+		return false, token.Token{}
 	}
 
 	if !valid {
 		scanner.error("Invalid number literal", scanner.line, scanner.col)
-		return false, Token{}
+		return false, token.Token{}
 	}
 
 	// Check if the character at r is a quote '"', this is not allowed
 	if scanner.atr() == QUOTE {
 		scanner.error("Invalid number literal", scanner.line, scanner.col)
-		return false, Token{}
+		return false, token.Token{}
 	}
 
 
 	// should be space, newline, tab or end of file
 	// so we can add the number token
-	var tt TokenType
+	var tt token.TokenType
 	if ndot == 1 {
-		tt = NUMBER_FLOAT
+		tt = token.NUMBER_FLOAT
 	} else {
-		tt = NUMBER_INT
+		tt = token.NUMBER_INT
 	}
 
 	// create the number token
 	num := scanner.src[scanner.l:scanner.r]
-	tok := Token{tt, num, scanner.line, scanner.col}
+	tok := token.Token{Type: tt, Lexeme: num, Line: scanner.line, Col: scanner.col}
 
 	return true, tok
 }
 
-func (scanner *MSScanner) skipComment() (bool, Token) {
+func (scanner *MSScanner) skipComment() (bool, token.Token) {
 
 	// found a comment where l points to the first /
 	// and r points to the second / Now we need to advance
@@ -296,7 +300,7 @@ func (scanner *MSScanner) skipComment() (bool, Token) {
 			scanner.advance()
 	}
 
-	return false, Token{}
+	return false, token.Token{}
 }
 
 func (scanner *MSScanner) advanceIfAtr(c byte) bool {
@@ -311,7 +315,7 @@ func (scanner *MSScanner) advanceIfAtr(c byte) bool {
 	return true
 }
 
-func (scanner *MSScanner) addToken(token Token) {
+func (scanner *MSScanner) addToken(token token.Token) {
 	scanner.tokens = append(scanner.tokens, token)
 }
 
@@ -321,7 +325,7 @@ func (scanner *MSScanner) atEnd() bool {
 
 func (scanner *MSScanner) error(msg string, line int, col int) {
 	err := ScannerError{msg, line, col}
-	scanner.errors = append(scanner.errors, err)
+	scanner.Errors = append(scanner.Errors, err)
 }
 
 func (scanner *MSScanner) setSrc(input string) {
@@ -336,13 +340,13 @@ func (scanner *MSScanner) reset() {
 	scanner.n = 0
 
 	// reset scanner state
-	scanner.tokens = make([]Token, 0)
+	scanner.tokens = make([]token.Token, 0)
 	scanner.r = 0
 	scanner.l = 0
 	scanner.line = 1
 	scanner.col = 1
 
 	// reset errors
-	scanner.errors = make([]ScannerError, 0)
+	scanner.Errors = make([]ScannerError, 0)
 	
 }
