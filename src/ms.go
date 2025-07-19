@@ -22,7 +22,7 @@ type MSRunner struct {
 	verbose 	bool
 }
 
-func (r MSRunner) log(input interface{}) {
+func (r MSRunner) log(input any) {
 	if r.verbose {
 		fmt.Println(input)
 	}

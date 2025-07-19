@@ -2,10 +2,9 @@ package parser
 
 import (
 	"fmt"
-	token "mikescript/src/token"
 	AST "mikescript/src/ast"
+	token "mikescript/src/token"
 )
-
 
 ////////////////////////////////////////////////////////////
 // 						Parser
@@ -16,16 +15,11 @@ type Parser interface {
 }
 
 type MSParser struct {
-
-	// src information
-	src    string
-	tokens []token.Token
-
-	// parser state
-	pos  int     // current position in tokens
-	pnc  bool    // panic flag
-
-	Errors []ParserError
+	src    string			// source code
+	tokens []token.Token	// token list from tokenizer
+	pos  int     			// current position in tokens
+	pnc  bool    			// panic flag
+	Errors []ParserError	// parser errors
 }
 
 func (parser *MSParser) SetSrc(src string) {
@@ -56,6 +50,7 @@ func (err ParserError) Error() string {
 ////////////////////////////////////////////////////////////
 
 func (parser *MSParser) advance() token.Token {
+	// Peeks current token and advances next position.
 	tok := parser.peek()
 	parser.pos = parser.pos + 1
 	return tok
@@ -69,6 +64,7 @@ func (parser *MSParser) peek() token.Token {
 }
 
 func (parser *MSParser) atend() bool {
+	// When past the token stack, we are at end.
 	return parser.pos >= len(parser.tokens)
 }
 
@@ -132,6 +128,7 @@ func (parser *MSParser) synchronize() {
 ////////////////////////////////////////////////////////////
 
 func (parser *MSParser) Parse(tokens []token.Token) (AST.Program, error) {
+	// Parses: START -> Program EOF
 
 	// parse block
 	ast, err := parser.parseProgram()
@@ -151,6 +148,7 @@ func (parser *MSParser) Parse(tokens []token.Token) (AST.Program, error) {
 }
 
 func (parser *MSParser) parseProgram() (AST.Program, error) {
+	// parses program -> statement *
 
 	// as long as we haven't reached the end of the tokens
 	// we keep parsing statements.
@@ -194,6 +192,7 @@ func (parser *MSParser) parseProgram() (AST.Program, error) {
 // }
 
 func (parser *MSParser) parseVarDeclaration(declarationType token.Token) (AST.DeclarationNodeS, error) {
+	// arg: type of declartion;
 	
 	// We expect an identifier next so we parse it
 	ident, err := parser.parseIdentifier()
@@ -216,9 +215,10 @@ func (parser *MSParser) parseVarDeclaration(declarationType token.Token) (AST.De
 }
 
 func (parser *MSParser) parseStatement() (AST.StmtNodeI, error){
+	// statement ->
 	// [0]: block
 	// [1]: if
-	// [2]: variable declaration
+	// [2]: variable_declaration
 	// [3]: while
 	// [-]: expression
 
@@ -230,7 +230,7 @@ func (parser *MSParser) parseStatement() (AST.StmtNodeI, error){
 	if ok, _ := parser.match(token.IF); ok {
 		return parser.parseIf()
 	}
-	// token.WHILE
+	// WHILE
 	if ok, _ := parser.match(token.WHILE); ok {
 		return parser.parseWhile()
 	}
@@ -238,6 +238,7 @@ func (parser *MSParser) parseStatement() (AST.StmtNodeI, error){
 	if ok, tk := parser.match(token.INT_TYPE, token.FLOAT_TYPE, token.STRING_TYPE, token.BOOLEAN_TYPE); ok {
 		return parser.parseVarDeclaration(tk)
 	}
+
 	// CONTINUE
 	if ok, tk := parser.match(token.CONTINUE); ok {
 		err := parser.error("Continue statement not allowed outside of loops", tk.Line, tk.Col)
@@ -283,8 +284,7 @@ func (parser *MSParser) parseIf() (AST.IfNodeS, error) {
 		return AST.IfNodeS{}, err
 	}
 
-	// Expect a block statement so we check for opening brace
-	// and parse the block.
+	// Expect a block statement so we check for opening brace.
 	if ok, tok := parser.expect(token.LEFT_BRACE); !ok {
 		msg := fmt.Sprintf("Expected '{' got '%v'", tok.Type.String())
 		err = parser.error(msg, tok.Line, tok.Col)
