@@ -1,8 +1,10 @@
 package ast
 
-import "fmt"
-import "mikescript/src/token"
-import "mikescript/src/utils"
+import (
+	"fmt"
+	"mikescript/src/token"
+	"mikescript/src/utils"
+)
 
 // Add statements and replace "ASTNode" with "Expression"
 // Add "ASTNode" interface
@@ -146,7 +148,7 @@ func (node BinaryExpNodeS) String() string {
 	case token.GREATER_GREATER:
 		return fmt.Sprintf("%v(%v)", node.Right, node.Left)
 	case token.COMMA:
-		return fmt.Sprintf("%v, %v", node.Left, node.Right)
+		return fmt.Sprintf("(%v, %v)", node.Left, node.Right)
 	}
 	return fmt.Sprintf("(%v %v %v)", node.Left, node.Op.Lexeme, node.Right)
 }
@@ -156,6 +158,14 @@ func (node UnaryExpNodeS) String() string {
 }
 
 func (node LiteralExpNodeS) String() string {
+	switch node.Tk.Type{
+	case token.STRING:
+		return fmt.Sprintf("\"%v\"", node.Tk.Lexeme)
+	case token.NUMBER_FLOAT:
+		return fmt.Sprintf("%v", node.Tk.Lexeme)
+	case token.NUMBER_INT:
+		return fmt.Sprintf("%v", node.Tk.Lexeme)
+	}
 	return node.Tk.Lexeme
 }
 
@@ -178,6 +188,7 @@ func (node FuncAppNodeS) String() string {
 
 	// join the strings
 	argsStr := utils.StrJoin(args, ", ")
+	argsStr = fmt.Sprintf("(%s)", argsStr)
 	
 	for _, arg := range node.Args {
 		fmt.Println(arg)
@@ -187,7 +198,7 @@ func (node FuncAppNodeS) String() string {
 }
 
 func (node VariableExpNodeS) String() string {
-	return "Var: " + node.Name.Lexeme
+	return "$" + node.Name.Lexeme
 }
 
 func (node BlockNodeS) String() string {
