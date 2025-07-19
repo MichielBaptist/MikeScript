@@ -452,17 +452,11 @@ func (parser *MSParser) parseFuncop() (AST.ExpNodeI, error) {
 	var left AST.ExpNodeI
 	var err error
 
-	// Check if we have an argument-less function
-	// application. If we do, we return the function
-	// application node.
-	if ok, id := parser.match(token.GREATER_GREATER); ok {
-		msg := "Function call with no arguments is not implemented yet"
-		return nil, ParserError{msg, id.Line, id.Col}
-	}
-	
 	// parse the first expression, this is either
 	// a comma separated list of expressions or empty (nil)
-	left, err = parser.parseTuple()
+	if !parser.checkType(token.GREATER_GREATER){
+		left, err = parser.parseTuple()
+	}
 
 	// check for errors
 	if err != nil {
@@ -471,7 +465,7 @@ func (parser *MSParser) parseFuncop() (AST.ExpNodeI, error) {
 
 	for {
 		if ok, op := parser.match(token.GREATER_GREATER, token.MINUS_GREAT); ok {
-
+			fmt.Println("Matched >>")
 			var right AST.ExpNodeI
 			var err error
 
@@ -518,6 +512,7 @@ func (parser *MSParser) parseFuncop() (AST.ExpNodeI, error) {
 			}
 
 		} else {
+			fmt.Println("No matched >>")
 			break
 		}
 	}
@@ -793,6 +788,11 @@ func (parser *MSParser) parseIdentifier() (AST.VariableExpNodeS, error) {
 
 
 func flattenExpNode(n *AST.ExpNodeI) []AST.ExpNodeI {
+
+	if (*n == nil) {
+		fmt.Println("flattening nil node")
+		return []AST.ExpNodeI{}
+	}
 
 	// By default, flatten returns the node
 	// wrapped in a slice

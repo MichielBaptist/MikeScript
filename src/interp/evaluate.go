@@ -10,13 +10,21 @@ import (
 ////////////////////////////////////////////////////////////////////////
 
 type MSEvaluator struct {
+	// Contains program state.
 	ast ast.Program			// The AST to evaluate
 	err []error				// Evaluation errors
-	env *Environment		// Global environment
+	env *Environment		// Environment of current scope
+	glb *Environment 		// Fixed reference to global scope (outermost env)
 }
 
 func NewMSEvaluator() *MSEvaluator {
-	return &MSEvaluator{env: NewEnvironment(nil)}
+	env := NewEnvironment(nil)
+	glb := env
+
+	// Add builtins to glb
+	glb.NewVar("print", MSBuiltinPrint(), RT_FUNCTION)
+
+	return &MSEvaluator{env: env, glb: glb}
 }
 
 func (evaluator *MSEvaluator) Eval(ast ast.Program) EvalResult {
@@ -47,7 +55,7 @@ func (evaluator *MSEvaluator) statementError(err []error) {
 
 type EvalResult struct {
 	rt    ResultType  	// type of the result
-	val   interface{} 	// Container for the result
+	val   any 			// Container for the result
 	err   []error    	// Error message on evaluation fail
 }
 

@@ -1,11 +1,20 @@
 package interp
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 ////////////////////////////////////////
 // Environment row
 ////////////////////////////////////////
 
+func stringCut(s string, n int) string {
+	if (len(s) > n && len(s) > 3){
+		return fmt.Sprintf("%s...", s[0:n-3])
+	}
+	return s
+}
 type EnvRow struct {
 	name 	string			// Name of the variable
 	value 	*EvalResult		// Value of the variable (always an EvalResult)
@@ -13,8 +22,27 @@ type EnvRow struct {
 }
 
 func (er *EnvRow) String() string {
-	return fmt.Sprintf("%v %v: %v", er.rtype, er.name, er.value)
+	return fmt.Sprintf("%v %v = %v", er.rtype, er.name, er.value)
 }
+
+func (er *EnvRow) rowRepr() string {
+	c1 := stringCut(er.rtype.String(), 15)
+	c2 := stringCut(er.name, 15)
+	c3 := stringCut(er.value.String(), 15)
+	return fmt.Sprintf("| %-15v | %-15v | %-15v |", c1, c2, c3)
+}
+
+// func (er *EnvRow) typeSLen() int {
+// 	return len(er.rtype.String())
+// }
+
+// func (er *EnvRow) nameSLen() int {
+// 	return len(er.name)
+// }
+
+// func (er *EnvRow) valSLen() int {
+// 	return len(er.value.String())
+// }
 
 ////////////////////////////////////////
 // Error
@@ -38,7 +66,10 @@ type Environment struct {
 }
 
 func NewEnvironment(enclosing *Environment) *Environment {
-	return &Environment{make(map[string]EnvRow), enclosing}
+	return &Environment{
+		variables: make(map[string]EnvRow),
+		enclosing: enclosing,
+	}
 }
 
 ////////////////////////////////////////
@@ -123,14 +154,15 @@ func (env *Environment) printEnv() {
 	// print enclosing scope first
 	env.enclosing.printEnv()
 
-	fmt.Println("-----------------------------------")
-
-	table := ""
-	for k, v := range env.variables {
-		table += fmt.Sprintf("%v: %v\n", k, v.String())
+	rows := []string{}
+	for _, v := range env.variables {
+		rows = append(rows, v.rowRepr())
 	}
-	
-	fmt.Println(table)
+
+	// Print table
+	fmt.Println("+-----------------+-----------------+-----------------+")
+	fmt.Println(strings.Join(rows, "\n"))
+	fmt.Println("+-----------------+-----------------+-----------------+")
 }
 
 func (env *Environment) validVarName(name string) bool {

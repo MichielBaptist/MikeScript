@@ -129,7 +129,7 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 
 	// If either of the evaluations failed, return the error
 	if !left.Valid() {
-		return left
+		return left // EvalResult contains error(s)
 	}
 
 	// Check if the left side is a boolean
@@ -142,12 +142,16 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 
 	// short circuit evaluation
 	switch  {
-	case node.Op.Type == token.AMP_AMP && !leftb: return EvalResult{rt: RT_BOOL, val: false}
-	case node.Op.Type == token.BAR_BAR &&  leftb: return EvalResult{rt: RT_BOOL, val: true}
+	case node.Op.Type == token.AMP_AMP && !leftb: return EvalResult{rt: RT_BOOL, val: false} // false && ...
+	case node.Op.Type == token.BAR_BAR &&  leftb: return EvalResult{rt: RT_BOOL, val: true}  // true || ...
 	}
 
 	// Means the first operand is inconclusive
 	right := evaluator.evaluateExpression(&node.Right)
+
+	if !right.Valid() {
+		return right // EvalResult contains error(s)
+	}
 
 	// Check if the right side is a boolean
 	if right.rt != RT_BOOL {
@@ -159,41 +163,46 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 }
 
 func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS) EvalResult {
-	// check if the function is 'print'
-	// if it is, print the arguments
 
-	switch fun := node.Fun.(type) {
-	case ast.VariableExpNodeS:
-		// Get the function name
-		if fun.Name.Lexeme == "print" || fun.Name.Lexeme == "println" {
-			// Evaluate the arguments
-			args := make([]EvalResult, len(node.Args))
-			for i, arg := range node.Args {
-				args[i] = evaluator.evaluateExpression(&arg)
-			}
+	// Evaluate the function
+	fn := evaluator.evaluateExpression(&node.Fun)
 
-			// Accumulate all errors into one
-			errs := []error{}
-			for _, arg := range args {
-				errs = append(errs, arg.err...)
-			}
-			if len(errs) > 0 {
-				return EvalResult{err: errs}
-			}
-
-			// Get all result values in a slice
-			// and convert them to strings
-			strs := make([]string, len(args))
-			for i, arg := range args {
-				strs[i] = fmt.Sprint(arg.val)
-			}
-
-			// Print the joined strings
-			fmt.Println(utils.StrJoin(strs, ", "))
-			return EvalResult{rt: RT_NONE}
-		}
+	// Check for errors
+	if (!fn.Valid()) {
+		return fn // Found errors
 	}
-	return evalErr("Function application is not implemented yet.")
+
+	// First evaluate all arguments, keep track of any errors.
+	args := make([]EvalResult, len(node.Args))
+	for i, arg := range node.Args {
+		args[i] = evaluator.evaluateExpression(&arg)
+	}
+
+	// Accumulate all errors into one
+	errs := []error{}
+	for _, arg := range args {
+		errs = append(errs, arg.err...)
+	}
+	if len(errs) > 0 {
+		return EvalResult{err: errs}
+	}
+
+	// Check the type of the evaluation of Fun
+	// For now, only func types will be callable.
+	if (fn.rt != RT_FUNCTION) {
+		return evalErr(fmt.Sprintf("Function application is not implemented for type '%s'", fn.rt))
+	}
+
+	// We can now be sure we can cast to FunctionResult
+	callable, ok := fn.val.(FunctionResult)
+
+	if (!ok) {
+		return evalErr(fmt.Sprintf("Could not cast %s to a FunctionResult", fn.val))
+	}
+
+	res := callable.call(evaluator, args)
+
+	return res
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -426,7 +435,7 @@ func evalGreaterEq(left, right EvalResult, op token.TokenType) EvalResult {
 	return evalErr(invalidBinop(left, right, op.String()))
 }
 
-func evalEq(left, right EvalResult, op token.TokenType) EvalResult {
+func evalEq(left EvalResult, right EvalResult, op token.TokenType) EvalResult {
 	switch {
 	case left.rt == RT_NONE   || right.rt == RT_NONE:	return EvalResult{rt: RT_BOOL, val: false}
 	case left.rt == RT_STRING && right.rt == RT_STRING:	return EvalResult{rt: RT_BOOL, val: left.val.(string) == right.val.(string)}
