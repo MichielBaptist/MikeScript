@@ -33,11 +33,13 @@ type PrintFunction struct {}
 
 func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalResult {
 
+	fmt.Println(args)
+
 	// Get all result values in a slice
 	// and convert them to strings
 	strs := make([]string, len(args))
 	for i, arg := range args {
-		strs[i] = fmt.Sprint(arg.val)
+		strs[i] = arg.String()
 	}
 
 	// Print the joined strings, this is where
@@ -45,7 +47,7 @@ func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalRe
 	fmt.Println(utils.StrJoin(strs, ", "))
 
 	// Done without return value
-	return EvalResult{rt: RT_NONE}
+	return EvalResult{rt: RT_NONE, val: nil}
 }
 
 func (pf *PrintFunction) min_arity() uint8 {

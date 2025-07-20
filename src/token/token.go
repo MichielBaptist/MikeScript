@@ -109,6 +109,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	LESS_EQ: "<=",
 	GREATER_EQ: ">=",
 	GREATER_GREATER: ">>",
+	MINUS_GREAT: "->",
 	LESS_LESS: "<<",
 	AMP_AMP: "&&",
 	BAR_BAR: "||",
@@ -165,3 +166,6 @@ func (t TokenType) String() string {
 func (t Token) String() string {
 	return "(" + t.Type.String() + ", " + t.Lexeme + ")"
 }
+
+// List of tokens which define a builtin type
+var TypeKeywords []TokenType = []TokenType{INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOLEAN_TYPE}

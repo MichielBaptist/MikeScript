@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mikescript/src/token"
 	"mikescript/src/utils"
+	"strings"
 )
 
 // Add statements and replace "ASTNode" with "Expression"
@@ -13,7 +14,7 @@ import (
 // Node types
 ////////////////////////////////////////
 
-type ASTNodeI interface {}
+type ASTNodeI any
 type ExpNodeI interface {
 	expressionPlaceholder()
 }
@@ -60,6 +61,18 @@ type BreakNodeS struct {
 	Tk token.Token
 }
 
+type FuncDeclNodeS struct {
+	Fname VariableExpNodeS			// name, should be VariableExpNodeS???
+	Args []FuncArgS 				// Arguments
+	Rt token.Token					// Return type
+	Body BlockNodeS					// Body of function
+}
+
+type FuncArgS struct {
+	Type token.Token		// Type token
+	Iden VariableExpNodeS 	// Var name
+}
+
 // forces possible structs for StmtNode
 func (Program) statmentPlaceholder() {}
 func (BlockNodeS) statmentPlaceholder() {}
@@ -69,6 +82,7 @@ func (IfNodeS) statmentPlaceholder() {}
 func (WhileNodeS) statmentPlaceholder() {}
 func (ContinueNodeS) statmentPlaceholder() {}
 func (BreakNodeS) statmentPlaceholder() {}
+func (FuncDeclNodeS) statmentPlaceholder() {}
 
 ////////////////////////////////////////
 // Expressios
@@ -145,12 +159,10 @@ func (node ExStmtNodeS) String() string {
 
 func (node BinaryExpNodeS) String() string {
 	switch node.Op.Type {
-	case token.GREATER_GREATER:
-		return fmt.Sprintf("%v(%v)", node.Right, node.Left)
-	case token.COMMA:
-		return fmt.Sprintf("(%v, %v)", node.Left, node.Right)
+	case token.GREATER_GREATER:	return fmt.Sprintf("%v(%v)", node.Right, node.Left)
+	case token.COMMA:			return fmt.Sprintf("(%v, %v)", node.Left, node.Right)
+	default: 					return fmt.Sprintf("(%v %v %v)", node.Left, node.Op.Lexeme, node.Right)
 	}
-	return fmt.Sprintf("(%v %v %v)", node.Left, node.Op.Lexeme, node.Right)
 }
 
 func (node UnaryExpNodeS) String() string {
@@ -159,14 +171,11 @@ func (node UnaryExpNodeS) String() string {
 
 func (node LiteralExpNodeS) String() string {
 	switch node.Tk.Type{
-	case token.STRING:
-		return fmt.Sprintf("\"%v\"", node.Tk.Lexeme)
-	case token.NUMBER_FLOAT:
-		return fmt.Sprintf("%v", node.Tk.Lexeme)
-	case token.NUMBER_INT:
-		return fmt.Sprintf("%v", node.Tk.Lexeme)
+	case token.STRING:			return fmt.Sprintf("\"%v\"", node.Tk.Lexeme)
+	case token.NUMBER_FLOAT:	return fmt.Sprintf("%v", node.Tk.Lexeme)
+	case token.NUMBER_INT:		return fmt.Sprintf("%v", node.Tk.Lexeme)
+	default:					return node.Tk.Lexeme
 	}
-	return node.Tk.Lexeme
 }
 
 func (node GroupExpNodeS) String() string {
@@ -188,11 +197,6 @@ func (node FuncAppNodeS) String() string {
 
 	// join the strings
 	argsStr := utils.StrJoin(args, ", ")
-	argsStr = fmt.Sprintf("(%s)", argsStr)
-	
-	for _, arg := range node.Args {
-		fmt.Println(arg)
-	}
 
 	return fmt.Sprintf("%v(%v)", node.Fun, argsStr)
 }
@@ -234,10 +238,28 @@ func (node BreakNodeS) String() string {
 	return "break"
 }
 
+func (node FuncDeclNodeS) String() string {
 
-////////////////////////////////////////
-// Helper functions
-////////////////////////////////////////
+	// Get args string
+	argss := []string{}
+	for _, arg := range node.Args {
+		argss = append(argss, arg.String())
+	}
+
+	// format
+	return fmt.Sprintf(
+		"%s %s %s %s %s",
+		strings.Join(argss, ", "),		// int x, int y
+		token.GREATER_GREATER.String(), // >>
+		node.Fname.String(),			// fname
+		token.MINUS_GREAT.String(),		// ->
+		node.Rt.Lexeme,					// int
+	)
+}
 
 
-
+func (fa FuncArgS) String() string {
+	typeS := fa.Type.Lexeme
+	nameS := fa.Iden.Name.Lexeme
+	return fmt.Sprintf("%s %s", typeS, nameS)
+}

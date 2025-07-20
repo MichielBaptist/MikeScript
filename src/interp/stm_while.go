@@ -1,0 +1,50 @@
+package interp
+
+import (
+	"fmt"
+	"mikescript/src/ast"
+)
+
+func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalResult {
+
+	var res EvalResult
+
+	for {
+
+		// Evaluate expression
+		cond := evaluator.evaluateExpression(&node.Condition)
+		if !cond.Valid() {
+			return cond
+		}
+		if cond.rt != RT_BOOL {
+			return evalErr(fmt.Sprintf("Condition must be of type bool, got %v", cond.rt))
+		}
+
+		// Get value of the bool
+		condb, ok := cond.val.(bool)
+		if !ok {
+			return evalErr(fmt.Sprintf("Condition value is not a bool: %v", cond.val))
+		}
+
+		// Here the condition should be a boolean
+		// If the condition is false, we break out of the loop
+		if !condb {
+			break
+		}
+
+		// Execute the body of the while loop
+		res = evaluator.executeBlock(&node.Body)
+
+		// Check if result has an error
+		if !res.Valid() {
+			return res
+		}
+
+		// Check if result is break, on break we exit
+		if res.rt == RT_BREAK {
+			return EvalResult{rt: RT_NONE}
+		}
+	}
+
+	return res
+}
