@@ -73,6 +73,7 @@ const(
 	FLOAT_TYPE 						// float (64)
 	STRING_TYPE 					// string
 	BOOLEAN_TYPE 					// boolean
+	NOTHING_TYPE					// nothing
 	STRUCT 							// struct
 
 	// End of file
@@ -168,4 +169,4 @@ func (t Token) String() string {
 }
 
 // List of tokens which define a builtin type
-var TypeKeywords []TokenType = []TokenType{INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOLEAN_TYPE}
+var TypeKeywords []TokenType = []TokenType{INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOLEAN_TYPE, NOTHING_TYPE}

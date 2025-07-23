@@ -19,7 +19,7 @@ func (parser *MSParser) parseExpressionStatement() (ast.ExStmtNodeS, error) {
 	// Expect a semicolon. If not found, return an error
 	// set the error message to the expected token.
 	if ok, tok := parser.expect(token.SEMICOLON); !ok {
-		msg := fmt.Sprintf("Expected ';' got '%v'", tok.Type.String())
+		msg := fmt.Sprintf("Expected '%v' got '%v'", token.SEMICOLON, tok.Type.String())
 		err = parser.error(msg, tok.Line, tok.Col)
 	}
 
@@ -40,14 +40,14 @@ func (parser *MSParser) parseLor() (ast.ExpNodeI, error) {
 
 	for {
 
-		// Match
+		// Match ||
 		ok, op := parser.match(token.BAR_BAR)
 
 		// No match
 		if !ok {
 			break
 		}
-		
+
 		// Match
 		right, err := parser.parseLand()
 		land = ast.LogicalExpNodeS{Left: land, Op: op, Right: right}
@@ -305,56 +305,32 @@ func (parser *MSParser) parseIdentifier() (ast.VariableExpNodeS, error) {
 		return ast.VariableExpNodeS{Name: id}, nil
 	}
 
-	// Handles "(x)", "(f)", "((x))", ...
-	if ok, _ := parser.match(token.LEFT_PAREN); ok {
+	// // Handles "(x)", "(f)", "((x))", ...
+	// if ok, _ := parser.match(token.LEFT_PAREN); ok {
 
-		// Recursively parse the identifier when 
-		// We encounter a left parenthesis
-		ident, err := parser.parseIdentifier()
+	// 	// Recursively parse the identifier when 
+	// 	// We encounter a left parenthesis
+	// 	ident, err := parser.parseIdentifier()
 
-		// On error, return the error and the identifier
-		if err != nil {
-			return ident, err
-		}
+	// 	// On error, return the error and the identifier
+	// 	if err != nil {
+	// 		return ident, err
+	// 	}
 
-		// Ensure we have a closing parenthesis
-		if ok, rp := parser.expect(token.RIGHT_PAREN); !ok {
-			msg := fmt.Sprintf("Expected ')' got '%v'", rp.Type.String())
-			err = parser.error(msg, rp.Line, rp.Col)
-		}
+	// 	// Ensure we have a closing parenthesis
+	// 	if ok, rp := parser.expect(token.RIGHT_PAREN); !ok {
+	// 		msg := fmt.Sprintf("Expected ')' got '%v'", rp.Type.String())
+	// 		err = parser.error(msg, rp.Line, rp.Col)
+	// 	}
 
-		return ident, err
-	}
+	// 	return ident, err
+	// }
 
 	tok := parser.peek()
-	msg := fmt.Sprintf("Expected identifier got '%v'", tok.Type.String())
+	msg := fmt.Sprintf("Expected identifier got '%v': '%v'", tok.Type.String(), tok.Lexeme)
 	err := parser.error(msg, tok.Line, tok.Col)
-	parser.panic()
 
 	return ast.VariableExpNodeS{}, err
 }
 
 
-func flattenExpNode(n *ast.ExpNodeI) []ast.ExpNodeI {
-
-	// nil node might happen when for example calling a
-	// function without arguments.
-	if (*n == nil) {
-		return []ast.ExpNodeI{}
-	}
-
-	// By default, flatten returns the node wrapped in a slice
-	lexpressions := []ast.ExpNodeI{*n}
-	
-	// If the node is a tuple, we need to flatten
-	// the left side and append the right side.
-	switch node := (*n).(type) {
-	case ast.BinaryExpNodeS:
-		switch node.Op.Type {
-		case token.COMMA:
-			lexpressions = append(flattenExpNode(&node.Left), node.Right)
-		}
-	}
-
-	return lexpressions
-}

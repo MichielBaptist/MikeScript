@@ -33,7 +33,7 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalRe
 		}
 
 		// Execute the body of the while loop
-		res = evaluator.executeBlock(&node.Body)
+		res = evaluator.executeBlock(&node.Body, NewEnvironment(evaluator.env))
 
 		// Check if result has an error
 		if !res.Valid() {

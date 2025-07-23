@@ -7,14 +7,14 @@ import (
 )
 
 
-func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.DeclarationNodeS) EvalResult {
+func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS) EvalResult {
 
 	// Map the Vartype token to returntype
 	var rt ResultType = declaredTypeToReturnType(node.Vartype)
 
 	// Check if we have a valid declaration type
 	if rt == RT_INVALID {
-		return evalErr(fmt.Sprintf("Unknown type '%v'", node.Vartype.Lexeme))
+		return evalErr(fmt.Sprintf("Tried to initialize an unknown type '%v'", node.Vartype.Lexeme))
 	}
 
 	// Get the default value for the type
@@ -24,14 +24,20 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.DeclarationN
 		return evalErr(fmt.Sprintf("Unknown type '%v'", node.Vartype.Lexeme))
 	}
 
+	// Create var
+	res := EvalResult{rt: rt, val: val}
+	name := node.Identifier.Name.Lexeme
+
 	// Declare variable in env
-	err := evaluator.env.NewVar(node.Identifier.Name.Lexeme, EvalResult{rt: rt, val: val}, rt)
+	err := evaluator.env.NewVar(name, res, rt)
 
 	if err != nil {
 		return EvalResult{err: []error{err}}
 	}
 
-	return EvalResult{rt: rt}
+	// The result of a variable declaration is Nothing
+	// this is not the value declared.
+	return EvalResult{rt: RT_NONE}
 }
 
 func declaredTypeToReturnType(tk token.Token) ResultType {

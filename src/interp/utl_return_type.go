@@ -61,21 +61,23 @@ func (er *EvalResult) ReturnType() ResultType {
 }
 
 func (er EvalResult) String() string {
+
+	// Check if the EvalResult has any errors,
+	// if so, we print the errors
 	if !er.Valid() {
 		return fmt.Sprintf("Error: %v", er.err)
 	}
+
+	// based on return type
 	switch er.rt {
-	case RT_INT:		return fmt.Sprintf("%v", er.val)
-	case RT_FLOAT:		return fmt.Sprintf("%v", er.val)
-	case RT_STRING:		return fmt.Sprintf("\"%v\"", er.val)
-	case RT_BOOL:		return fmt.Sprintf("%v", er.val)
-	case RT_TUPLE:		return tupleToString(er.val.([]EvalResult))
-	case RT_FUNCTION:	return fmt.Sprintf("%v", er.val)
-	case RT_INVALID:	return "Invalid"
-	case RT_NONE:		return "Nothing"
-	case RT_BREAK:		return "Break"
-	case RT_CONTINUE:	return "Continue"
-	default:			return "Unknown"
+	case RT_INT, RT_FLOAT, RT_BOOL, RT_FUNCTION:
+		return fmt.Sprintf("%v", er.val)
+	case RT_STRING:
+		return fmt.Sprintf("\"%v\"", er.val)
+	case RT_TUPLE:
+		return tupleToString(er.val.([]EvalResult))
+	default:
+		return er.rt.String()	// see ReturnType .String()
 	}
 }
 
@@ -129,7 +131,7 @@ func (res ResultType) String() string {
 	case RT_FUNCTION:	return "function"
 	case RT_BREAK:		return "break"
 	case RT_CONTINUE:	return "continue"
-	default:			return "unknown"
+	default:			return "UNKNOWN -- check expression.go"
 	}
 }
 

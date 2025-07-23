@@ -21,3 +21,11 @@ while x < 10 {
 
     x + 1 -> x;
 }
+
+
+function int x >> f -> int;
+function int x >> f -> int {
+    x * x -> return;
+}
+
+

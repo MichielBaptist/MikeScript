@@ -57,12 +57,14 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 			lexpressions := flattenExpNode(&left)
 
 			// TODO: make sure right side is VariableExpNodeS
-			switch v := right.(type) {
+			left = ast.FuncAppNodeS{Args: lexpressions, Fun: right}
+
+			/* switch v := right.(type) {
 			case ast.VariableExpNodeS:
-				left = ast.FuncAppNodeS{Args: lexpressions, Fun: right}
+				
 			default:
 				return left, parser.error(fmt.Sprintf("Expected a function identifer, got '%v'", v), op.Line, op.Col)
-			}
+			} */
 
 		case token.MINUS_GREAT:
 
@@ -91,4 +93,28 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 	}
 
 	return left, err
+}
+
+func flattenExpNode(n *ast.ExpNodeI) []ast.ExpNodeI {
+
+	// nil node might happen when for example calling a
+	// function without arguments.
+	if (*n == nil) {
+		return []ast.ExpNodeI{}
+	}
+
+	// By default, flatten returns the node wrapped in a slice
+	lexpressions := []ast.ExpNodeI{*n}
+	
+	// If the node is a tuple, we need to flatten
+	// the left side and append the right side.
+	switch node := (*n).(type) {
+	case ast.BinaryExpNodeS:
+		switch node.Op.Type {
+		case token.COMMA:
+			lexpressions = append(flattenExpNode(&node.Left), node.Right)
+		}
+	}
+
+	return lexpressions
 }

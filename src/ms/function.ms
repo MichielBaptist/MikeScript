@@ -5,11 +5,11 @@ function >> test -> int {
 }
 
 function int x >> f -> float {
-    float y;
+    int y;
     x -> y;
-    y + 1.0 -> y;
+    y + 1 -> y;
 }
 
-function string s, float x >> g -> bool {
+function string s, int x >> g -> bool {
     string t;
 }

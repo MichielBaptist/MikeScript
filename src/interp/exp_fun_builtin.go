@@ -3,15 +3,8 @@ package interp
 import (
 	"fmt"
 	"math"
-	"mikescript/src/utils"
+	"strings"
 )
-
-// Defines call
-type FunctionResult interface {
-	call(evaluator *MSEvaluator, args []EvalResult) EvalResult
-	max_arity() uint8	// Returns maximum amount of arguments
-	min_arity() uint8 	// Returns minimum amount of arguments
-}
 
 ///////////////////////////////////////////////////////////////
 // mikescript builtins
@@ -33,8 +26,6 @@ type PrintFunction struct {}
 
 func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalResult {
 
-	fmt.Println(args)
-
 	// Get all result values in a slice
 	// and convert them to strings
 	strs := make([]string, len(args))
@@ -44,20 +35,16 @@ func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalRe
 
 	// Print the joined strings, this is where
 	// the connection between mikesript and go is made.
-	fmt.Println(utils.StrJoin(strs, ", "))
+	fmt.Println(strings.Join(strs, ", "))
 
 	// Done without return value
 	return EvalResult{rt: RT_NONE, val: nil}
 }
 
-func (pf *PrintFunction) min_arity() uint8 {
-	return 0
-}
-
-func (pf *PrintFunction) max_arity() uint8 {
+func (pf *PrintFunction) arity() int {
 	return math.MaxUint8
 }
 
 func (pf *PrintFunction) String() string {
-	return "{...}"
+	return "* >> print"
 }

@@ -3,15 +3,17 @@ package interp
 import "mikescript/src/ast"
 
 
-func (evaluator *MSEvaluator) executeBlock(node *ast.BlockNodeS) EvalResult {
+func (evaluator *MSEvaluator) executeBlock(node *ast.BlockNodeS, env *Environment) EvalResult {
 
-	// Create a new environment with the current 
-	// environment as the enclosing environment
-	evaluator.env = NewEnvironment(evaluator.env)
+	// Save current environment
+	previous := evaluator.env
+
+	// Set new environment
+	evaluator.env = env
 
 	// Pop the environment when we are done with block
 	defer func() {
-		evaluator.env = evaluator.env.enclosing
+		evaluator.env = previous
 	}()
 
 	return evaluator.executeStatements(&ast.Program{Statements: node.Statements})

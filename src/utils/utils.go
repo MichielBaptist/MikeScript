@@ -36,16 +36,5 @@ func Fmap[T any, F any](a []T, f func(T) F) []F {
 }
 
 func MapArrayString[T any](a []T) []string {
-	return Fmap[T, string](a, func(v T) string { return fmt.Sprint(v) })
-}
-
-func StrJoin(a []string, sep string) string {
-	out := ""
-	for i, s := range a {
-		if i > 0 {
-			out += sep
-		}
-		out += s
-	}
-	return out
+	return Fmap(a, func(v T) string { return fmt.Sprint(v) })
 }

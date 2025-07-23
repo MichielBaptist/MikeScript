@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+const typecol_size int = 20
+const namecol_size int = 20
+const defcol_size int = 40
+
 ////////////////////////////////////////
 // Environment row
 ////////////////////////////////////////
@@ -26,23 +30,11 @@ func (er *EnvRow) String() string {
 }
 
 func (er *EnvRow) rowRepr() string {
-	c1 := stringCut(er.rtype.String(), 15)
-	c2 := stringCut(er.name, 15)
-	c3 := stringCut(er.value.String(), 15)
-	return fmt.Sprintf("| %-15v | %-15v | %-15v |", c1, c2, c3)
+	c1 := stringCut(er.rtype.String(), typecol_size)
+	c2 := stringCut(er.name, namecol_size)
+	c3 := stringCut(er.value.String(), defcol_size)
+	return fmt.Sprintf("| %-*v | %-*v | %-*v |", typecol_size, c1, namecol_size, c2, defcol_size, c3)
 }
-
-// func (er *EnvRow) typeSLen() int {
-// 	return len(er.rtype.String())
-// }
-
-// func (er *EnvRow) nameSLen() int {
-// 	return len(er.name)
-// }
-
-// func (er *EnvRow) valSLen() int {
-// 	return len(er.value.String())
-// }
 
 ////////////////////////////////////////
 // Error
@@ -104,6 +96,16 @@ func (env *Environment) NewVar(name string, value EvalResult, rtype ResultType) 
 		return &EnvironmentError{fmt.Sprintf("Variable '%v' is already defined", name)}
 	}
 
+	// Check if we're trying set a value not valid
+	if !value.Valid() {
+		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a value containing an error: %s", name, value)}
+	}
+
+	// Check if we're binding a EvalResult containing 'nil' value, this should not happen.
+	if value.val == nil {
+		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a 'nil' value: %s", name, value)}
+	}
+
 	env.variables[name] = EnvRow{name, &value, rtype}
 
 	return nil
@@ -145,14 +147,14 @@ func (env *Environment) SetVar(name string, value EvalResult) error {
 // Helper functions
 ////////////////////////////////////////
 
-func (env *Environment) printEnv() {
+func (env *Environment) printEnv() int {
 
 	if env == nil {
-		return
+		return 0
 	}
 
 	// print enclosing scope first
-	env.enclosing.printEnv()
+	depth := env.enclosing.printEnv()
 
 	rows := []string{}
 	for _, v := range env.variables {
@@ -160,9 +162,12 @@ func (env *Environment) printEnv() {
 	}
 
 	// Print table
-	fmt.Println("+-----------------+-----------------+-----------------+")
+	fmt.Println(tblbar())
 	fmt.Println(strings.Join(rows, "\n"))
-	fmt.Println("+-----------------+-----------------+-----------------+")
+	if depth == 0 {
+		fmt.Println(tblbar())
+	}
+	return depth + 1
 }
 
 func (env *Environment) validVarName(name string) bool {
@@ -176,4 +181,16 @@ func (env *Environment) containsVar(name string) bool {
 
 func (env *Environment) compatibleType(name string, value EvalResult) bool {
 	return env.variables[name].rtype == value.ReturnType()
+}
+
+func tblbar() string {
+	return strings.Join([]string{
+		"+-",
+		strings.Repeat("-", typecol_size),
+		"-+-",
+		strings.Repeat("-", namecol_size),
+		"-+-",
+		strings.Repeat("-", defcol_size),
+		"-+",
+	}, "")
 }

@@ -3,11 +3,21 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"log"
 	interp "mikescript/src/interp"
 	parser "mikescript/src/parser"
 	scanner "mikescript/src/scanner"
-	"mikescript/src/utils"
 	"os"
+	"strings"
+)
+
+// Repl commands
+type Command uint8
+const (
+	EXIT Command = iota
+	LOAD
+	RUN
 )
 
 type Runner interface {
@@ -85,25 +95,122 @@ func (r MSRunner) run(input string) int {
 	return 0
 }
 
-func (r *MSRunner) prompt() bool {
+func (r *MSRunner) isExit(s string) bool {
+	// split string and get first word
+	strs := strings.Split(s, " ")
+
+	if len(strs) == 0 {
+		return false
+	}
+
+	return strs[0] == "exit"
+}
+
+func (r *MSRunner) isLoad(s string) (bool, string) {
+	strs := strings.Split(s, " ")
+
+	fmt.Println(strs)
+
+	// Only one string, so not a command
+	if len(strs) == 0 {
+		return false, s
+	}
+
+	// check for load
+	if strs[0] == "load" {
+		return true, strings.Join(strs[1:], " ")
+	}
+
+	return false, strings.Join(strs[1:], " ")
+}
+
+func (r *MSRunner) prompt() (Command, string) {
 	fmt.Print("ms> ")
 	ok := r.prompter.Scan()
-	return ok && 
-		   r.prompter.Err() == nil &&
-		   r.text() != "exit"
+
+	// something went wrong??
+	if !ok {
+		fmt.Println("Something went wrong during prompting...")
+		return EXIT, "exit"
+	}
+
+	// Get text
+	txt := r.text()
+
+	// Check if the text is exit, if it is we return exit
+	if r.isExit(txt) {
+		return EXIT, txt
+	}
+
+	// Check for load directive
+	if b, txt := r.isLoad(txt); b {
+		return LOAD, txt
+	}
+
+	// Not anything, normal command?
+	return RUN, txt
 }
 
 func (r *MSRunner) text() string {
 	return r.prompter.Text()
 }
 
+func (r *MSRunner) loadCommand(txt string) {
+	// Split the txt into paths
+	paths := strings.Split(txt, " ")
+
+	// loop all paths and load the src file
+	for _, p := range paths {
+
+		src, err := readMSFile(p)
+
+		// Something went wrong with reading the file.
+		if err != nil {
+			log.Println("Failed to load MikeScript file: ", p)
+			continue
+		}
+
+		// Print source
+		fmt.Println("#############################################")
+		fmt.Println(src)
+		fmt.Println("#############################################")
+
+		// Loaded source correctly, so we exec.
+		r.run(src)
+	}
+}
+
 func (r *MSRunner) mainLoop() {
 
-	for r.prompt() {
-		txt := r.text()
-		r.run(txt)
+	promptloop: for {
+		switch cmd, txt := r.prompt(); cmd {
+		case LOAD: 	r.loadCommand(txt)
+		case RUN:	r.run(txt)
+		case EXIT: 	break promptloop
+		}
 	}
 	fmt.Println("Goodbye!")
+}
+
+func readMSFile(path string) (string, error) {
+	handle, err := os.Open(path)
+
+	if err != nil {
+		log.Println("Could not load file:", path)
+		return "", err
+	}
+
+	// Close file on exit
+	defer handle.Close()
+
+	b, err := io.ReadAll(handle)
+	
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+	
 }
 
 func main() {
@@ -133,7 +240,7 @@ func main() {
 		for scanner.Scan() {
 			lines = append(lines, scanner.Text())
 		}
-		src := utils.StrJoin(lines, "\n")
+		src := strings.Join(lines, "\n")
 
 		fmt.Println("#############################################")
 		fmt.Println(src)

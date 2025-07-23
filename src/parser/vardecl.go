@@ -6,7 +6,7 @@ import (
 	token "mikescript/src/token"
 )
 
-func (parser *MSParser) parseVarDeclaration(declarationType token.Token) (ast.DeclarationNodeS, error) {
+func (parser *MSParser) parseVarDeclaration(declarationType token.Token) (ast.VarDeclNodeS, error) {
 	// arg: type of declartion;
 	
 	// We expect an identifier next so we parse it
@@ -16,7 +16,7 @@ func (parser *MSParser) parseVarDeclaration(declarationType token.Token) (ast.De
 	if err != nil {
 		// If we encounter an error parsing the identifier
 		// We return the error and empty declaration node
-		return ast.DeclarationNodeS{}, err
+		return ast.VarDeclNodeS{}, err
 	}
 
 	// expect a semicolon
@@ -25,6 +25,6 @@ func (parser *MSParser) parseVarDeclaration(declarationType token.Token) (ast.De
 		err = parser.error(msg, tok.Line, tok.Col)
 	}
 
-	return ast.DeclarationNodeS{Identifier: ident, Vartype: declarationType}, err
+	return ast.VarDeclNodeS{Identifier: ident, Vartype: declarationType}, err
 
 }
