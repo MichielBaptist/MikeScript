@@ -91,19 +91,13 @@ func (env *Environment) NewVar(name string, value EvalResult, rtype ResultType) 
 		return &EnvironmentError{fmt.Sprintf("Invalid variable name: '%v'", name)}
 	}
 
+	if err := env.validValue(name, value) ; err != nil {
+		return err
+	}
+
 	// Check if already in env. We don't allow re-declaring variables
 	if env.containsVar(name) {
 		return &EnvironmentError{fmt.Sprintf("Variable '%v' is already defined", name)}
-	}
-
-	// Check if we're trying set a value not valid
-	if !value.Valid() {
-		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a value containing an error: %s", name, value)}
-	}
-
-	// Check if we're binding a EvalResult containing 'nil' value, this should not happen.
-	if value.val == nil {
-		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a 'nil' value: %s", name, value)}
 	}
 
 	env.variables[name] = EnvRow{name, &value, rtype}
@@ -116,6 +110,10 @@ func (env *Environment) SetVar(name string, value EvalResult) error {
 	// Check if the variable is empty
 	if !env.validVarName(name) {
 		return &EnvironmentError{fmt.Sprintf("Invalid variable name: '%v'", name)}
+	}
+
+	if err := env.validValue(name, value) ; err != nil {
+		return err
 	}
 
 	// Check if the variable is defined. If it's not
@@ -139,6 +137,21 @@ func (env *Environment) SetVar(name string, value EvalResult) error {
 
 	// Set the value, this is safe now
 	env.variables[name] = EnvRow{name, &value, env.variables[name].rtype}
+
+	return nil
+}
+
+func (env *Environment) validValue(name string, val EvalResult) error {
+
+	// Check if we're trying set a value not valid
+	if !val.Valid() {
+		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a value containing an error: %s", name, val)}
+	}
+
+	// Check if we're binding a EvalResult containing 'nil' value, this should not happen.
+	if val.val == nil {
+		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a 'nil' value: %s", name, val)}
+	}
 
 	return nil
 }

@@ -29,8 +29,8 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 
 	for {
 
-		// Check if we match '>>' or '->'
-		ok, op := parser.match(token.GREATER_GREATER, token.MINUS_GREAT)
+		// Check if we match '>>' or '->' or '=>'
+		ok, op := parser.match(token.GREATER_GREATER, token.MINUS_GREAT, token.EQ_GREATER)
 		
 		// Check if we matched
 		if !ok {
@@ -56,15 +56,7 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 			// into a list of expressions
 			lexpressions := flattenExpNode(&left)
 
-			// TODO: make sure right side is VariableExpNodeS
 			left = ast.FuncAppNodeS{Args: lexpressions, Fun: right}
-
-			/* switch v := right.(type) {
-			case ast.VariableExpNodeS:
-				
-			default:
-				return left, parser.error(fmt.Sprintf("Expected a function identifer, got '%v'", v), op.Line, op.Col)
-			} */
 
 		case token.MINUS_GREAT:
 
@@ -83,6 +75,18 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 			default:
 				return left, parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
 			}
+		case token.EQ_GREATER:
+			variable, verr := parser.parseTuple()
+			err = verr
+
+			switch v := variable.(type) {
+			case ast.VariableExpNodeS:
+				left = ast.DeclAssignNodeS{Identifier: v, Exp: left}
+			default:
+				return left, parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
+			}
+
+
 		}
 
 		// check for errors

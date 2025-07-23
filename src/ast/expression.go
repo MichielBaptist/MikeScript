@@ -7,6 +7,11 @@ type AssignmentNodeS struct {
 	Exp        ExpNodeI
 }
 
+type DeclAssignNodeS struct {
+	Identifier 	VariableExpNodeS
+	Exp 		ExpNodeI
+}
+
 // exp >> exp
 type FuncAppNodeS struct {
 	Args 	[]ExpNodeI
@@ -46,6 +51,7 @@ type GroupExpNodeS struct {
 
 // forces possible structs for ExpNode
 func (AssignmentNodeS) expressionPlaceholder() {}
+func (DeclAssignNodeS) expressionPlaceholder() {}
 func (FuncAppNodeS) expressionPlaceholder() {}
 func (BinaryExpNodeS) expressionPlaceholder() {}
 func (UnaryExpNodeS) expressionPlaceholder() {}

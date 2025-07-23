@@ -43,6 +43,7 @@ const(
 	GREATER_GREATER					// >> (function calls)
 	LESS_LESS						// <<
 	MINUS_GREAT						// -> (assignment)
+	EQ_GREATER						// => (decl & assignment)
 	LESS_MINUS						// <-
 	AMP_AMP							// &&
 	BAR_BAR							// ||
@@ -111,6 +112,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	GREATER_EQ: ">=",
 	GREATER_GREATER: ">>",
 	MINUS_GREAT: "->",
+	EQ_GREATER: "=>",
 	LESS_LESS: "<<",
 	AMP_AMP: "&&",
 	BAR_BAR: "||",

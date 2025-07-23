@@ -30,3 +30,18 @@ func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) EvalResul
 	return val
 	
 }
+
+func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignNodeS) EvalResult {
+	res := evaluator.evaluateExpression(&node.Exp)
+
+	// set val, even if res contains error.
+	name := node.Identifier.Name.Lexeme
+	err := evaluator.env.NewVar(name, res, res.rt)
+
+	if err != nil {
+		// Add errors to res errors
+		return EvalResult{err: append(res.err, err)}
+	}
+
+	return res
+}

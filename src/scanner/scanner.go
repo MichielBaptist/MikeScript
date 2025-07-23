@@ -149,6 +149,7 @@ func (scanner *MSScanner) nextToken() (token.Token, bool) {
 	case c == '!' && scanner.advanceIfAtr('='):	tok = token.Token{Type: token.EXCLAMATION_EQ, Lexeme: "!=", Line: scanner.line, Col: scanner.col}
 	case c == '!':								tok = token.Token{Type: token.EXCLAMATION, Lexeme: "!", Line: scanner.line, Col: scanner.col}
 	case c == '=' && scanner.advanceIfAtr('='):	tok = token.Token{Type: token.EQ_EQ, Lexeme: "==", Line: scanner.line, Col: scanner.col}
+	case c == '=' && scanner.advanceIfAtr('>'): tok = token.Token{Type: token.EQ_GREATER, Lexeme: "=>", Line: scanner.line, Col: scanner.col}
 	case c == '=':								tok = token.Token{Type: token.EQ, Lexeme: "=", Line: scanner.line, Col: scanner.col}
 	// handle string literals
 	case c == '"':								ok, tok = scanner.scanString()
