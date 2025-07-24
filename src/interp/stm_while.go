@@ -42,7 +42,7 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalRe
 
 		// Check if result is break, on break we exit
 		if res.rt == RT_BREAK {
-			return EvalResult{rt: RT_NONE}
+			return EvalResult{rt: RT_NOTHING}
 		}
 	}
 

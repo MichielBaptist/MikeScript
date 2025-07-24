@@ -31,6 +31,6 @@ func (evaluator *MSEvaluator) executeIfstatement(node *ast.IfNodeS) EvalResult {
 		return evalErr(fmt.Sprintf("Incompatible result type and value: %v: %v", cond.rt, cond.val))
 	}
 
-	return EvalResult{rt: RT_NONE}
+	return EvalResult{rt: RT_NOTHING}
 
 }

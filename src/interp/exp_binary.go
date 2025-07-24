@@ -169,7 +169,7 @@ func evalDiv(left, right EvalResult) EvalResult {
 
 	// Div with dynamic type checking
 	switch {
-	case left.rt == RT_NONE || right.rt == RT_NONE:
+	case left.rt == RT_NOTHING || right.rt == RT_NOTHING:
 		return errRes
 	case left.rt == RT_STRING || right.rt == RT_STRING:
 		return errRes
@@ -275,7 +275,7 @@ func evalGreaterEq(left, right EvalResult, op token.TokenType) EvalResult {
 
 func evalEq(left EvalResult, right EvalResult, op token.TokenType) EvalResult {
 	switch {
-	case left.rt == RT_NONE   || right.rt == RT_NONE:	return EvalResult{rt: RT_BOOL, val: false}
+	case left.rt == RT_NOTHING   || right.rt == RT_NOTHING:	return EvalResult{rt: RT_BOOL, val: false}
 	case left.rt == RT_STRING && right.rt == RT_STRING:	return EvalResult{rt: RT_BOOL, val: left.val.(string) == right.val.(string)}
 	case left.rt == RT_STRING || right.rt == RT_STRING:	return EvalResult{rt: RT_BOOL, val: false}
 	case left.rt == RT_BOOL   && right.rt == RT_BOOL:	return EvalResult{rt: RT_BOOL, val: left.val.(bool) == right.val.(bool)}

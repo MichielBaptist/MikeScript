@@ -38,7 +38,7 @@ func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalRe
 	fmt.Println(strings.Join(strs, ", "))
 
 	// Done without return value
-	return EvalResult{rt: RT_NONE, val: nil}
+	return EvalResult{rt: RT_NOTHING, val: nil}
 }
 
 func (pf *PrintFunction) arity() int {

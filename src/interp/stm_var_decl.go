@@ -37,7 +37,7 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 
 	// The result of a variable declaration is Nothing
 	// this is not the value declared.
-	return EvalResult{rt: RT_NONE}
+	return EvalResult{rt: RT_NOTHING}
 }
 
 func declaredTypeToReturnType(tk token.Token) ResultType {

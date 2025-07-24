@@ -29,6 +29,6 @@ func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) 
 	}
 
 	// The result of a function declartion is Nothing
-	return EvalResult{rt: RT_NONE}
+	return EvalResult{rt: RT_NOTHING}
 
 }
