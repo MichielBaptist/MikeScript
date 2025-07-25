@@ -1,6 +1,9 @@
 package interp
 
-import "mikescript/src/ast"
+import (
+	"mikescript/src/ast"
+	"mikescript/src/mstype"
+)
 
 func (evaluator *MSEvaluator) executeStatements(node *ast.Program) EvalResult {
 
@@ -21,7 +24,7 @@ func (evaluator *MSEvaluator) executeStatements(node *ast.Program) EvalResult {
 		// Check if the result is break or continue
 		// then exit the block statement. You don't need
 		// to be in a loop to use break or continue.
-		if res.rt == RT_BREAK || res.rt == RT_CONTINUE {
+		if res.IsType(&mstype.MS_BREAK) || res.IsType(&mstype.MS_CONTINUE){
 			break
 		}
 	}

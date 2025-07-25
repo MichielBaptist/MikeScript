@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 )
 
 
@@ -15,7 +16,7 @@ func (evaluator *MSEvaluator) executeIfstatement(node *ast.IfNodeS) EvalResult {
 	if !cond.Valid() {
 		return cond
 	}
-	if !cond.Expect(RT_BOOL) {
+	if !cond.IsType(&mstype.MS_BOOL) {
 		return evalErr(fmt.Sprintf("Condition must be of type bool, got %v", cond.rt))
 	}
 
@@ -31,6 +32,6 @@ func (evaluator *MSEvaluator) executeIfstatement(node *ast.IfNodeS) EvalResult {
 		return evalErr(fmt.Sprintf("Incompatible result type and value: %v: %v", cond.rt, cond.val))
 	}
 
-	return EvalResult{rt: RT_NOTHING}
+	return EvalResult{rt: mstype.MS_NOTHING}
 
 }

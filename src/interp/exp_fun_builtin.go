@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"math"
+	"mikescript/src/mstype"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ import (
 ///////////////////////////////////////////////////////////////
 func MSBuiltinPrint() EvalResult {
 	return EvalResult{
-		rt: RT_FUNCTION,
+		rt: &mstype.MSOperationTypeS{},
 		val: &PrintFunction{},
 		err: []error{},
 	}
@@ -38,7 +39,7 @@ func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalRe
 	fmt.Println(strings.Join(strs, ", "))
 
 	// Done without return value
-	return EvalResult{rt: RT_NOTHING, val: nil}
+	return EvalResult{rt: mstype.MS_NOTHING, val: nil}
 }
 
 func (pf *PrintFunction) arity() int {

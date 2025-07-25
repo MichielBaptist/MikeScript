@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 )
 
 func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalResult {
@@ -16,7 +17,7 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalRe
 		if !cond.Valid() {
 			return cond
 		}
-		if cond.rt != RT_BOOL {
+		if !cond.IsType(&mstype.MS_BOOL) {
 			return evalErr(fmt.Sprintf("Condition must be of type bool, got %v", cond.rt))
 		}
 
@@ -41,8 +42,8 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalRe
 		}
 
 		// Check if result is break, on break we exit
-		if res.rt == RT_BREAK {
-			return EvalResult{rt: RT_NOTHING}
+		if res.IsType(&mstype.MS_BREAK) {
+			return EvalResult{rt: mstype.MS_NOTHING}
 		}
 	}
 

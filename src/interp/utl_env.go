@@ -2,6 +2,7 @@ package interp
 
 import (
 	"fmt"
+	"mikescript/src/mstype"
 	"strings"
 )
 
@@ -19,10 +20,11 @@ func stringCut(s string, n int) string {
 	}
 	return s
 }
+
 type EnvRow struct {
-	name 	string			// Name of the variable
-	value 	*EvalResult		// Value of the variable (always an EvalResult)
-	rtype 	ResultType		// Type of the variable (fixed, this can never change)
+	name 	string				// Name of the variable
+	value 	*EvalResult			// Value of the variable (always an EvalResult)
+	rtype 	mstype.MSType		// Type of the variable (fixed, this can never change)
 }
 
 func (er *EnvRow) String() string {
@@ -84,7 +86,7 @@ func (env *Environment) GetVar(name string) (EvalResult, error) {
 	return EvalResult{}, &EnvironmentError{fmt.Sprintf("Variable '%v' is not defined", name)}
 }
 
-func (env *Environment) NewVar(name string, value EvalResult, rtype ResultType) error {
+func (env *Environment) NewVar(name string, value EvalResult, rtype mstype.MSType) error {
 
 	// Check if the variable is empty
 	if !env.validVarName(name) {
@@ -132,7 +134,9 @@ func (env *Environment) SetVar(name string, value EvalResult) error {
 
 	// Variable is defined, first check for type compatibility.
 	if !env.compatibleType(name, value) {
-		return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, env.variables[name].rtype, value.ReturnType())}
+		envVarT := env.variables[name].rtype
+		valT := value.rt
+		return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, envVarT, valT)}
 	}
 
 	// Set the value, this is safe now
@@ -193,7 +197,9 @@ func (env *Environment) containsVar(name string) bool {
 }
 
 func (env *Environment) compatibleType(name string, value EvalResult) bool {
-	return env.variables[name].rtype == value.ReturnType()
+	envVarT := env.variables[name].rtype
+	valueT := value.rt
+	return envVarT.Eq(&valueT)
 }
 
 func tblbar() string {

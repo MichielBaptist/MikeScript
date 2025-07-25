@@ -46,7 +46,7 @@ func (node GroupExpNodeS) String() string {
 }
 
 func (node VarDeclNodeS) String() string {
-	return fmt.Sprintf("%v %v", node.Vartype.Lexeme, node.Identifier)
+	return fmt.Sprintf("%v %v", node.Vartype, node.Identifier)
 }
 
 func (node AssignmentNodeS) String() string {
@@ -116,13 +116,13 @@ func (node FuncDeclNodeS) String() string {
 		token.GREATER_GREATER.String(), // >>
 		node.Fname.String(),			// fname
 		token.MINUS_GREAT.String(),		// ->
-		node.Rt.Lexeme,					// int
+		node.Rt.String(),				// int
 	)
 }
 
 
 func (fa FuncParamS) String() string {
-	typeS := fa.Type.Lexeme
+	typeS := fa.Type.String()
 	nameS := fa.Iden.Name.Lexeme
 	return fmt.Sprintf("%s %s", typeS, nameS)
 }

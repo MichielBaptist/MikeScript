@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"mikescript/src/mstype"
 	"mikescript/src/token"
 )
 
@@ -14,7 +15,7 @@ type BlockNodeS struct {
 
 type VarDeclNodeS struct {
 	Identifier 	VariableExpNodeS	// Name
-	Vartype 	token.Token			// Type
+	Vartype 	mstype.MSType		// Type 
 }
 
 type ExStmtNodeS struct {
@@ -42,12 +43,12 @@ type BreakNodeS struct {
 type FuncDeclNodeS struct {
 	Fname VariableExpNodeS				// Name
 	Params []FuncParamS 				// Parameters
-	Rt token.Token						// Return type
+	Rt mstype.MSType					// Return type
 	Body *BlockNodeS					// Body of function, may be nil
 }
 
 type FuncParamS struct {
-	Type token.Token		// Type token
+	Type mstype.MSType		// Var type
 	Iden VariableExpNodeS 	// Var name
 }
 
@@ -61,3 +62,11 @@ func (WhileNodeS) statmentPlaceholder() {}
 func (ContinueNodeS) statmentPlaceholder() {}
 func (BreakNodeS) statmentPlaceholder() {}
 func (FuncDeclNodeS) statmentPlaceholder() {}
+
+func (fd *FuncDeclNodeS) GetFuncType() *mstype.MSOperationTypeS {
+	typelist := []mstype.MSType{}
+	for _, par := range fd.Params {
+		typelist =	append(typelist, par.Type)
+	}
+	return &mstype.MSOperationTypeS{Left: typelist, Right: fd.Rt}
+}

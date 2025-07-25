@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 )
 
 func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS) EvalResult {
@@ -19,7 +20,8 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 
 	// Check the type of the evaluation of Fun
 	// For now, only func types will be callable.
-	if (fn.rt != RT_FUNCTION) {
+	_, ok := fn.rt.(*mstype.MSOperationTypeS)
+	if !ok {
 		return evalErr(fmt.Sprintf("Function application is not implemented for type '%s'", fn.rt))
 	}
 

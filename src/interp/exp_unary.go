@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 	"mikescript/src/token"
 )
 
@@ -25,17 +26,17 @@ func (evaluator *MSEvaluator) evaluateUnaryExpression(node *ast.UnaryExpNodeS) E
 }
 
 func evaluateMinus(res *EvalResult) EvalResult {
-	switch res.rt {
-	case RT_INT: 	return EvalResult{rt: RT_INT, val: -res.val.(int)}
-	case RT_FLOAT:	return EvalResult{rt: RT_FLOAT, val: -res.val.(float64)}
-	default:		return evalErr(unknownUnop(token.MINUS.String(), res.rt))
+	switch {
+	case res.IsType(&mstype.MS_INT): 	return EvalResult{rt: mstype.MS_INT, val: -res.val.(int)}
+	case res.IsType(&mstype.MS_FLOAT):	return EvalResult{rt: mstype.MS_FLOAT, val: -res.val.(float64)}
+	default:							return evalErr(unknownUnop(token.MINUS.String(), res.rt))
 	}
 }
 
 func evaluateExcl(res *EvalResult) EvalResult {
-	switch res.rt {
-	case RT_BOOL:	return EvalResult{rt: RT_BOOL, val: !res.val.(bool)}
-	default:		return evalErr(unknownUnop(token.MINUS.String(), res.rt))
+	switch {
+	case res.IsType(&mstype.MS_BOOL):	return EvalResult{rt: mstype.MS_BOOL, val: !res.val.(bool)}
+	default:							return evalErr(unknownUnop(token.MINUS.String(), res.rt))
 	}
 }
 
@@ -43,6 +44,6 @@ func (evaluator *MSEvaluator) evaluateGroupExpression(node *ast.GroupExpNodeS) E
 	return evaluator.evaluateExpression(&node.Node)
 }
 
-func unknownUnop(lexeme string, tt ResultType) string {
+func unknownUnop(lexeme string, tt mstype.MSType) string {
 	return fmt.Sprintf("Operator %v is not defined for type %v", lexeme, tt)
 }

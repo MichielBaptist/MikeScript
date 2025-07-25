@@ -19,6 +19,10 @@ func BoolToInt(b bool) int {
 	}
 }
 
+func BoolToFloat(b bool) float64 {
+	return float64(BoolToInt(b))
+}
+
 func RepeatString(s string, n int) string {
 	res := ""
 	for i := 0; i < n; i++ {

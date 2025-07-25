@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 	"mikescript/src/token"
 )
 
@@ -37,9 +38,16 @@ func (parser *MSParser) parseFunctionDecl() (ast.FuncDeclNodeS, error) {
 
 	// We expect a return type at this point
 	ok, rt := parser.match(token.TypeKeywords...)
+
+	// Convert token to mstype
+	mrt, err := mstype.TokenToType(&rt)
+	if err != nil {
+		return ast.FuncDeclNodeS{}, err
+	}
+
 	if !ok {
 		err := parser.error(fmt.Sprintf("Expected a return type but received '%s'", arr.Lexeme), arr.Line, arr.Col)
-		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: rt}, err
+		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: mrt}, err
 	}
 
 	// Check which token comes next:
@@ -54,16 +62,16 @@ func (parser *MSParser) parseFunctionDecl() (ast.FuncDeclNodeS, error) {
 
 		if err != nil {
 			// Something went wrong while parsing the block
-			return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: rt}, err
+			return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: mrt}, err
 		}
 		
-		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: rt, Body: &block}, err
+		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: mrt, Body: &block}, err
 
 	case token.SEMICOLON:
-		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: rt, Body: nil}, nil
+		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: mrt, Body: nil}, nil
 	default:
 		err = parser.error(fmt.Sprintf("Expected a '%s' type but received '%s'", token.LEFT_BRACE, arr.Lexeme), arr.Line, arr.Col)
-		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: rt, Body: nil}, err
+		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: mrt, Body: nil}, err
 	}
 }
 
@@ -91,8 +99,14 @@ func (parser *MSParser) parseFunctionArgs() ([]ast.FuncParamS, error) {
 			return args, err
 		}
 
+		vtype, err := mstype.TokenToType(&ttok)
+
+		if err != nil {
+			return args, err
+		}
+
 		// add arg
-		args = append(args, ast.FuncParamS{Type: ttok, Iden: vn})
+		args = append(args, ast.FuncParamS{Type: vtype, Iden: vn})
 
 		// Check if we see a ','. If so, we can continue the loop
 		// else we have to break the loop. We don't expect a ">>"

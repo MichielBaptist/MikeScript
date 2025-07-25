@@ -3,8 +3,8 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 	"mikescript/src/token"
-	"mikescript/src/utils"
 )
 
 func (evaluator *MSEvaluator) evaluateBinaryExpression(node *ast.BinaryExpNodeS) EvalResult {
@@ -48,7 +48,7 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 	}
 
 	// Check if the left side is a boolean
-	if left.rt != RT_BOOL {
+	if !left.IsType(&mstype.MS_BOOL) {
 		return evalErr(invalidLogop(left, node.Op.Lexeme))
 	}
 
@@ -57,8 +57,8 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 
 	// short circuit evaluation
 	switch  {
-	case node.Op.Type == token.AMP_AMP && !leftb: return EvalResult{rt: RT_BOOL, val: false} // false && ...
-	case node.Op.Type == token.BAR_BAR &&  leftb: return EvalResult{rt: RT_BOOL, val: true}  // true || ...
+	case node.Op.Type == token.AMP_AMP && !leftb: return EvalResult{rt: mstype.MS_BOOL, val: false} // false && ...
+	case node.Op.Type == token.BAR_BAR &&  leftb: return EvalResult{rt: mstype.MS_BOOL, val: true}  // true || ...
 	}
 
 	// Means the first operand is inconclusive
@@ -69,7 +69,7 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 	}
 
 	// Check if the right side is a boolean
-	if right.rt != RT_BOOL {
+	if !right.IsType(&mstype.MS_BOOL) {
 		return evalErr(invalidLogop(right, node.Op.Lexeme))
 	}
 
@@ -85,228 +85,22 @@ func invalidLogop(left EvalResult, op string) string {
 	return fmt.Sprintf("Logical operator '%v' is not defined for type '%v'", op, left.rt)
 }
 
-func evalAdd(left, right EvalResult) EvalResult {
-
-	// Prepare error message
-	errRes := evalErr(invalidBinop(left, right, "+"))
-
-	// Handle all numeric/boolean cases
-	switch left.rt {
-	case RT_INT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_INT, val: left.val.(int) + right.val.(int)}
-		case RT_FLOAT:	return EvalResult{rt: RT_FLOAT, val: float64(left.val.(int)) + right.val.(float64)}
-		case RT_BOOL:	return EvalResult{rt: RT_INT, val: left.val.(int) + utils.BoolToInt(right.val.(bool))}
-		}
-	case RT_FLOAT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_FLOAT, val: left.val.(float64) + float64(right.val.(int))}
-		case RT_FLOAT:	return EvalResult{rt: RT_FLOAT, val: left.val.(float64) + right.val.(float64)}
-		case RT_BOOL:	return EvalResult{rt: RT_FLOAT, val: left.val.(float64) + float64(utils.BoolToInt(right.val.(bool)))}
-		}
-	case RT_BOOL:
-		// Cast left value to int
-		boolint := utils.BoolToInt(left.val.(bool))
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_INT, val: boolint + right.val.(int)}
-		case RT_FLOAT:	return EvalResult{rt: RT_FLOAT, val: float64(boolint) + right.val.(float64)}
-		case RT_BOOL:	return EvalResult{rt: RT_INT, val: boolint + utils.BoolToInt(right.val.(bool))}
-		}
-	case RT_STRING:
-		switch right.rt {
-		case RT_STRING:	return EvalResult{rt: RT_STRING, val: left.val.(string) + right.val.(string)}
-		}
-	case RT_TUPLE:
-		switch right.rt{
-		case RT_TUPLE:	return EvalResult{rt: RT_TUPLE, val: append(left.val.([]EvalResult), right.val.([]EvalResult)...)}
-		}
-	}
-	return errRes
-}
-
-func evalSub(_, _ EvalResult) EvalResult {
-	// This code should never happen as there is no
-	// way in which the parser can generate a subtraction
-	// instead it will generate an addition with a negative unary
-	return evalErr("Subtraction should be replaced with addition and unary negation. If you see this error, the parser is broken.")
-}
-
-func evalMult(left, right EvalResult) EvalResult {
-
-	switch left.rt {
-	case RT_STRING:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_STRING, val: utils.RepeatString(left.val.(string), right.val.(int))}
-		}
-	case RT_INT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_INT, val: left.val.(int) * right.val.(int)}
-		case RT_FLOAT:	return EvalResult{rt: RT_FLOAT, val: float64(left.val.(int)) * right.val.(float64)}
-		case RT_BOOL:	return EvalResult{rt: RT_INT, val: left.val.(int) * utils.BoolToInt(right.val.(bool))}
-		case RT_STRING: return EvalResult{rt: RT_STRING, val: utils.RepeatString(right.val.(string), left.val.(int))}
-		}
-	case RT_FLOAT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_FLOAT, val: left.val.(float64) * float64(right.val.(int))}
-		case RT_FLOAT:	return EvalResult{rt: RT_FLOAT, val: left.val.(float64) * right.val.(float64)}
-		case RT_BOOL:	return EvalResult{rt: RT_FLOAT, val: left.val.(float64) * float64(utils.BoolToInt(right.val.(bool)))}
-		}
-	case RT_BOOL:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_INT, val: utils.BoolToInt(left.val.(bool)) * right.val.(int)}
-		case RT_FLOAT:	return EvalResult{rt: RT_FLOAT, val: float64(utils.BoolToInt(left.val.(bool))) * right.val.(float64)}
-		case RT_BOOL:	return EvalResult{rt: RT_INT, val: utils.BoolToInt(left.val.(bool)) * utils.BoolToInt(right.val.(bool))}
-		}
-	}
-	return evalErr(invalidBinop(left, right, "*"))
-}
-
-func evalDiv(left, right EvalResult) EvalResult {
-
-	// prepare error message
-	errRes := evalErr(invalidBinop(left, right, "/"))
-	errDiv := evalErr("Division by zero.")
-
-	// Div with dynamic type checking
-	switch {
-	case left.rt == RT_NOTHING || right.rt == RT_NOTHING:
-		return errRes
-	case left.rt == RT_STRING || right.rt == RT_STRING:
-		return errRes
-	}
-
-	// Handle all numeric/boolean cases
-	switch left.rt {
-	case RT_INT:
-		switch right.rt {
-		case RT_INT:
-			if right.val.(int) == 0 {
-				return errDiv
-			}
-			return EvalResult{rt: RT_FLOAT, val: float64(left.val.(int)) / float64(right.val.(int))}
-		case RT_FLOAT:
-			if right.val.(float64) == 0 {
-				return errDiv
-			}
-			return EvalResult{rt: RT_FLOAT, val: float64(left.val.(int)) / right.val.(float64)}
-		case RT_BOOL:
-			if utils.BoolToInt(right.val.(bool)) == 0 {
-				return errDiv
-			}
-			return EvalResult{rt: RT_FLOAT, val: left.val.(int) / utils.BoolToInt(right.val.(bool))}
-		default:
-			return evalErr(fmt.Sprintf("Cannot divide '%v' with type '%v'", left.rt, right.rt))
-		}
-	case RT_FLOAT:
-		switch right.rt {
-		case RT_INT:
-			if right.val.(int) == 0 {
-				return errDiv
-			}
-			return EvalResult{rt: RT_FLOAT, val: left.val.(float64) / float64(right.val.(int))}
-		case RT_FLOAT:
-			if right.val.(float64) == 0 {
-				return errDiv
-			}
-			return EvalResult{rt: RT_FLOAT, val: left.val.(float64) / right.val.(float64)}
-		case RT_BOOL:
-			if utils.BoolToInt(right.val.(bool)) == 0 {
-				return errDiv
-			}
-			return EvalResult{rt: RT_FLOAT, val: left.val.(float64) / float64(utils.BoolToInt(right.val.(bool)))}
-		}
-	case RT_BOOL:
-		switch right.rt {
-		case RT_INT:
-			if right.val.(int) == 0 {
-				return evalErr("Division by zero.")
-			}
-			return EvalResult{rt: RT_FLOAT, val: utils.BoolToInt(left.val.(bool)) / right.val.(int)}
-		case RT_FLOAT:
-			if right.val.(float64) == 0 {
-				return evalErr("Division by zero.")
-			}
-			return EvalResult{rt: RT_FLOAT, val: float64(utils.BoolToInt(left.val.(bool))) / right.val.(float64)}
-		case RT_BOOL:
-			if utils.BoolToInt(right.val.(bool)) == 0 {
-				return evalErr("Division by zero.")
-			}
-			return EvalResult{rt: RT_FLOAT, val: utils.BoolToInt(left.val.(bool)) / utils.BoolToInt(right.val.(bool))}
-		default:
-			return evalErr(invalidBinop(left, right, "/"))
-		}
-	}
-	return evalErr(invalidBinop(left, right, "/"))
-}
-
-func evalGreater(left, right EvalResult, op token.TokenType) EvalResult {
-
-	switch left.rt {
-	case RT_INT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_BOOL, val: left.val.(int) > right.val.(int)}
-		case RT_FLOAT:	return EvalResult{rt: RT_BOOL, val: float64(left.val.(int)) > right.val.(float64)}
-		}
-	case RT_FLOAT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_BOOL, val: left.val.(float64) > float64(right.val.(int))}
-		case RT_FLOAT:	return EvalResult{rt: RT_BOOL, val: left.val.(float64) > right.val.(float64)}
-		}
-	}
-	return evalErr(invalidBinop(left, right, op.String()))
-}
-
-func evalGreaterEq(left, right EvalResult, op token.TokenType) EvalResult {
-
-	switch left.rt {
-	case RT_INT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_BOOL, val: left.val.(int) >= right.val.(int)}
-		case RT_FLOAT:	return EvalResult{rt: RT_BOOL, val: float64(left.val.(int)) >= right.val.(float64)}
-		}
-	case RT_FLOAT:
-		switch right.rt {
-		case RT_INT:	return EvalResult{rt: RT_BOOL, val: left.val.(float64) >= float64(right.val.(int))}
-		case RT_FLOAT:	return EvalResult{rt: RT_BOOL, val: left.val.(float64) >= right.val.(float64)}
-		}
-	}
-	return evalErr(invalidBinop(left, right, op.String()))
-}
-
-func evalEq(left EvalResult, right EvalResult, op token.TokenType) EvalResult {
-	switch {
-	case left.rt == RT_NOTHING   || right.rt == RT_NOTHING:	return EvalResult{rt: RT_BOOL, val: false}
-	case left.rt == RT_STRING && right.rt == RT_STRING:	return EvalResult{rt: RT_BOOL, val: left.val.(string) == right.val.(string)}
-	case left.rt == RT_STRING || right.rt == RT_STRING:	return EvalResult{rt: RT_BOOL, val: false}
-	case left.rt == RT_BOOL   && right.rt == RT_BOOL:	return EvalResult{rt: RT_BOOL, val: left.val.(bool) == right.val.(bool)}
-	case left.rt == RT_BOOL   || right.rt == RT_BOOL:	return EvalResult{rt: RT_BOOL, val: false}
-	case left.rt == RT_INT    && right.rt == RT_INT:	return EvalResult{rt: RT_BOOL, val: left.val.(int) == right.val.(int)}
-	case left.rt == RT_FLOAT  && right.rt == RT_FLOAT:	return EvalResult{rt: RT_BOOL, val: left.val.(float64) == right.val.(float64)}
-	case left.rt == RT_INT    && right.rt == RT_FLOAT:	return EvalResult{rt: RT_BOOL, val: float64(left.val.(int)) == right.val.(float64)}
-	case left.rt == RT_FLOAT  && right.rt == RT_INT:	return EvalResult{rt: RT_BOOL, val: left.val.(float64) == float64(right.val.(int))}
-	default:											return evalErr(invalidBinop(left, right, op.String()))
-	}
-}
-
-func evalNeq(_, _ EvalResult, _ token.TokenType) EvalResult {
-	return evalErr("Not equal should be replaced with equality and unary negation. If you see this error, the parser is broken.")
-}
-
-func evalGrGr(_, _ EvalResult) EvalResult {
-	return evalErr("Trying to evaluate function call as binary operator. If you see this error, the parser is broken.")
-}
 
 func evalTuple(left, right EvalResult) EvalResult {
-	return EvalResult{rt: RT_TUPLE, val: []EvalResult{left, right}}
+	valuetype := mstype.MSCompositeTypeS{
+		Left: left.rt,
+		Right: right.rt,
+	}
+	return EvalResult{rt: &valuetype, val: []EvalResult{left, right}}
 }
 
 func evalMod(left, right EvalResult) EvalResult {
 	switch left.rt {
-	case RT_INT:
+	case mstype.MS_INT:
 		switch right.rt {
-		case RT_INT:
+		case mstype.MS_INT:
 			if right.val.(int) == 0 { return evalErr("Division by zero.")}
-			return EvalResult{rt: RT_INT, val: left.val.(int) % right.val.(int)}
+			return EvalResult{rt: mstype.MS_INT, val: left.val.(int) % right.val.(int)}
 		}
 	}
 	return evalErr(invalidBinop(left, right, "%"))

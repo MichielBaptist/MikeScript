@@ -2,6 +2,7 @@ package interp
 
 import (
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -23,7 +24,7 @@ func NewMSEvaluator() *MSEvaluator {
 	glb := env
 
 	// Add builtins to glb
-	glb.NewVar("print", MSBuiltinPrint(), RT_FUNCTION)
+	glb.NewVar("print", MSBuiltinPrint(), &mstype.MSCompositeTypeS{})
 
 	return &MSEvaluator{env: env, glb: glb}
 }

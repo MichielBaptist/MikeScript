@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 	"strings"
 )
 
@@ -17,9 +18,9 @@ type FunctionResult interface {
 ///////////////////////////////////////////////////////////////
 
 type ParamBindingS struct {
-	Type ResultType				// expected type of param
-	Name ast.VariableExpNodeS 	// Name
-	Value *EvalResult			// Can be nil when unbound
+	Type mstype.MSType				// expected type of param
+	Name ast.VariableExpNodeS 		// Name
+	Value *EvalResult				// Can be nil when unbound
 }
 
 func paramToBinding(p ast.FuncParamS) ParamBindingS {
@@ -27,7 +28,7 @@ func paramToBinding(p ast.FuncParamS) ParamBindingS {
 	// Initializes all bindings to nil
 
 	return ParamBindingS{
-		Type: declaredTypeToReturnType(p.Type),
+		Type: p.Type,
 		Name: p.Iden,
 		Value: nil,
 	}
@@ -53,7 +54,7 @@ func (b *ParamBindingS) bind(val EvalResult) (ParamBindingS, error) {
 	}
 
 	// Validate correct types
-	if b.Type != val.rt {
+	if !b.ValidBindingEvalResult(&val) {
 		msg := fmt.Sprintf("Cannot bind '%s' of type '%s' to parameter '%s' of type '%s'", val.String(), val.rt.String(), b.Name.String(), b.Type.String())
 		return *b, BindingError{msg: msg}
 	}
@@ -78,6 +79,10 @@ func (b *ParamBindingS) String() string {
 	}
 
 	return fmt.Sprintf("%s %s = %s", b.Type.String(), b.Name.String(), vals)
+}
+
+func (b *ParamBindingS) ValidBindingEvalResult(t *EvalResult) bool {
+	return b.Type.Eq(&t.rt)
 }
 
 // -----------------------------------------------------------
@@ -138,7 +143,7 @@ func (f *MSFunction) call(ev *MSEvaluator, args []EvalResult) EvalResult {
 		return newf.exec(ev)
 	} else {
 		// parameters not full
-		return EvalResult{rt: RT_FUNCTION, val: newf}
+		return EvalResult{rt: newf.GetFuncType(), val: newf}
 	}
 }
 
@@ -190,7 +195,7 @@ func (f *MSFunction) String() string {
 	if pss != "" {
 		strs = append(strs, pss)
 	}
-	strs = append(strs, ">>", f.fname(), "->", f.decl.Rt.Type.String(), bodys)
+	strs = append(strs, ">>", f.fname(), "->", f.decl.Rt.String(), bodys)
 	
 	// bindings >> fname -> rt
 	return strings.Join(strs, " ")
@@ -200,6 +205,18 @@ func (f *MSFunction) String() string {
 // -----------------------------------------------------------
 // helpers
 // -----------------------------------------------------------
+
+func (f *MSFunction) GetFuncType() *mstype.MSOperationTypeS {
+	// Get type list of unbound variables
+	typelist := []mstype.MSType{}
+	for _, binding := range f.unBoundParams {
+		typelist = append(typelist, binding.Type)
+	}
+	return &mstype.MSOperationTypeS{
+		Left: typelist,
+		Right: f.decl.Rt,
+	}
+}
 
 func (f *MSFunction) initialized() bool {
 	return f.body() != nil
