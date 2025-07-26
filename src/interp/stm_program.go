@@ -7,30 +7,23 @@ import (
 
 func (evaluator *MSEvaluator) executeStatements(node *ast.Program) EvalResult {
 
-	// By default the return value of a set of statements
-	// is 'nothing' (cannot have value)
-	res := EvalResult{Rt: mstype.MS_NOTHING}
-	
-	// A ast.Program is a list of statements
-	// So we just loop through the statements and evaluate them
 	for _, stmt := range node.Statements {
-		res = evaluator.executeStatement(&stmt)
+		
+		res := evaluator.executeStatement(&stmt)
 
-		// If we notice an error during execution of this 
-		// Satetement, we print the error and return
+		// On error, break a
 		if !res.Valid() {
-			evaluator.statementError(res.Err)
-			return res
+			return evaluator.statementError(res)
 		}
 
-		// Check if the result is break or continue
-		// then exit the block statement. You don't need
-		// to be in a loop to use break or continue.
-		if res.IsType(&mstype.MS_BREAK) || res.IsType(&mstype.MS_CONTINUE){
-			break
+		// Break out the program on 'break', 'continue' and 'return'
+		if 	res.IsType(&mstype.MS_BREAK) || 
+			res.IsType(&mstype.MS_CONTINUE)|| 
+			res.IsType(&mstype.MS_RETURN){
+			return res
 		}
 	}
 
-	// The result of a ast.Program is the result of the last statement
-	return res
+	// Ignore result of the last statement
+	return EvalResult{Rt: mstype.MS_NOTHING}
 }

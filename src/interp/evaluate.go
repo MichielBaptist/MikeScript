@@ -47,8 +47,9 @@ func (evaluator *MSEvaluator) PrintEnv() {
 	evaluator.env.printEnv()
 }
 
-func (evaluator *MSEvaluator) statementError(err []error) {
-	evaluator.err = append(evaluator.err, err...)
+func (evaluator *MSEvaluator) statementError(e EvalResult) EvalResult{
+	evaluator.err = append(evaluator.err, e.Err...)
+	return e
 }
 
 type EvalError struct {

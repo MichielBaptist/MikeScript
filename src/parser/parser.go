@@ -4,6 +4,7 @@ import (
 	"fmt"
 	ast "mikescript/src/ast"
 	token "mikescript/src/token"
+	"slices"
 )
 
 ////////////////////////////////////////////////////////////
@@ -20,6 +21,7 @@ type MSParser struct {
 	pos  int     			// current position in tokens
 	pnc  bool    			// panic flag
 	Errors []ParserError	// parser errors
+	context []ParserConext	// nothing, loop, function...
 }
 
 func (parser *MSParser) SetSrc(src string) {
@@ -29,6 +31,31 @@ func (parser *MSParser) SetSrc(src string) {
 func (parser *MSParser) SetTokens(tokens []token.Token) {
 	parser.tokens = tokens
 }
+////////////////////////////////////////////////////////////
+// 						context
+////////////////////////////////////////////////////////////
+
+type ParserConext uint
+const (
+	LOOP ParserConext = iota
+	FUNCTION
+)
+
+func (p *MSParser) enterContext(ctx ParserConext) {
+	p.context = append(p.context, ctx)
+}
+
+func (p *MSParser) leaveContext() ParserConext{
+	// throw error if something goes wrong
+	ctx := p.context[len(p.context)-1]
+	p.context = p.context[:len(p.context)-1]
+	return ctx
+}
+
+func (p *MSParser) inContext(ctx ParserConext) bool {
+	return slices.Contains(p.context, ctx)
+}
+
 
 ////////////////////////////////////////////////////////////
 // 						Errors

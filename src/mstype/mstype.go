@@ -7,6 +7,8 @@ import (
 
 ////////////////////////////////////////////////////////////
 
+// Result type basically defines how to interpret an EvalResult
+//
 type ResultType uint8
 const (
 	RT_INVALID ResultType = iota
@@ -22,6 +24,7 @@ const (
 
 	RT_BREAK
 	RT_CONTINUE
+	RT_RETURN
 )
 
 func (res ResultType) String() string {
@@ -74,9 +77,10 @@ var MS_STRING MSType = &MSSimpleTypeS{Rt: RT_STRING}
 // possible value this type can produce.
 var MS_NOTHING MSType = &MSSimpleTypeS{Rt: RT_NOTHING}
 
-// Break and Continue 
+// break, continue and return types
 var MS_BREAK MSType = &MSSimpleTypeS{Rt: RT_BREAK}
 var MS_CONTINUE MSType = &MSSimpleTypeS{Rt: RT_CONTINUE}
+var MS_RETURN MSType = &MSSimpleTypeS{Rt: RT_RETURN}
 
 ////////////////////////////////////////////////////////////
 

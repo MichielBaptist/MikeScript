@@ -1,7 +1,6 @@
 package interp
 
 import (
-	"fmt"
 	"mikescript/src/ast"
 )
 
@@ -42,7 +41,6 @@ func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignN
 	
 	
 	res := evaluator.evaluateExpression(&node.Exp)
-	fmt.Println("Found result:", res)
 
 	if !res.Valid() {
 		return res
@@ -52,14 +50,10 @@ func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignN
 	name := node.Identifier.Name.Lexeme
 	err := evaluator.env.NewVar(name, res, res.Rt)
 
-	fmt.Println("Found result:", name, err)
-
 	if err != nil {
 		// Add errors to res errors
 		return EvalResult{Err: append(res.Err, err)}
 	}
-	
-	fmt.Println("Found result:", res)
 
 	return res
 }

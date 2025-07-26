@@ -35,13 +35,15 @@ func (parser *MSParser) parseStatement() (ast.StmtNodeI, error){
 	}
 	// CONTINUE
 	if ok, tk := parser.match(token.CONTINUE); ok {
-		err := parser.error("Continue statement not allowed outside of loops", tk.Line, tk.Col)
-		return ast.ContinueNodeS{Tk: tk}, err
+		return parser.parseContinue(tk)
 	}
 	// BREAK
 	if ok, tk := parser.match(token.BREAK); ok {
-		err := parser.error("Break statement not allowed outside of loops", tk.Line, tk.Col)
-		return ast.BreakNodeS{Tk: tk}, err
+		return parser.parseBreak(tk)
+	}
+	// RETURN
+	if ok, tk := parser.match(token.RETURN) ; ok {
+		return parser.parseReturn(tk)
 	}
 
 	// Nothing matched, so we assume it must be an expression.

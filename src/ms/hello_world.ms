@@ -1,7 +1,7 @@
 
 while true {
-    "Hello, world!" >> print;
+    "Hello, world! 1" >>= print;
     break;
 }
 
-"Hello, world!" >> print;
+"Hello, world! 2" >>= print;

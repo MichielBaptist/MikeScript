@@ -1,6 +1,9 @@
 function (int x) >> count -> int {
-    x >> print;
+    x >>= print;
     if x > 0 {
-        x - 1 >> count;
+        x - 1 >>= count;
     }
+    return x;
 }
+
+5 >>= count;

@@ -1,14 +1,10 @@
-var int x;
-var int y;
-var int z;
-var string s;
-
+0 => x;
 while x < 5 {
-    0 -> y;
+    0 => y;
     while y < 5 {
-        0 -> z;
+        0 => z;
         while z < 5 {
-            x, y, z >> print;
+            x, y, z >>= print;
             if z == 3 {
                 break;
             }
@@ -18,6 +14,3 @@ while x < 5 {
     }
     x + 1 -> x;
 }
-
-"hello" >> print;
-"world" >> print;

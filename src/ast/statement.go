@@ -36,8 +36,13 @@ type WhileNodeS struct {
 type ContinueNodeS struct {
 	Tk token.Token
 }
+
 type BreakNodeS struct {
 	Tk token.Token
+}
+
+type ReturnNodeS struct {
+	Node ExpNodeI
 }
 
 type FuncDeclNodeS struct {
@@ -62,6 +67,12 @@ func (WhileNodeS) statmentPlaceholder() {}
 func (ContinueNodeS) statmentPlaceholder() {}
 func (BreakNodeS) statmentPlaceholder() {}
 func (FuncDeclNodeS) statmentPlaceholder() {}
+func (ReturnNodeS) statmentPlaceholder() {}
+
+
+////////////////////////////////////////////////////////////
+// Helpers
+////////////////////////////////////////////////////////////
 
 func (fd *FuncDeclNodeS) GetFuncType() *mstype.MSOperationTypeS {
 	typelist := []mstype.MSType{}
@@ -69,4 +80,8 @@ func (fd *FuncDeclNodeS) GetFuncType() *mstype.MSOperationTypeS {
 		typelist =	append(typelist, par.Type)
 	}
 	return &mstype.MSOperationTypeS{Left: typelist, Right: fd.Rt}
+}
+
+func (rs *ReturnNodeS) HasReturnValue() bool {
+	return rs.Node != nil
 }

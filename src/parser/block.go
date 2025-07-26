@@ -20,14 +20,8 @@ func (parser *MSParser) parseBlock() (ast.BlockNodeS, error) {
 	// we keep parsing statements.
 	for !parser.atend() && parser.peek().Type != token.RIGHT_BRACE {
 
-		// continue
-		if ok, tk := parser.match(token.CONTINUE); ok {
-			stmt, err = parser.parseContinue(tk)
-		} else if ok, tk := parser.match(token.BREAK); ok {
-			stmt, err = parser.parseBreak(tk)
-		} else {
-			stmt, err = parser.parseStatement()
-		}
+		// parse
+		stmt, err = parser.parseStatement()
 
 		// Only add to the statements if there was no error
 		// Else we just synchronize and continue

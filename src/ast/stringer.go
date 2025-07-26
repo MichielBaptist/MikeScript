@@ -101,6 +101,10 @@ func (node BreakNodeS) String() string {
 	return "break"
 }
 
+func (node ReturnNodeS) String() string {
+	return fmt.Sprintf("return %s", node.Node)
+}
+
 func (node FuncDeclNodeS) String() string {
 
 	// Get args string

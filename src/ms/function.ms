@@ -17,8 +17,11 @@ function (int x) >> one_arg_with_return -> int {
     x + 1;
 }
 
+function (int y, int x) >> is_multiple -> bool {
+    return x % y == 0;
+}
 function (int x) >> is_even -> bool {
-    2, x >>= is_multiple;
+    return 2, x >>= is_multiple;
 }
 
 // Function with function as an argument
@@ -27,11 +30,7 @@ function ((int -> bool) f, int x, int y) >> first_order_function {
     "f(y) is", (y >>= f) >>= print;
 }
 
-function (int y, int x) >> is_multiple -> bool {
-    x % y == 0;
-}
-
 // Function returning a function
 function (int y) >> is_multiple_of -> (int -> bool) {
-    y >> is_multiple;
+    return y >> is_multiple;
 }

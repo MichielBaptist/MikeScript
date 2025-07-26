@@ -42,8 +42,12 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalRe
 		}
 
 		// Check if result is break, on break we exit
-		if res.IsType(&mstype.MS_BREAK) {
+		if res.IsType(&mstype.MS_BREAK){
 			return EvalResult{Rt: mstype.MS_NOTHING}
+		}
+		// Check if result is return, then we exit
+		if res.IsType(&mstype.MS_RETURN) {
+			return res
 		}
 	}
 

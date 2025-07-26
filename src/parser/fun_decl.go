@@ -51,9 +51,23 @@ func (parser *MSParser) parseFunctionDecl() (ast.FuncDeclNodeS, error) {
 	if ok, tok := parser.match(token.LEFT_BRACE) ; !ok {
 		return ast.FuncDeclNodeS{}, parser.unexpectedToken(tok, token.LEFT_BRACE)
 	}
+
+	// Enter function context
+	parser.enterContext(FUNCTION)
 	block, err := parser.parseBlock()
+	ctx := parser.leaveContext()
+	if ctx != FUNCTION {
+		_ = []int{}[0]
+	}
+
 	if err != nil {
 		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: returnType}, err
+	}
+
+	// Always add a "return;" statement at the end of the function
+	// body so that if you specify no return it still returns a return val
+	block = ast.BlockNodeS{
+		Statements: append(block.Statements, ast.ReturnNodeS{Node: nil}),
 	}
 
 	return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: returnType, Body: &block}, err
