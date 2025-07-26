@@ -6,6 +6,7 @@ import (
 	utils "mikescript/src/utils"
 )
 
+// TODO: fix this using regex instead?
 
 const(
 	SPACE byte = ' '
@@ -141,7 +142,13 @@ func (scanner *MSScanner) nextToken() (token.Token, bool) {
 	case c == '<' && scanner.advanceIfAtr('-'): tok = token.Token{Type: token.LESS_MINUS, Lexeme: "<-", Line: scanner.line, Col: scanner.col}
 	case c == '<':								tok = token.Token{Type: token.LESS, Lexeme: "<", Line: scanner.line, Col: scanner.col}
 	case c == '>' && scanner.advanceIfAtr('='):	tok = token.Token{Type: token.GREATER_EQ, Lexeme: ">=", Line: scanner.line, Col: scanner.col}
-	case c == '>' && scanner.advanceIfAtr('>'):	tok = token.Token{Type: token.GREATER_GREATER, Lexeme: ">>", Line: scanner.line, Col: scanner.col}
+	case c == '>' && scanner.advanceIfAtr('>'):
+		if scanner.advanceIfAtr('='){
+			tok = token.Token{Type: token.GREATER_GREATER_EQ, Lexeme: ">>=", Line: scanner.line, Col: scanner.col}
+		} else {
+			tok = token.Token{Type: token.GREATER_GREATER, Lexeme: ">>", Line: scanner.line, Col: scanner.col}
+		}									
+	case c == '>' && scanner.advanceIfAtr('>'):	
 	case c == '>':								tok = token.Token{Type: token.GREATER, Lexeme: ">", Line: scanner.line, Col: scanner.col}
 	case c == '|' && scanner.advanceIfAtr('|'):	tok = token.Token{Type: token.BAR_BAR, Lexeme: "||", Line: scanner.line, Col: scanner.col}
 	case c == '|':								tok = token.Token{Type: token.BAR, Lexeme: "|", Line: scanner.line, Col: scanner.col}

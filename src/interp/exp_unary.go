@@ -20,6 +20,7 @@ func (evaluator *MSEvaluator) evaluateUnaryExpression(node *ast.UnaryExpNodeS) E
 	switch node.Op.Type {
 	case token.MINUS:		return evaluateMinus(&res)
 	case token.EXCLAMATION:	return evaluateExcl(&res)
+	case token.EQ:			return evaluator.evaluateFunctionCall(&res)
 	default: 				return evalErr(unknownUnop(node.Op.Lexeme, res.rt))
 	}
 	
@@ -40,9 +41,16 @@ func evaluateExcl(res *EvalResult) EvalResult {
 	}
 }
 
+func (evaluator *MSEvaluator) evaluateFunctionCall(res *EvalResult) EvalResult {
+	println("Evaluating the function:", res.String())
+	return *res
+}
+
+
 func (evaluator *MSEvaluator) evaluateGroupExpression(node *ast.GroupExpNodeS) EvalResult {
 	return evaluator.evaluateExpression(&node.Node)
 }
+
 
 func unknownUnop(lexeme string, tt mstype.MSType) string {
 	return fmt.Sprintf("Operator %v is not defined for type %v", lexeme, tt)

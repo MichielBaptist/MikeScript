@@ -30,70 +30,69 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 	for {
 
 		// Check if we match '>>' or '->' or '=>'
-		ok, op := parser.match(token.GREATER_GREATER, token.MINUS_GREAT, token.EQ_GREATER)
+		ok, op := parser.match(
+			token.GREATER_GREATER,		// >>
+			token.MINUS_GREAT,			// ->
+			token.EQ_GREATER,			// =>
+			token.GREATER_GREATER_EQ,	// >>=
+		)
 		
 		// Check if we matched
 		if !ok {
 			break
 		}
 
-		// Found match, check which one we got
 		var right ast.ExpNodeI
 		var err error
 
-		// Parse the right side of the '>>'. If this is
-		// and identifier, we have either a function application
-		// or a variable assignment. The parser cannot know
-		// which one it is, we only know this at runtime time.
+		// parse right
+		right, err = parser.parseTuple()
+
+		// stop on fail
+		if err != nil {
+			return left, err
+		}
+
 		switch op.Type {
-		case token.GREATER_GREATER:
+		case token.GREATER_GREATER, token.GREATER_GREATER_EQ:
+			// >> function application (parameter binding)
+			// >>= function application && call
 
-			// Parse the right side of the function application
-			// This should resolve into an identifier.
-			right, err = parser.parseTuple()
-
-			// Flatten the left side of the function application
-			// into a list of expressions
+			// TODO: remove tuple alltogether?
 			lexpressions := flattenExpNode(&left)
 
+			// Function application
 			left = ast.FuncAppNodeS{Args: lexpressions, Fun: right}
 
+			// also wrap with call?
+			if op.Type == token.GREATER_GREATER_EQ {
+				left = ast.UnaryExpNodeS{Op: token.Token{Type: token.EQ, Lexeme: "=", Line: op.Line, Col: op.Col}, Node: left}
+			}
+
 		case token.MINUS_GREAT:
+			// -> assignment
 
-			// Parse the right side of the assignment
-			// This should resolve into:
-			// 1. A single variable
-			// 2. A tuple of variables (not implemented)
-			variable, verr := parser.parseTuple()
-			err = verr
-
-			// TODO: add support for tuple assignments
-			// TODO:
-			switch v := variable.(type) {
+			switch v := right.(type) {
 			case ast.VariableExpNodeS:
 				left = ast.AssignmentNodeS{Identifier: v, Exp: left}
 			default:
-				return left, parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
+				err = parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
 			}
 		case token.EQ_GREATER:
-			variable, verr := parser.parseTuple()
-			err = verr
+			// => create && assignment
 
-			switch v := variable.(type) {
+			switch v := right.(type) {
 			case ast.VariableExpNodeS:
 				left = ast.DeclAssignNodeS{Identifier: v, Exp: left}
 			default:
-				return left, parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
+				err = parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
 			}
-
-
 		}
 
-		// check for errors
+		// Break loop if we see an error
 		if err != nil {
-			return right, err
+			break
 		}
-
 	}
 
 	return left, err

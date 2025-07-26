@@ -16,8 +16,8 @@ const(
 	RIGHT_PAREN						// ) 
 	LEFT_BRACE						// { 
 	RIGHT_BRACE						// } 
-	LEFT_SQUARE						// [ 
-	RIGHT_SQUARE					// ] 
+	LEFT_SQUARE						// [ UNUSED
+	RIGHT_SQUARE					// ] UNUSED
 	COMMA							// , 
 	DOT								// . 
 	PLUS							// + 
@@ -25,26 +25,27 @@ const(
 	MULT							// * 
 	SLASH							// / 
 	SEMICOLON						// ;
-	COLON							// :
+	COLON							// : UNUSED
 	PERCENT							// % 
 	EXCLAMATION						// ! 
 	LESS							// < 
 	GREATER							// >
-	BAR								// | (guard in xif)
-	EQ								// = (unused currently)
+	BAR								// | (guard in xif) UNUSED
+	EQ								// = (function call)
 
 	// Double character tokens
 	EXCLAMATION_EQ					// != 
 	EQ_EQ							// == 
 	INT_DIV							// // 
-	DOT_DOT							// ..
+	DOT_DOT							// .. UNUSED
 	LESS_EQ							// <=
 	GREATER_EQ						// >=
-	GREATER_GREATER					// >> (function calls)
+	GREATER_GREATER					// >> (function application)
+	GREATER_GREATER_EQ				// >>= (function application && call)
 	LESS_LESS						// <<
 	MINUS_GREAT						// -> (assignment)
 	EQ_GREATER						// => (decl & assignment)
-	LESS_MINUS						// <-
+	LESS_MINUS						// <- UNUSED
 	AMP_AMP							// &&
 	BAR_BAR							// ||
 
@@ -59,9 +60,9 @@ const(
 	TRUE 							// true
 	IF								// if
 	ELSE 							// else
-	XIF 							// xif
-	OTHERWISE 						// otherwise
-	FOR 							// for
+	XIF 							// xif UNUSED
+	OTHERWISE 						// otherwise UNUSED
+	FOR 							// for UNUSED
 	WHILE 							// while
 	FUNCTION 						// function
 	RETURN 							// return
@@ -76,7 +77,7 @@ const(
 	STRING_TYPE 					// string
 	BOOLEAN_TYPE 					// boolean
 	NOTHING_TYPE					// nothing
-	STRUCT 							// struct
+	STRUCT 							// struct UNUSED
 
 	// End of file
 	EOF								// End of file
@@ -105,6 +106,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	LESS: "<",
 	GREATER: ">",
 	BAR: "|",
+	EQ: "=",
 	EXCLAMATION_EQ: "!=",
 	EQ_EQ: "==",
 	INT_DIV: "//",
@@ -112,6 +114,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	LESS_EQ: "<=",
 	GREATER_EQ: ">=",
 	GREATER_GREATER: ">>",
+	GREATER_GREATER_EQ: ">>=",
 	MINUS_GREAT: "->",
 	EQ_GREATER: "=>",
 	LESS_LESS: "<<",
