@@ -18,9 +18,7 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 
 	// parse the first expression, this is either
 	// a comma separated list of expressions or empty (nil)
-	if !parser.checkType(token.GREATER_GREATER) {
-		left, err = parser.parseTuple()
-	}
+	left, err = parser.parseTuple()
 
 	// check for errors
 	if err != nil {
@@ -29,12 +27,11 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 
 	for {
 
-		// Check if we match '>>' or '->' or '=>'
 		ok, op := parser.match(
-			token.GREATER_GREATER,		// >>
-			token.MINUS_GREAT,			// ->
-			token.EQ_GREATER,			// =>
-			token.GREATER_GREATER_EQ,	// >>=
+			token.GREATER_GREATER,		// >>  param binding
+			token.MINUS_GREAT,			// ->  assignment
+			token.EQ_GREATER,			// =>  declaration & assignment
+			token.GREATER_GREATER_EQ,	// >>= binding & call
 		)
 		
 		// Check if we matched

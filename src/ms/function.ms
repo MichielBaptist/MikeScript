@@ -1,37 +1,37 @@
 
-function () >> test -> int {
-    var int x;
-    0 -> x;
+// function with no arguments and no return type
+function () >> no_args_no_return {}
+
+// function with no arguments
+function () >> no_args_with_return -> int {
+    0;
 }
 
-function (int x) >> f -> float {
-    var int y;
-    x -> y;
-    y + 1 -> y;
+// Function with one argument and no return type
+function (int x) >> one_arg_no_return {
+    x >>= print;
 }
 
-function (string s, int x) >> g -> bool {
-    0 => i;
-    while i < x {
-        s >> print;
-        i + 1 -> i;
-    }
+// Function with one argument and a return type
+function (int x) >> one_arg_with_return -> int {
+    x + 1;
 }
 
-function () >> h {
-    var int x;
+function (int x) >> is_even -> bool {
+    2, x >>= is_multiple;
 }
 
+// Function with function as an argument
+function ((int -> bool) f, int x, int y) >> first_order_function {
+    "f(x) is", (x >>= f) >>= print;
+    "f(y) is", (y >>= f) >>= print;
+}
 
-// // Want:
-// function ((int, int -> bool) f, int x, int y) >> h -> int {
-//     if (x, y >> f){
-//         "f(x, y) is positive" >> print;
-//     } else {
-//         "f(x, y) is negative" >> print;
-//     }
-// }
+function (int y, int x) >> is_multiple -> bool {
+    x % y == 0;
+}
 
-// function () >> f -> int {
-//     1 >> return;
-// }
+// Function returning a function
+function (int y) >> is_multiple_of -> (int -> bool) {
+    y >> is_multiple;
+}
