@@ -7,21 +7,21 @@ import (
 )
 
 type EvalResult struct {
-	rt    mstype.MSType		  	// type of the result
-	val   any 					// Container for the result
-	err   []error    			// Error message on evaluation fail
+	Rt    mstype.MSType		  	// type of the result
+	Val   any 					// Container for the result
+	Err   []error    			// Error message on evaluation fail
 }
 
 func (er *EvalResult) Valid() bool {
-	return len(er.err) == 0
+	return len(er.Err) == 0
 }
 
 func (er *EvalResult) Expect(rt mstype.MSType) bool {
-	return er.rt.Eq(&rt)
+	return er.Rt.Eq(&rt)
 }
 
 func (er *EvalResult) IsType(t *mstype.MSType) bool {
-	return er.rt.Eq(t)
+	return er.Rt.Eq(t)
 }
 
 func (er EvalResult) String() string {
@@ -29,23 +29,23 @@ func (er EvalResult) String() string {
 	// Check if the EvalResult has any errors,
 	// if so, we print the errors
 	if !er.Valid() {
-		return fmt.Sprintf("Error: %v", er.err)
+		return fmt.Sprintf("Error: %v", er.Err)
 	}
 	
 	// If we have a nil value for whatever reason we show nothing.
-	if er.val == nil {
+	if er.Val == nil {
 		return "nothing"
 	}
 
 	// based on return type
-	switch tp := er.rt.(type) {
+	switch tp := er.Rt.(type) {
 	case *mstype.MSSimpleTypeS:
 		switch tp.Rt{
-		case mstype.RT_STRING:	return fmt.Sprintf("\"%v\"", er.val)
-		case mstype.RT_TUPLE:	return tupleToString(er.val.([]EvalResult))
+		case mstype.RT_STRING:	return fmt.Sprintf("\"%v\"", er.Val)
+		case mstype.RT_TUPLE:	return tupleToString(er.Val.([]EvalResult))
 		}
 	}
-	return fmt.Sprintf("%v", er.val)
+	return fmt.Sprintf("%v", er.Val)
 }
 
 func tupleToString(t []EvalResult) string {
@@ -60,14 +60,3 @@ func tupleToString(t []EvalResult) string {
 // Evaluation error
 ////////////////////////////////////////////////////////////////////////
 
-type EvalError struct {
-	message string
-}
-
-func (ee *EvalError) Error() string {
-	return "Evaluation error: " + ee.message
-}
-
-func evalErr(msg string) EvalResult {
-	return EvalResult{err: []error{&EvalError{msg}}}
-}

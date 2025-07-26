@@ -20,32 +20,25 @@ func (evaluator *MSEvaluator) evaluateUnaryExpression(node *ast.UnaryExpNodeS) E
 	switch node.Op.Type {
 	case token.MINUS:		return evaluateMinus(&res)
 	case token.EXCLAMATION:	return evaluateExcl(&res)
-	case token.EQ:			return evaluator.evaluateFunctionCall(&res)
-	default: 				return evalErr(unknownUnop(node.Op.Lexeme, res.rt))
+	default: 				return evalErr(unknownUnop(node.Op.Lexeme, res.Rt))
 	}
 	
 }
 
 func evaluateMinus(res *EvalResult) EvalResult {
 	switch {
-	case res.IsType(&mstype.MS_INT): 	return EvalResult{rt: mstype.MS_INT, val: -res.val.(int)}
-	case res.IsType(&mstype.MS_FLOAT):	return EvalResult{rt: mstype.MS_FLOAT, val: -res.val.(float64)}
-	default:							return evalErr(unknownUnop(token.MINUS.String(), res.rt))
+	case res.IsType(&mstype.MS_INT): 	return EvalResult{Rt: mstype.MS_INT, Val: -res.Val.(int)}
+	case res.IsType(&mstype.MS_FLOAT):	return EvalResult{Rt: mstype.MS_FLOAT, Val: -res.Val.(float64)}
+	default:							return evalErr(unknownUnop(token.MINUS.String(), res.Rt))
 	}
 }
 
 func evaluateExcl(res *EvalResult) EvalResult {
 	switch {
-	case res.IsType(&mstype.MS_BOOL):	return EvalResult{rt: mstype.MS_BOOL, val: !res.val.(bool)}
-	default:							return evalErr(unknownUnop(token.MINUS.String(), res.rt))
+	case res.IsType(&mstype.MS_BOOL):	return EvalResult{Rt: mstype.MS_BOOL, Val: !res.Val.(bool)}
+	default:							return evalErr(unknownUnop(token.MINUS.String(), res.Rt))
 	}
 }
-
-func (evaluator *MSEvaluator) evaluateFunctionCall(res *EvalResult) EvalResult {
-	println("Evaluating the function:", res.String())
-	return *res
-}
-
 
 func (evaluator *MSEvaluator) evaluateGroupExpression(node *ast.GroupExpNodeS) EvalResult {
 	return evaluator.evaluateExpression(&node.Node)

@@ -15,7 +15,7 @@ func (evaluator *MSEvaluator) evaluateBinaryExpression(node *ast.BinaryExpNodeS)
 
 	// If either of the evaluations failed, return the error
 	if !left.Valid() || !right.Valid() {
-		return EvalResult{err: append(left.err, right.err...)}
+		return EvalResult{Err: append(left.Err, right.Err...)}
 	}
 
 	switch node.Op.Type {
@@ -53,12 +53,12 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 	}
 
 	// Check the truth value of the left side
-	leftb := left.val.(bool)
+	leftb := left.Val.(bool)
 
 	// short circuit evaluation
 	switch  {
-	case node.Op.Type == token.AMP_AMP && !leftb: return EvalResult{rt: mstype.MS_BOOL, val: false} // false && ...
-	case node.Op.Type == token.BAR_BAR &&  leftb: return EvalResult{rt: mstype.MS_BOOL, val: true}  // true || ...
+	case node.Op.Type == token.AMP_AMP && !leftb: return EvalResult{Rt: mstype.MS_BOOL, Val: false} // false && ...
+	case node.Op.Type == token.BAR_BAR &&  leftb: return EvalResult{Rt: mstype.MS_BOOL, Val: true}  // true || ...
 	}
 
 	// Means the first operand is inconclusive
@@ -78,28 +78,28 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 }
 
 func invalidBinop(left, right EvalResult, op string) string {
-	return fmt.Sprintf("Operator '%v' is not defined for types '%v' and '%v'", op, left.rt, right.rt)
+	return fmt.Sprintf("Operator '%v' is not defined for types '%v' and '%v'", op, left.Rt, right.Rt)
 }
 
 func invalidLogop(left EvalResult, op string) string {
-	return fmt.Sprintf("Logical operator '%v' is not defined for type '%v'", op, left.rt)
+	return fmt.Sprintf("Logical operator '%v' is not defined for type '%v'", op, left.Rt)
 }
 
 
 func evalTuple(left, right EvalResult) EvalResult {
 	valuetype := mstype.MSCompositeTypeS{
-		Types: []mstype.MSType{left.rt, right.rt},
+		Types: []mstype.MSType{left.Rt, right.Rt},
 	}
-	return EvalResult{rt: &valuetype, val: []EvalResult{left, right}}
+	return EvalResult{Rt: &valuetype, Val: []EvalResult{left, right}}
 }
 
 func evalMod(left, right EvalResult) EvalResult {
-	switch left.rt {
+	switch left.Rt {
 	case mstype.MS_INT:
-		switch right.rt {
+		switch right.Rt {
 		case mstype.MS_INT:
-			if right.val.(int) == 0 { return evalErr("Division by zero.")}
-			return EvalResult{rt: mstype.MS_INT, val: left.val.(int) % right.val.(int)}
+			if right.Val.(int) == 0 { return evalErr("Division by zero.")}
+			return EvalResult{Rt: mstype.MS_INT, Val: left.Val.(int) % right.Val.(int)}
 		}
 	}
 	return evalErr(invalidBinop(left, right, "%"))

@@ -1,6 +1,8 @@
 package interp
 
-import "mikescript/src/ast"
+import (
+	"mikescript/src/ast"
+)
 
 
 func (evaluator *MSEvaluator) executeBlock(node *ast.BlockNodeS, env *Environment) EvalResult {

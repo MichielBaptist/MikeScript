@@ -14,6 +14,7 @@ func (evaluator *MSEvaluator) evaluateExpression(node *ast.ExpNodeI) EvalResult 
 	case ast.AssignmentNodeS:	return evaluator.evaluateAssignmentExpression(&node)
 	case ast.DeclAssignNodeS: 	return evaluator.evaluateDeclAssignExpression(&node)
 	case ast.FuncAppNodeS:		return evaluator.evaluateFunctionApplication(&node)
+	case ast.FuncCallNodeS:		return evaluator.evaluateFunctionCall(&node)
 	case ast.VariableExpNodeS:	return evaluator.evalVariable(&node)
 	case ast.LogicalExpNodeS:	return evaluator.evaluateLogicalExpression(&node)
 	default:					return evalErr(fmt.Sprintf("Unknown expression type: %v", node))

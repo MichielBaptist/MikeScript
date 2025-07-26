@@ -1,6 +1,9 @@
 package interp
 
-import "mikescript/src/ast"
+import (
+	"fmt"
+	"mikescript/src/ast"
+)
 
 
 func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentNodeS) EvalResult {
@@ -16,10 +19,10 @@ func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentN
 	err := evaluator.env.SetVar(node.Identifier.Name.Lexeme, res)
 
 	if err != nil {
-		return EvalResult{err: []error{err}}
+		return EvalResult{Err: []error{err}}
 	}
 
-	return EvalResult{rt: res.rt, val: res.val}
+	return EvalResult{Rt: res.Rt, Val: res.Val}
 }
 
 func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) EvalResult {
@@ -28,7 +31,7 @@ func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) EvalResul
 	val, err := evaluator.env.GetVar(node.Name.Lexeme)
 
 	if err != nil {
-		return EvalResult{err: []error{err}}
+		return EvalResult{Err: []error{err}}
 	}
 
 	return val
@@ -36,7 +39,10 @@ func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) EvalResul
 }
 
 func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignNodeS) EvalResult {
+	
+	
 	res := evaluator.evaluateExpression(&node.Exp)
+	fmt.Println("Found result:", res)
 
 	if !res.Valid() {
 		return res
@@ -44,12 +50,16 @@ func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignN
 
 	// set val, even if res contains error.
 	name := node.Identifier.Name.Lexeme
-	err := evaluator.env.NewVar(name, res, res.rt)
+	err := evaluator.env.NewVar(name, res, res.Rt)
+
+	fmt.Println("Found result:", name, err)
 
 	if err != nil {
 		// Add errors to res errors
-		return EvalResult{err: append(res.err, err)}
+		return EvalResult{Err: append(res.Err, err)}
 	}
+	
+	fmt.Println("Found result:", res)
 
 	return res
 }

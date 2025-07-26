@@ -7,12 +7,6 @@ import (
 	"strings"
 )
 
-
-type FunctionResult interface {
-	call(e *MSEvaluator, args []EvalResult) EvalResult	// native or foreign
-	arity() int											// # args left
-}
-
 ///////////////////////////////////////////////////////////////
 // helper struct
 ///////////////////////////////////////////////////////////////
@@ -55,7 +49,7 @@ func (b *ParamBindingS) bind(val EvalResult) (ParamBindingS, error) {
 
 	// Validate correct types
 	if !b.ValidBindingEvalResult(&val) {
-		msg := fmt.Sprintf("Cannot bind '%s' of type '%s' to parameter '%s' of type '%s'", val.String(), val.rt.String(), b.Name.String(), b.Type.String())
+		msg := fmt.Sprintf("Cannot bind '%s' of type '%s' to parameter '%s' of type '%s'", val.String(), val.Rt.String(), b.Name.String(), b.Type.String())
 		return *b, BindingError{msg: msg}
 	}
 	
@@ -82,7 +76,7 @@ func (b *ParamBindingS) String() string {
 }
 
 func (b *ParamBindingS) ValidBindingEvalResult(t *EvalResult) bool {
-	return b.Type.Eq(&t.rt)
+	return b.Type.Eq(&t.Rt)
 }
 
 // -----------------------------------------------------------
@@ -125,32 +119,14 @@ type MSFunction struct {
 // Implements FunctionResult
 // -----------------------------------------------------------
 
-func (f *MSFunction) call(ev *MSEvaluator, args []EvalResult) EvalResult {
+func (f *MSFunction) Call(ev *MSEvaluator) EvalResult {
 
 	if !f.initialized() {
 		return evalErr(fmt.Sprintf("Cannot call uninitialized function '%s'", f.fname()))
 	}
 
-	// Add all the args to the function bindings
-	newf, err := f.bindArgs(args)
-
-	if err != nil {
-		return EvalResult{err: []error{err}}
-	}
-
-	if newf.execable() {
-		// parameters full
-		return newf.exec(ev)
-	} else {
-		// parameters not full
-		return EvalResult{rt: newf.GetFuncType(), val: newf}
-	}
-}
-
-func (f *MSFunction) exec(evaluator *MSEvaluator) EvalResult {
-
 	// Create a new environment with globals as base scope.
-	env := NewEnvironment(evaluator.glb)
+	env := NewEnvironment(ev.glb)
 
 	// push all bindings in the env
 	for _, bind := range f.boundParams {
@@ -158,12 +134,24 @@ func (f *MSFunction) exec(evaluator *MSEvaluator) EvalResult {
 	}
 
 	// Call the body using env
-	return evaluator.executeBlock(f.body(), env)
-
+	return ev.executeBlock(f.body(), env)
 }
 
-func (f *MSFunction) arity() int {
+func (f *MSFunction) Arity() int {
 	return len(f.unBoundParams)
+}
+
+func (f *MSFunction) Bind(args []EvalResult) EvalResult {
+
+	// Add all the args to the function bindings
+	newf, err := f.bindArgs(args)
+
+	// Binding error
+	if err != nil {
+		return EvalResult{Err: []error{err}}
+	}
+
+	return EvalResult{Rt: newf.GetFuncType(), Val: newf}
 }
 
 // -----------------------------------------------------------
@@ -227,7 +215,7 @@ func (f *MSFunction) body() *ast.BlockNodeS {
 }
 
 func (f *MSFunction) execable() bool {
-	return f.arity() == 0
+	return f.Arity() == 0
 }
 
 func (f *MSFunction) fname() string {
@@ -240,7 +228,7 @@ func (f *MSFunction) checkArity(args []EvalResult) error {
 
 	// info
 	nargs := len(args)
-	npars := f.arity()
+	npars := f.Arity()
 
 	// Get amount of parameters (definition)
 	if npars < nargs{

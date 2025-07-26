@@ -19,8 +19,8 @@ func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) 
 	// Create EvalResult, NOTE: we provide a pointer to MSFunction
 	// not the function itself!!
 	evalres := EvalResult{
-		rt: node.GetFuncType(),
-		val: callable,
+		Rt: node.GetFuncType(),
+		Val: callable,
 	}
 
 	// Add EvalResult to current scope
@@ -29,10 +29,10 @@ func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) 
 
 	// Throw env error
 	if err != nil {
-		return EvalResult{err: []error{err}}
+		return EvalResult{Err: []error{err}}
 	}
 
 	// The result of a function declartion is Nothing
-	return EvalResult{rt: mstype.MS_NOTHING}
+	return EvalResult{Rt: mstype.MS_NOTHING}
 
 }

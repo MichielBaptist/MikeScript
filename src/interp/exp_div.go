@@ -7,9 +7,9 @@ import (
 
 func evalDiv(left, right EvalResult) EvalResult {
 
-	switch lt := left.rt.(type){
+	switch lt := left.Rt.(type){
 	case *mstype.MSSimpleTypeS:
-		switch rt := right.rt.(type){
+		switch rt := right.Rt.(type){
 		case *mstype.MSSimpleTypeS:
 			return evalDivSimple(left, right, lt, rt)
 		}
@@ -34,27 +34,27 @@ func evalDivSimple(left, right EvalResult, lt, rt *mstype.MSSimpleTypeS) EvalRes
 
 	// Left is int
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_INT):
-		if right.val.(int) == 0 {return errDiv}
-		return EvalResult{rt: mstype.MS_FLOAT, val: float64(left.val.(int)) / float64(right.val.(int))}
+		if right.Val.(int) == 0 {return errDiv}
+		return EvalResult{Rt: mstype.MS_FLOAT, Val: float64(left.Val.(int)) / float64(right.Val.(int))}
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_FLOAT):
-		if right.val.(float64) == 0 {return errDiv}
-		return EvalResult{rt: mstype.MS_FLOAT, val: float64(left.val.(int)) / right.val.(float64)}
+		if right.Val.(float64) == 0 {return errDiv}
+		return EvalResult{Rt: mstype.MS_FLOAT, Val: float64(left.Val.(int)) / right.Val.(float64)}
 
 	// Left is float
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_INT):
-		if right.val.(int64) == 0 {return errDiv}
-		return EvalResult{rt: mstype.MS_FLOAT, val: left.val.(float64) / float64(right.val.(int))}
+		if right.Val.(int64) == 0 {return errDiv}
+		return EvalResult{Rt: mstype.MS_FLOAT, Val: left.Val.(float64) / float64(right.Val.(int))}
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_FLOAT):
-		if right.val.(float64) == 0 {return errDiv}
-		return EvalResult{rt: mstype.MS_FLOAT, val: left.val.(float64) / right.val.(float64)}
+		if right.Val.(float64) == 0 {return errDiv}
+		return EvalResult{Rt: mstype.MS_FLOAT, Val: left.Val.(float64) / right.Val.(float64)}
 
 	// Left is bool
 	case left.IsType(&mstype.MS_BOOL) && right.IsType(&mstype.MS_INT):
-		if right.val.(int64) == 0 {return errDiv}
-		return EvalResult{rt: mstype.MS_FLOAT, val: utils.BoolToFloat(left.val.(bool)) / float64(right.val.(int))}
+		if right.Val.(int64) == 0 {return errDiv}
+		return EvalResult{Rt: mstype.MS_FLOAT, Val: utils.BoolToFloat(left.Val.(bool)) / float64(right.Val.(int))}
 	case left.IsType(&mstype.MS_BOOL) && right.IsType(&mstype.MS_FLOAT):
-		if right.val.(int64) == 0 {return errDiv}
-		return EvalResult{rt: mstype.MS_FLOAT, val: utils.BoolToFloat(left.val.(bool)) / right.val.(float64)}
+		if right.Val.(int64) == 0 {return errDiv}
+		return EvalResult{Rt: mstype.MS_FLOAT, Val: utils.BoolToFloat(left.Val.(bool)) / right.Val.(float64)}
 	}
 
 	return errRes

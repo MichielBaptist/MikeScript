@@ -11,10 +11,14 @@ import (
 // mikescript builtins
 ///////////////////////////////////////////////////////////////
 func MSBuiltinPrint() EvalResult {
+	return NewPrintFunction([]EvalResult{})
+}
+
+func NewPrintFunction(args []EvalResult) EvalResult {
 	return EvalResult{
-		rt: &mstype.MSOperationTypeS{},
-		val: &PrintFunction{},
-		err: []error{},
+		Rt: &mstype.MSOperationTypeS{Right: mstype.MS_NOTHING},
+		Val: &PrintFunction{args: args},
+		Err: []error{},
 	}
 }
 
@@ -23,14 +27,20 @@ func MSBuiltinPrint() EvalResult {
 ///////////////////////////////////////////////////////////////
 
 // Is a FunctionResult placeholder for print
-type PrintFunction struct {}
+type PrintFunction struct {
+	args []EvalResult
+}
 
-func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalResult {
+// --------------------------------------------------------
+// Implements FunctionResult
+// --------------------------------------------------------
+
+func (pf *PrintFunction) Call(_evaluator *MSEvaluator) EvalResult {
 
 	// Get all result values in a slice
 	// and convert them to strings
-	strs := make([]string, len(args))
-	for i, arg := range args {
+	strs := make([]string, len(pf.args))
+	for i, arg := range pf.args {
 		strs[i] = arg.String()
 	}
 
@@ -39,13 +49,33 @@ func (pf *PrintFunction) call(_evaluator *MSEvaluator, args []EvalResult) EvalRe
 	fmt.Println(strings.Join(strs, ", "))
 
 	// Done without return value
-	return EvalResult{rt: mstype.MS_NOTHING, val: nil}
+	return EvalResult{Rt: mstype.MS_NOTHING, Val: nil}
 }
 
-func (pf *PrintFunction) arity() int {
+func (pf *PrintFunction) Bind(args []EvalResult) EvalResult {
+	return NewPrintFunction(args)
+}
+
+func (pf *PrintFunction) Arity() int {
 	return math.MaxUint8
 }
 
+// --------------------------------------------------------
+// Implements stringer
+// --------------------------------------------------------
 func (pf *PrintFunction) String() string {
-	return "* >> print"
+
+	fs := ">> print -> nothing"
+
+	if len(pf.args) == 0 {
+		return fs
+	}
+
+	// Convert all print args to string
+	strs := make([]string, len(pf.args))
+	for i, arg := range pf.args {
+		strs[i] = arg.String()
+	}
+
+	return fmt.Sprintf("%s %s", strings.Join(strs, ", "), fs)
 }

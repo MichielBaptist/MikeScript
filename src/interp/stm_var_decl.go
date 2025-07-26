@@ -18,26 +18,26 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 	// }
 
 	// Get the default value for the type
-	val, err := declaredTypeDefaultValue(&node.Vartype)
+	val, _ := declaredTypeDefaultValue(&node.Vartype)
 
 	// if err != nil {
 	// 	return EvalResult{err: []error{err}}
 	// }
 
 	// Create var
-	res := EvalResult{rt: node.Vartype, val: val}
+	res := EvalResult{Rt: node.Vartype, Val: val}
 	name := node.Identifier.Name.Lexeme
 
 	// Declare variable in env
-	err = evaluator.env.NewVar(name, res, node.Vartype)
+	err := evaluator.env.NewVar(name, res, node.Vartype)
 
 	if err != nil {
-		return EvalResult{err: []error{err}}
+		return EvalResult{Err: []error{err}}
 	}
 
 	// The result of a variable declaration is Nothing
 	// this is not the value declared.
-	return EvalResult{rt: mstype.MS_NOTHING}
+	return EvalResult{Rt: mstype.MS_NOTHING}
 }
 
 func declaredTypeDefaultValue(tk *mstype.MSType) (any, error) {

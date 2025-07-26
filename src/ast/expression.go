@@ -12,10 +12,16 @@ type DeclAssignNodeS struct {
 	Exp 		ExpNodeI
 }
 
-// exp >> exp
+// exp, exp, ... >> exp
 type FuncAppNodeS struct {
 	Args 	[]ExpNodeI
 	Fun		ExpNodeI
+}
+
+// = exp
+type FuncCallNodeS struct {
+	Fun ExpNodeI
+	Op token.Token
 }
 
 type BinaryExpNodeS struct {
@@ -53,6 +59,7 @@ type GroupExpNodeS struct {
 func (AssignmentNodeS) expressionPlaceholder() {}
 func (DeclAssignNodeS) expressionPlaceholder() {}
 func (FuncAppNodeS) expressionPlaceholder() {}
+func (FuncCallNodeS) expressionPlaceholder() {}
 func (BinaryExpNodeS) expressionPlaceholder() {}
 func (UnaryExpNodeS) expressionPlaceholder() {}
 func (LiteralExpNodeS) expressionPlaceholder() {}

@@ -28,6 +28,9 @@ type EnvRow struct {
 }
 
 func (er *EnvRow) String() string {
+	if er == nil {
+		return "ERROR"
+	}
 	return fmt.Sprintf("%v %v = %v", er.rtype, er.name, er.value)
 }
 
@@ -135,7 +138,7 @@ func (env *Environment) SetVar(name string, value EvalResult) error {
 	// Variable is defined, first check for type compatibility.
 	if !env.compatibleType(name, value) {
 		envVarT := env.variables[name].rtype
-		valT := value.rt
+		valT := value.Rt
 		return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, envVarT, valT)}
 	}
 
@@ -200,7 +203,7 @@ func (env *Environment) containsVar(name string) bool {
 
 func (env *Environment) compatibleType(name string, value EvalResult) bool {
 	envVarT := env.variables[name].rtype
-	valueT := value.rt
+	valueT := value.Rt
 	return envVarT.Eq(&valueT)
 }
 

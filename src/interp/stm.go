@@ -15,8 +15,8 @@ func (evaluator *MSEvaluator) executeStatement(node *ast.StmtNodeI) EvalResult {
 	case ast.BlockNodeS:		return evaluator.executeBlock(&node, NewEnvironment(evaluator.env))
 	case ast.IfNodeS:			return evaluator.executeIfstatement(&node)
 	case ast.WhileNodeS:		return evaluator.executeWhileStatement(&node)
-	case ast.ContinueNodeS:		return EvalResult{rt: mstype.MS_CONTINUE}
-	case ast.BreakNodeS:		return EvalResult{rt: mstype.MS_BREAK}
+	case ast.ContinueNodeS:		return EvalResult{Rt: mstype.MS_CONTINUE}
+	case ast.BreakNodeS:		return EvalResult{Rt: mstype.MS_BREAK}
 	case ast.ExStmtNodeS:		return evaluator.executeExpressionStatement(&node)
 	default:					return evalErr(fmt.Sprintf("Unknown statement type: %v", node))
 	}

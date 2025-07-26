@@ -24,7 +24,7 @@ func NewMSEvaluator() *MSEvaluator {
 	glb := env
 
 	// Add builtins to glb
-	glb.NewVar("print", MSBuiltinPrint(), &mstype.MSCompositeTypeS{})
+	glb.NewVar("print", MSBuiltinPrint(), &mstype.MSOperationTypeS{Right: mstype.MS_NOTHING})
 
 	return &MSEvaluator{env: env, glb: glb}
 }
@@ -50,3 +50,16 @@ func (evaluator *MSEvaluator) PrintEnv() {
 func (evaluator *MSEvaluator) statementError(err []error) {
 	evaluator.err = append(evaluator.err, err...)
 }
+
+type EvalError struct {
+	message string
+}
+
+func (ee *EvalError) Error() string {
+	return "Evaluation error: " + ee.message
+}
+
+func evalErr(msg string) EvalResult {
+	return EvalResult{Err: []error{&EvalError{msg}}}
+}
+

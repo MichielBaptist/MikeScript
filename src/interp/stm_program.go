@@ -17,7 +17,7 @@ func (evaluator *MSEvaluator) executeStatements(node *ast.Program) EvalResult {
 		// If we notice an error during execution of this 
 		// Satetement, we print the error and return
 		if !res.Valid() {
-			evaluator.statementError(res.err)
+			evaluator.statementError(res.Err)
 			return res
 		}
 

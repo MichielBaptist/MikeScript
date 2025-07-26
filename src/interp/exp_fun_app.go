@@ -20,18 +20,18 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 
 	// Check the type of the evaluation of Fun
 	// For now, only func types will be callable.
-	_, ok := fn.rt.(*mstype.MSOperationTypeS)
+	_, ok := fn.Rt.(*mstype.MSOperationTypeS)
 	if !ok {
-		return evalErr(fmt.Sprintf("Function application is not implemented for type '%s'", fn.rt))
+		return evalErr(fmt.Sprintf("Function application is not implemented for type '%s'", fn.Rt))
 	}
 
-	if fn.val == nil {
+	if fn.Val == nil {
 		return evalErr("Trying to apply an undefined function")
 	}
 
 	// We can now be sure we can cast to FunctionResult
 	// This will throw an error if not possible
-	callable := fn.val.(FunctionResult)
+	callable := fn.Val.(FunctionResult)
 	
 	// if (!ok) {
 	// 	return evalErr(fmt.Sprintf("Could not cast %s to a FunctionResult", fn.val))
@@ -50,16 +50,39 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	// Accumulate all errors into one
 	errs := []error{}
 	for _, arg := range args {
-		errs = append(errs, arg.err...)
+		errs = append(errs, arg.Err...)
 	}
 	if len(errs) > 0 {
-		return EvalResult{err: errs}
+		return EvalResult{Err: errs}
 	}
 
 	//////////////////////////////////////////////////
-	// evaluate function
+	// bind function
 	//////////////////////////////////////////////////
-	res := callable.call(evaluator, args)
+	return callable.Bind(args)
+}
 
-	return res
+func (evaluator *MSEvaluator) evaluateFunctionCall(node *ast.FuncCallNodeS) EvalResult {
+	fn := evaluator.evaluateExpression(&node.Fun)
+
+	// Check for errors
+	if (!fn.Valid()) {
+		return fn // Found errors
+	}
+
+	// Check the type of the evaluation of Fun
+	// For now, only func types will be callable.
+	_, ok := fn.Rt.(*mstype.MSOperationTypeS)
+	if !ok {
+		return evalErr(fmt.Sprintf("Function call is not implemented for type '%s'", fn.Rt))
+	}
+	if fn.Val == nil {
+		return evalErr("Trying to call an undefined function")
+	}
+
+	// We can now be sure we can cast to FunctionResult
+	// This will throw an error if not possible
+	callable := fn.Val.(FunctionResult)
+
+	return callable.Call(evaluator)
 }

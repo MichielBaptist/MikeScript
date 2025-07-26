@@ -66,7 +66,7 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 
 			// also wrap with call?
 			if op.Type == token.GREATER_GREATER_EQ {
-				left = ast.UnaryExpNodeS{Op: token.Token{Type: token.EQ, Lexeme: "=", Line: op.Line, Col: op.Col}, Node: left}
+				left = ast.FuncCallNodeS{Op: op, Fun: left}
 			}
 
 		case token.MINUS_GREAT:

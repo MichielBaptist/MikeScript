@@ -9,13 +9,13 @@ func evalGreater(left, right EvalResult, op token.TokenType) EvalResult {
 
 	switch {
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_INT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(int) > right.val.(int)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(int) > right.Val.(int)}
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_FLOAT):
-		return EvalResult{rt: mstype.MS_BOOL, val: float64(left.val.(int)) > right.val.(float64)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: float64(left.Val.(int)) > right.Val.(float64)}
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_INT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(float64) > float64(right.val.(int))}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(float64) > float64(right.Val.(int))}
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_FLOAT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(float64) > right.val.(float64)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(float64) > right.Val.(float64)}
 	}
 	return evalErr(invalidBinop(left, right, op.String()))
 }
@@ -24,13 +24,13 @@ func evalGreaterEq(left, right EvalResult, op token.TokenType) EvalResult {
 
 	switch {
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_INT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(int) >= right.val.(int)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(int) >= right.Val.(int)}
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_FLOAT):
-		return EvalResult{rt: mstype.MS_BOOL, val: float64(left.val.(int)) >= right.val.(float64)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: float64(left.Val.(int)) >= right.Val.(float64)}
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_INT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(float64) >= float64(right.val.(int))}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(float64) >= float64(right.Val.(int))}
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_FLOAT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(float64) >= right.val.(float64)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(float64) >= right.Val.(float64)}
 	}
 	return evalErr(invalidBinop(left, right, op.String()))
 
@@ -39,23 +39,23 @@ func evalGreaterEq(left, right EvalResult, op token.TokenType) EvalResult {
 func evalEq(left EvalResult, right EvalResult, op token.TokenType) EvalResult {
 	switch {
 	case left.IsType(&mstype.MS_NOTHING) || right.IsType(&mstype.MS_NOTHING):
-		return EvalResult{rt: mstype.MS_BOOL, val: false}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: false}
 	case left.IsType(&mstype.MS_STRING) && right.IsType(&mstype.MS_STRING):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(string) == right.val.(string)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(string) == right.Val.(string)}
 	case left.IsType(&mstype.MS_STRING) || right.IsType(&mstype.MS_STRING):
-		return EvalResult{rt: mstype.MS_BOOL, val: false}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: false}
 	case left.IsType(&mstype.MS_BOOL) && right.IsType(&mstype.MS_BOOL):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(bool) == right.val.(bool)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(bool) == right.Val.(bool)}
 	case left.IsType(&mstype.MS_BOOL) || right.IsType(&mstype.MS_BOOL):
-		return EvalResult{rt: mstype.MS_BOOL, val: false}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: false}
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_INT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(int) == right.val.(int)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(int) == right.Val.(int)}
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_FLOAT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(float64) == right.val.(float64)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(float64) == right.Val.(float64)}
 	case left.IsType(&mstype.MS_INT) && right.IsType(&mstype.MS_FLOAT):
-		return EvalResult{rt: mstype.MS_BOOL, val: float64(left.val.(int)) == right.val.(float64)}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: float64(left.Val.(int)) == right.Val.(float64)}
 	case left.IsType(&mstype.MS_FLOAT) && right.IsType(&mstype.MS_INT):
-		return EvalResult{rt: mstype.MS_BOOL, val: left.val.(float64) == float64(right.val.(int))}
+		return EvalResult{Rt: mstype.MS_BOOL, Val: left.Val.(float64) == float64(right.Val.(int))}
 	default:
 		return evalErr(invalidBinop(left, right, op.String()))
 	}

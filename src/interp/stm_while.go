@@ -18,13 +18,13 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalRe
 			return cond
 		}
 		if !cond.IsType(&mstype.MS_BOOL) {
-			return evalErr(fmt.Sprintf("Condition must be of type bool, got %v", cond.rt))
+			return evalErr(fmt.Sprintf("Condition must be of type bool, got %v", cond.Rt))
 		}
 
 		// Get value of the bool
-		condb, ok := cond.val.(bool)
+		condb, ok := cond.Val.(bool)
 		if !ok {
-			return evalErr(fmt.Sprintf("Condition value is not a bool: %v", cond.val))
+			return evalErr(fmt.Sprintf("Condition value is not a bool: %v", cond.Val))
 		}
 
 		// Here the condition should be a boolean
@@ -43,7 +43,7 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalRe
 
 		// Check if result is break, on break we exit
 		if res.IsType(&mstype.MS_BREAK) {
-			return EvalResult{rt: mstype.MS_NOTHING}
+			return EvalResult{Rt: mstype.MS_NOTHING}
 		}
 	}
 
