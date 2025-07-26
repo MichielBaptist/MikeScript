@@ -7,7 +7,9 @@ import (
 
 func (evaluator *MSEvaluator) executeStatements(node *ast.Program) EvalResult {
 
-	var res EvalResult
+	// By default the return value of a set of statements
+	// is 'nothing' (cannot have value)
+	res := EvalResult{Rt: mstype.MS_NOTHING}
 	
 	// A ast.Program is a list of statements
 	// So we just loop through the statements and evaluate them
