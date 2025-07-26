@@ -88,8 +88,7 @@ func invalidLogop(left EvalResult, op string) string {
 
 func evalTuple(left, right EvalResult) EvalResult {
 	valuetype := mstype.MSCompositeTypeS{
-		Left: left.rt,
-		Right: right.rt,
+		Types: []mstype.MSType{left.rt, right.rt},
 	}
 	return EvalResult{rt: &valuetype, val: []EvalResult{left, right}}
 }

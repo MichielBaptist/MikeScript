@@ -68,6 +68,7 @@ const(
 	PRINT 							// print
 	CONTINUE 						// continue
 	BREAK 							// break
+	VAR								// var
 
 	// Types
 	INT_TYPE 						// int (64)
@@ -139,6 +140,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	UNKNOWN: "UNKNOWN",
 	CONTINUE: "continue",
 	BREAK: "break",
+	VAR: "var",
 }
 
 // Map of keywords
@@ -159,6 +161,8 @@ var Keywords map[string]TokenType = map[string]TokenType{
 	"bool": BOOLEAN_TYPE,
 	"continue": CONTINUE,
 	"break": BREAK,
+	"var": VAR,
+	"nothing": NOTHING_TYPE,
 }
 
 // implement stringer
@@ -172,3 +176,10 @@ func (t Token) String() string {
 
 // List of tokens which define a builtin type
 var TypeKeywords []TokenType = []TokenType{INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOLEAN_TYPE, NOTHING_TYPE}
+var SimpleTypeKeywords []TokenType = []TokenType{
+	INT_TYPE,
+	FLOAT_TYPE,
+	STRING_TYPE,
+	BOOLEAN_TYPE,
+	NOTHING_TYPE,
+}

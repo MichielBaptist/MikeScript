@@ -1,4 +1,4 @@
-int x;
+var int x;
 
 // Test comment
 while x < 10 {

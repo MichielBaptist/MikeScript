@@ -152,10 +152,12 @@ func (env *Environment) validValue(name string, val EvalResult) error {
 		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a value containing an error: %s", name, val)}
 	}
 
+
+
 	// Check if we're binding a EvalResult containing 'nil' value, this should not happen.
-	if val.val == nil {
-		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a 'nil' value: %s", name, val)}
-	}
+	// if val.val == nil {
+	// 	return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a 'nil' value: %s", name, val)}
+	// }
 
 	return nil
 }

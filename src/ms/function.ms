@@ -1,16 +1,16 @@
 
-function >> test -> int {
-    int x;
+function () >> test -> int {
+    var int x;
     0 -> x;
 }
 
-function int x >> f -> float {
-    int y;
+function (int x) >> f -> float {
+    var int y;
     x -> y;
     y + 1 -> y;
 }
 
-function string s, int x >> g -> bool {
+function (string s, int x) >> g -> bool {
     0 => i;
     while i < x {
         s >> print;
@@ -18,7 +18,9 @@ function string s, int x >> g -> bool {
     }
 }
 
-
+function () >> h {
+    var int x;
+}
 
 
 // // Want:

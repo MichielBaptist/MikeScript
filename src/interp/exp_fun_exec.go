@@ -95,7 +95,7 @@ type BindingError struct {
 }
 
 func (e BindingError) Error() string {
-	return e.msg
+	return "Binding error:" + e.msg
 }
 
 

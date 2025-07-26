@@ -30,8 +30,8 @@ func (parser *MSParser) parseStatement() (ast.StmtNodeI, error){
 		return parser.parseWhile()
 	}
 	// VARIABLE DECLARATION
-	if ok, tk := parser.match(token.TypeKeywords...); ok {
-		return parser.parseVarDeclaration(tk)
+	if ok, _ := parser.match(token.VAR); ok {
+		return parser.parseVarDeclaration()
 	}
 	// CONTINUE
 	if ok, tk := parser.match(token.CONTINUE); ok {

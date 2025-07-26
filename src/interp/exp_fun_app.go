@@ -25,6 +25,10 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 		return evalErr(fmt.Sprintf("Function application is not implemented for type '%s'", fn.rt))
 	}
 
+	if fn.val == nil {
+		return evalErr("Trying to apply an undefined function")
+	}
+
 	// We can now be sure we can cast to FunctionResult
 	// This will throw an error if not possible
 	callable := fn.val.(FunctionResult)

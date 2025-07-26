@@ -72,6 +72,15 @@ func (parser *MSParser) checkType(t token.TokenType) bool {
 	return !parser.atend() && parser.peek().Type == t
 }
 
+func (parser *MSParser) lookahead(t ...token.TokenType) (bool, token.Token) {
+	for _, tt := range t {
+		if parser.checkType(tt) {
+			return true, parser.peek()
+		}
+	}
+	return false, parser.peek()
+}
+
 func (parser *MSParser) match(t ...token.TokenType) (bool, token.Token) {
 	// check if we matched the token types
 	// If we did, we advance the position
@@ -96,13 +105,6 @@ func (parser *MSParser) expect(t token.TokenType) (bool, token.Token) {
 
 func (parser *MSParser) panic() {
 	parser.pnc = true
-}
-
-func (parser *MSParser) error(msg string, line, col int) error {
-	err := ParserError{msg, line, col}
-	parser.Errors = append(parser.Errors, err)
-	parser.panic()
-	return err
 }
 
 func (parser *MSParser) synchronize() {
@@ -144,4 +146,20 @@ func (parser *MSParser) Parse(tokens []token.Token) (ast.Program, error) {
 	}
 
 	return ast, err
+}
+
+////////////////////////////////////////////////////////////
+// Common parser errors
+////////////////////////////////////////////////////////////
+
+func (parser *MSParser) error(msg string, line, col int) error {
+	err := ParserError{msg, line, col}
+	parser.Errors = append(parser.Errors, err)
+	parser.panic()
+	return err
+}
+
+func (parser *MSParser) unexpectedToken(got token.Token, expected ...token.TokenType) error {
+	msg := fmt.Sprintf("expected '%s' got '%s'", expected, got)
+	return parser.error(msg, got.Line, got.Col)
 }

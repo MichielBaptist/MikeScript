@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"mikescript/src/ast"
 	"mikescript/src/mstype"
-	"mikescript/src/token"
 )
 
 
@@ -21,9 +20,9 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 	// Get the default value for the type
 	val, err := declaredTypeDefaultValue(&node.Vartype)
 
-	if err != nil {
-		return EvalResult{err: []error{err}}
-	}
+	// if err != nil {
+	// 	return EvalResult{err: []error{err}}
+	// }
 
 	// Create var
 	res := EvalResult{rt: node.Vartype, val: val}
@@ -39,16 +38,6 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 	// The result of a variable declaration is Nothing
 	// this is not the value declared.
 	return EvalResult{rt: mstype.MS_NOTHING}
-}
-
-func declaredTypeToReturnType(tk token.Token) mstype.ResultType {
-	switch tk.Type {
-	case token.INT_TYPE:		return mstype.RT_INT
-	case token.FLOAT_TYPE:		return mstype.RT_FLOAT
-	case token.STRING_TYPE:		return mstype.RT_STRING
-	case token.BOOLEAN_TYPE:	return mstype.RT_BOOL
-	default:					return mstype.RT_INVALID
-	}
 }
 
 func declaredTypeDefaultValue(tk *mstype.MSType) (any, error) {

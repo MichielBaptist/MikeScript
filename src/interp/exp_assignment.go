@@ -8,6 +8,10 @@ func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentN
 	// Evaluate the expression
 	res := evaluator.evaluateExpression(&node.Exp)
 
+	if !res.Valid() {
+		return res
+	}
+
 	// set the variable in current scope
 	err := evaluator.env.SetVar(node.Identifier.Name.Lexeme, res)
 
@@ -33,6 +37,10 @@ func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) EvalResul
 
 func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignNodeS) EvalResult {
 	res := evaluator.evaluateExpression(&node.Exp)
+
+	if !res.Valid() {
+		return res
+	}
 
 	// set val, even if res contains error.
 	name := node.Identifier.Name.Lexeme

@@ -1,7 +1,7 @@
-int x;
-int y;
-int z;
-string s;
+var int x;
+var int y;
+var int z;
+var string s;
 
 while x < 5 {
     0 -> y;
