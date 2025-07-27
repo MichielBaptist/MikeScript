@@ -11,10 +11,6 @@ import (
 // 						Parser
 ////////////////////////////////////////////////////////////
 
-type Parser interface {
-	parse(tokens []token.Token) (ast.ExpNodeI, error)
-}
-
 type MSParser struct {
 	src    string			// source code
 	tokens []token.Token	// token list from tokenizer
@@ -24,6 +20,10 @@ type MSParser struct {
 	context []ParserConext	// nothing, loop, function...
 }
 
+////////////////////////////////////////////////////////////
+// 						helpers
+////////////////////////////////////////////////////////////
+
 func (parser *MSParser) SetSrc(src string) {
 	parser.src = src
 }
@@ -31,50 +31,7 @@ func (parser *MSParser) SetSrc(src string) {
 func (parser *MSParser) SetTokens(tokens []token.Token) {
 	parser.tokens = tokens
 }
-////////////////////////////////////////////////////////////
-// 						context
-////////////////////////////////////////////////////////////
 
-type ParserConext uint
-const (
-	LOOP ParserConext = iota
-	FUNCTION
-)
-
-func (p *MSParser) enterContext(ctx ParserConext) {
-	p.context = append(p.context, ctx)
-}
-
-func (p *MSParser) leaveContext() ParserConext{
-	// throw error if something goes wrong
-	ctx := p.context[len(p.context)-1]
-	p.context = p.context[:len(p.context)-1]
-	return ctx
-}
-
-func (p *MSParser) inContext(ctx ParserConext) bool {
-	return slices.Contains(p.context, ctx)
-}
-
-
-////////////////////////////////////////////////////////////
-// 						Errors
-////////////////////////////////////////////////////////////
-
-type ParserError struct {
-	// Represents a parser error
-	msg  string
-	line int
-	col  int
-}
-
-func (err ParserError) Error() string {
-	return fmt.Sprintf("Parsing Error: %v at line %v col %v", err.msg, err.line, err.col)
-}
-
-////////////////////////////////////////////////////////////
-// 						helpers
-////////////////////////////////////////////////////////////
 
 func (parser *MSParser) advance() token.Token {
 	// Peeks current token and advances next position.
@@ -100,25 +57,20 @@ func (parser *MSParser) checkType(t token.TokenType) bool {
 }
 
 func (parser *MSParser) lookahead(t ...token.TokenType) (bool, token.Token) {
-	for _, tt := range t {
-		if parser.checkType(tt) {
+	if slices.ContainsFunc(t, parser.checkType) {
 			return true, parser.peek()
 		}
-	}
 	return false, parser.peek()
 }
 
 func (parser *MSParser) match(t ...token.TokenType) (bool, token.Token) {
-	// check if we matched the token types
-	// If we did, we advance the position
-	for _, tt := range t {
-		if parser.checkType(tt) {
+	
+	// Only advance if we match a type
+	if slices.ContainsFunc(t, parser.checkType) {
 			return true, parser.advance()
 		}
-	}
 
-	// Did not match any of the tokens
-	// return false and an empty token
+	// No match
 	return false, parser.peek()
 }
 
@@ -126,9 +78,43 @@ func (parser *MSParser) expect(t token.TokenType) (bool, token.Token) {
 	return parser.match(t)
 }
 
+func (p *MSParser) enterContext(ctx ParserConext) {
+	p.context = append(p.context, ctx)
+}
+
+func (p *MSParser) leaveContext() ParserConext{
+	// throw error if something goes wrong
+	ctx := p.context[len(p.context)-1]
+	p.context = p.context[:len(p.context)-1]
+	return ctx
+}
+
+func (p *MSParser) inContext(ctx ParserConext) bool {
+	// LOOP context: must be the last context seen
+	// FUNCTION context: must be in the context stack (contains)
+	switch ctx {
+	case LOOP:		return p.context[len(p.context)-1] == LOOP
+	case FUNCTION:	return slices.Contains(p.context, ctx)
+	default: 		_ = []int{}[0]
+	}
+	return slices.Contains(p.context, ctx)
+}
+
 ////////////////////////////////////////////////////////////
 // 						Error handling
 ////////////////////////////////////////////////////////////
+
+func (parser *MSParser) error(msg string, line, col int) error {
+	err := ParserError{msg, line, col}
+	parser.Errors = append(parser.Errors, err)
+	parser.panic()
+	return err
+}
+
+func (parser *MSParser) unexpectedToken(got token.Token, expected ...token.TokenType) error {
+	msg := fmt.Sprintf("expected '%s' got '%s'", expected, got)
+	return parser.error(msg, got.Line, got.Col)
+}
 
 func (parser *MSParser) panic() {
 	parser.pnc = true
@@ -173,20 +159,4 @@ func (parser *MSParser) Parse(tokens []token.Token) (ast.Program, error) {
 	}
 
 	return ast, err
-}
-
-////////////////////////////////////////////////////////////
-// Common parser errors
-////////////////////////////////////////////////////////////
-
-func (parser *MSParser) error(msg string, line, col int) error {
-	err := ParserError{msg, line, col}
-	parser.Errors = append(parser.Errors, err)
-	parser.panic()
-	return err
-}
-
-func (parser *MSParser) unexpectedToken(got token.Token, expected ...token.TokenType) error {
-	msg := fmt.Sprintf("expected '%s' got '%s'", expected, got)
-	return parser.error(msg, got.Line, got.Col)
 }

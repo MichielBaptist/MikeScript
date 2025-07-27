@@ -6,11 +6,38 @@ import (
 	"io"
 	"log"
 	interp "mikescript/src/interp"
+	"mikescript/src/mstype"
 	parser "mikescript/src/parser"
 	scanner "mikescript/src/scanner"
 	"os"
 	"strings"
 )
+
+type colorLogger struct{
+	c color
+	enable bool
+}
+
+func (l *colorLogger) log(s any) {
+	if l.enable {
+		fmt.Println(colorText(fmt.Sprintf("%s", s), l.c))
+	}
+}
+
+type color string
+const RESET color = "\033[0m"
+const RED color = "\033[31m"
+const GREEN color = "\033[32m"
+const YELLOW color = "\033[33m"
+const BLUE color = "\033[34m"
+const MAGENTA color = "\033[35m"
+const CYAN color = "\033[36m"
+const GRAY color = "\033[37m"
+const WHITE color= "\033[97m"
+
+func colorText(txt string, color color) string {
+	return string(color) + txt + string(RESET)
+}
 
 // Repl commands
 type Command uint8
@@ -40,26 +67,33 @@ func (r MSRunner) log(input any) {
 
 func (r MSRunner) run(input string) int {
 
+	// loggers
+	scannerlog := colorLogger{c: GRAY, enable: false}
+	parserlog := colorLogger{c: GRAY, enable: false}
+	evallog := colorLogger{c: BLUE, enable: false}
+	errorlog := colorLogger{c: RED, enable: true}
+
 	//////////////////////////////////////////////////////
-	r.log("--------------- Scanner ---------------------")
+	scannerlog.log("--------------- Scanner ---------------------")
 
 	// call scanner
 	tokens := r.scanner.Scan(input)
 
 	// print the tokens
-	r.log(fmt.Sprintf("Tokens (%v): %v", len(tokens), tokens))
+	scannerlog.log(fmt.Sprintf("Tokens (%v): %v", len(tokens), tokens))
 
 	if len(r.scanner.Errors) > 0 {
-		fmt.Printf("Scanner errors (%v): \n", len(r.scanner.Errors))
+		errorlog.log(fmt.Sprintf("Scanner errors (%v): \n", len(r.scanner.Errors)))
 		for i, err := range r.scanner.Errors {
-			fmt.Printf("[%v]: %v\n", i, err)
+			errorlog.log(fmt.Sprintf("[%v]: %v\n", i, err))
 		}
 		fmt.Println("")
 		return 1
 	}
 
 	//////////////////////////////////////////////////////
-	r.log("---------------- Parser ---------------------")
+	
+	parserlog.log("---------------- Parser ---------------------")
 
 	// set the source code and tokens
 	r.parser.SetSrc(input)
@@ -67,30 +101,33 @@ func (r MSRunner) run(input string) int {
 
 	ast, _ := r.parser.Parse(tokens)
 
-	r.log("AST:")
-	r.log(ast)
+	parserlog.log("AST:")
+	parserlog.log(ast)
 
 	if len(r.parser.Errors) > 0 {
-		fmt.Println("Parser errors:")
+		errorlog.log("Parser errors:")
 		for i, err := range r.parser.Errors {
-			fmt.Printf("[%v]: %v\n", i, err)
+			errorlog.log(fmt.Sprintf("[%v]: %v", i, err))
 		}
 		fmt.Println("")
 		return 1
 	}
 
 	//////////////////////////////////////////////////////
-	r.log("--------------- Evaluator ---------------------")
+	evallog.log("--------------- Evaluator ---------------------")
 	eval := r.evaluator.Eval(ast)
 
 	// print the current env
-	r.log("Environment:")
-	if r.verbose {
-		r.evaluator.PrintEnv()
-	}
+	evallog.log("Environment:")
+	// if r.verbose {
+	// 	r.evaluator.PrintEnv()
+	// }
 
 	// Print the result
-	fmt.Println(&eval)
+	if !eval.IsType(&mstype.MS_NOTHING) {
+		fmt.Println(&eval)
+	}
+	
 
 	return 0
 }
@@ -109,8 +146,6 @@ func (r *MSRunner) isExit(s string) bool {
 func (r *MSRunner) isLoad(s string) (bool, string) {
 	strs := strings.Split(s, " ")
 
-	fmt.Println(strs)
-
 	// Only one string, so not a command
 	if len(strs) == 0 {
 		return false, s
@@ -125,7 +160,7 @@ func (r *MSRunner) isLoad(s string) (bool, string) {
 }
 
 func (r *MSRunner) prompt() (Command, string) {
-	fmt.Print("ms> ")
+	fmt.Print(colorText("ms> ", RED))
 	ok := r.prompter.Scan()
 
 	// something went wrong??
@@ -166,7 +201,7 @@ func (r *MSRunner) loadCommand(txt string) {
 
 		// Something went wrong with reading the file.
 		if err != nil {
-			log.Println("Failed to load MikeScript file: ", p)
+			log.Println(colorText("Failed to load MikeScript file: ", RED), p)
 			continue
 		}
 
@@ -196,7 +231,7 @@ func readMSFile(path string) (string, error) {
 	handle, err := os.Open(path)
 
 	if err != nil {
-		log.Println("Could not load file:", path)
+		log.Println(colorText("Could not load file:", RED), path)
 		return "", err
 	}
 
