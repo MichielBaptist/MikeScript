@@ -7,7 +7,7 @@ import (
 )
 
 
-func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS) EvalResult {
+func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS) (MSVal, error) {
 
 	// // Map the Vartype token to returntype
 	// var rt ResultType = declaredTypeToReturnType(node.Vartype)
@@ -17,48 +17,57 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 	// 	return evalErr(fmt.Sprintf("Tried to initialize an unknown type '%v'", node.Vartype.Lexeme))
 	// }
 
+	println("qslkdqklsjdlkqsj")
+
 	// Get the default value for the type
-	val, _ := declaredTypeDefaultValue(&node.Vartype)
+	val := declaredTypeDefaultValue(&node.Vartype, &node.Identifier)
 
-	// if err != nil {
-	// 	return EvalResult{err: []error{err}}
-	// }
-
-	// Create var
-	res := EvalResult{Rt: node.Vartype, Val: val}
-	name := node.Identifier.Name.Lexeme
-
-	// Declare variable in env
-	err := evaluator.env.NewVar(name, res, node.Vartype)
-
-	if err != nil {
-		return EvalResult{Err: []error{err}}
+	println("qslkdqklsjdlkqsj")
+	
+	if val == nil {
+		_ = []int{}[0]
 	}
 
-	// The result of a variable declaration is Nothing
-	// this is not the value declared.
-	return EvalResult{Rt: mstype.MS_NOTHING}
+	name := node.Identifier.Name.Lexeme
+
+	fmt.Println("Setting variable...")
+
+	// Declare variable in env
+	err := evaluator.env.NewVar(name, val)
+
+	// Done
+	return MSNothing{}, err
 }
 
-func declaredTypeDefaultValue(tk *mstype.MSType) (any, error) {
+func declaredTypeDefaultValue(tk *mstype.MSType, name *ast.VariableExpNodeS) MSVal {
 	// 3 cases:
 	// 1. simple type --> direct map possible
 	// 2. composite (undeclarable)
 	// 3. function (undeclarable)
 
 	switch t := (*tk).(type){
-	case *mstype.MSSimpleTypeS: return resultTypeDefaultValue(t.Rt), nil
-	default:					return nil, &mstype.MSTypeError{Msg: fmt.Sprintf("Type '%s' has no default value.", t.String())}
+	case *mstype.MSSimpleTypeS: 	return resultTypeDefaultValue(t)
+	case *mstype.MSCompositeTypeS:	return compositeTypeDefaultValue(t, name)
+	case *mstype.MSOperationTypeS:	return MSFunctionFromType(t, name)
+	default:						fmt.Printf("Found unknown type: '%s'\n", t)
 	}
-
+	return nil
 }
 
-func resultTypeDefaultValue(rt mstype.ResultType) any {
-	switch rt {
-	case mstype.RT_INT:		return 0
-	case mstype.RT_FLOAT:	return 0.0
-	case mstype.RT_STRING:	return ""
-	case mstype.RT_BOOL:	return false
+func resultTypeDefaultValue(rt *mstype.MSSimpleTypeS) MSVal {
+	switch rt.Rt {
+	case mstype.RT_INT:		return MSInt{0}
+	case mstype.RT_FLOAT:	return MSFloat{0.0}
+	case mstype.RT_STRING:	return MSString{""}
+	case mstype.RT_BOOL:	return MSBool{false}
 	default:				return nil
 	}
+}
+
+func compositeTypeDefaultValue(ct *mstype.MSCompositeTypeS, name *ast.VariableExpNodeS) MSVal {
+	vals := make([]MSVal, len(ct.Types))
+	for i, t := range ct.Types {
+		vals[i] = declaredTypeDefaultValue(&t, name)
+	}
+	return MSTuple{Values: vals}
 }

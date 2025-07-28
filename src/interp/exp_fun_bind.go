@@ -6,12 +6,20 @@ import (
 	"mikescript/src/mstype"
 )
 
-
 type ParamBindingS struct {
 	Type mstype.MSType				// expected type of param
 	Name ast.VariableExpNodeS 		// Name
-	Value *EvalResult				// Can be nil when unbound
+	Value *MSVal					// Can be nil when unbound
 }
+
+
+func typeToBinding(t mstype.MSType) ParamBindingS {
+	return ParamBindingS{
+		Type: t,
+		Value: nil,
+	}
+}
+
 
 func paramToBinding(p ast.FuncParamS) ParamBindingS {
 	// Converts a Function parameter to a binding
@@ -34,7 +42,7 @@ func (b *ParamBindingS) copy() ParamBindingS {
 	}
 }
 
-func (b *ParamBindingS) bind(val EvalResult) (ParamBindingS, error) {
+func (b *ParamBindingS) bind(val MSVal) (ParamBindingS, error) {
 
 	// Check if param is already bound, we currently don't allow
 	// re-binding of parameters; though it could be interesting???
@@ -45,7 +53,11 @@ func (b *ParamBindingS) bind(val EvalResult) (ParamBindingS, error) {
 
 	// Validate correct types
 	if !b.ValidBindingEvalResult(&val) {
-		msg := fmt.Sprintf("Cannot bind '%s' of type '%s' to parameter '%s' of type '%s'", val.String(), val.Rt.String(), b.Name.String(), b.Type.String())
+		vals := val.String()
+		typs := val.Type().String()
+		pname := b.Name.String()
+		ptype := b.Type.String()
+		msg := fmt.Sprintf("Cannot bind '%s' of type '%s' to parameter '%s' of type '%s'", vals, typs, pname, ptype)
 		return *b, BindingError{msg: msg}
 	}
 	
@@ -65,14 +77,16 @@ func (b *ParamBindingS) String() string {
 	if b.Value == nil {
 		vals = "_"
 	} else {
-		vals = b.Value.String()
+		vals = (*b.Value).String()
 	}
 
 	return fmt.Sprintf("%s %s = %s", b.Type.String(), b.Name.String(), vals)
 }
 
-func (b *ParamBindingS) ValidBindingEvalResult(t *EvalResult) bool {
-	return b.Type.Eq(&t.Rt)
+func (b *ParamBindingS) ValidBindingEvalResult(t *MSVal) bool {
+	expectedType := b.Type
+	receivedType := (*t).Type()
+	return expectedType.Eq(&receivedType)
 }
 
 // -----------------------------------------------------------

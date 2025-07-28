@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	interp "mikescript/src/interp"
-	"mikescript/src/mstype"
 	parser "mikescript/src/parser"
 	scanner "mikescript/src/scanner"
 	"os"
@@ -115,18 +114,20 @@ func (r MSRunner) run(input string) int {
 
 	//////////////////////////////////////////////////////
 	evallog.log("--------------- Evaluator ---------------------")
-	eval := r.evaluator.Eval(ast)
+	eval, err := r.evaluator.Eval(ast)
+
+	if err != nil {
+		errorlog.log(err)
+	}
 
 	// print the current env
 	evallog.log("Environment:")
-	// if r.verbose {
-	// 	r.evaluator.PrintEnv()
-	// }
+	if r.verbose {
+		r.evaluator.PrintEnv()
+	}
 
 	// Print the result
-	if !eval.IsType(&mstype.MS_NOTHING) {
-		fmt.Println(&eval)
-	}
+	fmt.Println(eval)
 	
 
 	return 0

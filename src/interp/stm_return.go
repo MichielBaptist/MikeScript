@@ -2,28 +2,25 @@ package interp
 
 import (
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 )
 
-func (evaluator *MSEvaluator) executeReturnStatement(node *ast.ReturnNodeS) EvalResult {
+func (evaluator *MSEvaluator) executeReturnStatement(node *ast.ReturnNodeS) (MSVal, error) {
 	
 	// Evaluate return values (if exists)
-	var res EvalResult
+	var res MSVal
+	var err error
+
 	if node.HasReturnValue() {
-		res = evaluator.evaluateExpression(&node.Node)
+		res, err = evaluator.evaluateExpression(&node.Node)
 	} else {
-		res = EvalResult{Rt: mstype.MS_NOTHING}
+		res = MSNothing{}
 	}
 
 	// Check for errors in res
-	if !res.Valid() {
-		return res
+	if err != nil {
+		return MSNothing{}, err
 	}
 
 	// wrap the result in a return EvalResult
-	return EvalResult{
-		Rt: mstype.MS_RETURN,
-		Val: res,
-		Err: nil,
-	}
+	return MSReturn{Val: res}, nil
 }

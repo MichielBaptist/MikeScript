@@ -2,11 +2,10 @@ package interp
 
 import (
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 )
 
 
-func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) EvalResult {
+func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) (MSVal, error) {
 	
 	// When declaring a function, all it does is:
 	// 1. Create an EvalResult containing the function callable function object
@@ -16,23 +15,16 @@ func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) 
 	//callable := MSFunction{decl: node}
 	callable := NewMSFunction(node)
 
-	// Create EvalResult, NOTE: we provide a pointer to MSFunction
-	// not the function itself!!
-	evalres := EvalResult{
-		Rt: node.GetFuncType(),
-		Val: callable,
-	}
-
 	// Add EvalResult to current scope
 	fname := node.Fname.Name.Lexeme
-	err := evaluator.env.NewVar(fname, evalres, node.GetFuncType())
+	err := evaluator.env.NewVar(fname, callable)
 
 	// Throw env error
 	if err != nil {
-		return EvalResult{Err: []error{err}}
+		return MSNothing{}, err
 	}
 
 	// The result of a function declartion is Nothing
-	return EvalResult{Rt: mstype.MS_NOTHING}
+	return MSNothing{}, nil
 
 }

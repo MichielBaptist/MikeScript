@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"mikescript/src/ast"
 	"mikescript/src/mstype"
-	"strings"
 )
 
-///////////////////////////////////////////////////////////////
-// User defined function
-///////////////////////////////////////////////////////////////
+
 
 func NewMSFunction(decl *ast.FuncDeclNodeS) *MSFunction {
 
@@ -19,24 +16,40 @@ func NewMSFunction(decl *ast.FuncDeclNodeS) *MSFunction {
 		bindings[i] = paramToBinding(p)
 	}
 
-	return &MSFunction{decl: decl, unBoundParams: bindings}
+	return &MSFunction{
+		fbody: decl.Body,
+		unBoundParams: bindings,
+		returnType: decl.Rt,
+		name: &decl.Fname,
+	}
 
 }
 
-type MSFunction struct {
-	decl *ast.FuncDeclNodeS 			// How was the function declared
-	boundParams []ParamBindingS			// bound params
-	unBoundParams []ParamBindingS		// unbound
+func MSFunctionFromType(t *mstype.MSOperationTypeS, name *ast.VariableExpNodeS) *MSFunction {
+
+	// Create the bindings for the function
+	bindings := make([]ParamBindingS, len(t.Left))
+	for i, t := range t.Left {
+		bindings[i] = typeToBinding(t)
+	}
+
+	return &MSFunction{
+		name: name,					// from var declaration
+		fbody: nil,					// no body since used in "var (... -> ...) f;"
+		unBoundParams: bindings,
+		returnType: t.Right,
+	}
 }
 
 // -----------------------------------------------------------
 // Implements FunctionResult
 // -----------------------------------------------------------
 
-func (f *MSFunction) Call(ev *MSEvaluator) EvalResult {
+func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 
 	if !f.initialized() {
-		return evalErr(fmt.Sprintf("Cannot call uninitialized function '%s'", f.fname()))
+		err := EvalError{fmt.Sprintf("Cannot call uninitialized function '%s'", f.fname())}
+		return MSNothing{}, &err
 	}
 
 	// Create a new environment with globals as base scope.
@@ -44,123 +57,71 @@ func (f *MSFunction) Call(ev *MSEvaluator) EvalResult {
 
 	// push all bindings in the env
 	for _, bind := range f.boundParams {
-		env.NewVar(bind.strName(), *bind.Value, bind.Type)
+		env.NewVar(bind.strName(), *bind.Value)
 	}
 
 	// Call the body using env
-	res := ev.executeBlock(f.body(), env)
+	res, err := ev.executeBlock(f.fbody, env)
 
 	// Check if the block executed properly, if not,
 	// we cannot expect an EvalResult with RT_RETURN
-	if !res.Valid() {
-		return res
+	if err != nil {
+		return MSNothing{}, err
 	}
 
-	if res.Val == nil {
-		return res
-	}
-
-	// Should panic when not actually an EvalResult
-	returnVal := res.Val.(EvalResult)
+	// Check if we can cast to MSReturn
+	returnVal := res.(MSReturn)
 
 	// Type check the return value against the
 	// declared return type.
-	if !returnVal.IsType(f.GetOutputType()) {
-		msg := fmt.Sprintf("Tried returning '%s' of type '%s', expected type '%s'", returnVal, returnVal.Rt, *f.GetOutputType())
-		return evalErr(msg)
+	if !returnVal.Type().Eq(f.GetOutputType()) {
+		msg := fmt.Sprintf("Tried returning '%s' of type '%s', expected type '%s'", returnVal, returnVal.Type(), *f.GetOutputType())
+		return MSNothing{}, &EvalError{msg}
 	}
 
-	return returnVal
+	return returnVal.Val, nil
 }
 
-func (f *MSFunction) Arity() int {
+func (f MSFunction) Arity() int {
 	return len(f.unBoundParams)
 }
 
-func (f *MSFunction) Bind(args []EvalResult) EvalResult {
+func (f MSFunction) Bind(args []MSVal) (MSVal, error) {
+
+	if !f.initialized() {
+		return MSNothing{}, BindingError{msg: fmt.Sprintf("Cannot bind uninitialized function '%s'", f.fname())}
+	}
 
 	// Add all the args to the function bindings
 	newf, err := f.bindArgs(args)
 
 	// Binding error
 	if err != nil {
-		return EvalResult{Err: []error{err}}
+		return MSNothing{}, err
 	}
 
-	return EvalResult{Rt: newf.GetFuncType(), Val: newf}
+	return *newf, nil
 }
 
-// -----------------------------------------------------------
-// Implements Stringer
-// -----------------------------------------------------------
-
-func (f *MSFunction) String() string {
-
-	ps := []string{}
-	for _, bp := range f.boundParams {
-		ps = append(ps, bp.String())
-	}
-	for _, up := range f.unBoundParams {
-		ps = append(ps, up.String())
-	}
-
-	// check if body is nil
-	var bodys string
-	if f.initialized() {
-		bodys = "{...}"
-	} else {
-		bodys = "{}"
-	}
-
-	strs := []string{}
-
-	// Join strings
-	pss := strings.Join(ps, ", ")
-	if pss != "" {
-		strs = append(strs, pss)
-	}
-	strs = append(strs, ">>", f.fname(), "->", f.decl.Rt.String(), bodys)
-	
-	// bindings >> fname -> rt
-	return strings.Join(strs, " ")
-
-}
 
 // -----------------------------------------------------------
 // helpers
 // -----------------------------------------------------------
 
-func (f *MSFunction) GetFuncType() *mstype.MSOperationTypeS {
-	// Get type list of unbound variables
-	typelist := []mstype.MSType{}
-	for _, binding := range f.unBoundParams {
-		typelist = append(typelist, binding.Type)
-	}
-	return &mstype.MSOperationTypeS{
-		Left: typelist,
-		Right: f.decl.Rt,
-	}
-}
-
 func (f *MSFunction) GetOutputType() *mstype.MSType{
-	return &f.decl.Rt
+	return &f.returnType
 }
 
 func (f *MSFunction) initialized() bool {
-	return f.body() != nil
-}
-
-func (f *MSFunction) body() *ast.BlockNodeS {
-	return f.decl.Body
+	return f.fbody != nil
 }
 
 func (f *MSFunction) fname() string {
-	// Name of function from declaration
-	return f.decl.Fname.String()
+	return f.name.String()
 }
 
 
-func (f *MSFunction) checkArity(args []EvalResult) error {
+func (f *MSFunction) checkArity(args []MSVal) error {
 
 	// info
 	nargs := len(args)
@@ -195,7 +156,7 @@ func (f *MSFunction) copyUnBound() []ParamBindingS {
 }
 
 
-func (f *MSFunction) bindArgs(args []EvalResult) (*MSFunction, error) {
+func (f *MSFunction) bindArgs(args []MSVal) (*MSFunction, error) {
 
 	// check arity, if we don't have enough space
 	// in unbounded parameters, we can't bind all args.
@@ -232,9 +193,11 @@ func (f *MSFunction) bindArgs(args []EvalResult) (*MSFunction, error) {
 
 	// Creates a new MSFunction struct containing the new bindings
 	fnew := MSFunction{
-		decl: f.decl,
+		fbody: f.fbody,
 		boundParams: newBound,
 		unBoundParams: newUnbound,
+		returnType: f.returnType,
+		name: f.name,
 	}
 
 	return &fnew, nil

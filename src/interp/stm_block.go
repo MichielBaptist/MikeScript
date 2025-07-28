@@ -5,7 +5,7 @@ import (
 )
 
 
-func (evaluator *MSEvaluator) executeBlock(node *ast.BlockNodeS, env *Environment) EvalResult {
+func (evaluator *MSEvaluator) executeBlock(node *ast.BlockNodeS, env *Environment) (MSVal, error) {
 
 	// Save current environment
 	previous := evaluator.env

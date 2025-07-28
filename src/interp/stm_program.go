@@ -2,28 +2,29 @@ package interp
 
 import (
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 )
 
-func (evaluator *MSEvaluator) executeStatements(node *ast.Program) EvalResult {
+func (evaluator *MSEvaluator) executeStatements(node *ast.Program) (MSVal, error) {
+
+	var res MSVal
+	var err error
 
 	for _, stmt := range node.Statements {
 		
-		res := evaluator.executeStatement(&stmt)
+		res, err = evaluator.executeStatement(&stmt)
 
 		// On error, break a
-		if !res.Valid() {
-			return evaluator.statementError(res)
+		if err != nil {
+			return MSNothing{}, err
 		}
 
-		// Break out the program on 'break', 'continue' and 'return'
-		if 	res.IsType(&mstype.MS_BREAK) || 
-			res.IsType(&mstype.MS_CONTINUE)|| 
-			res.IsType(&mstype.MS_RETURN){
-			return res
+		switch res.(type){
+		case MSReturn:		return res, nil
+		case MSBreak:		return res, nil
+		case MSContinue:	return res, nil
 		}
 	}
 
 	// Ignore result of the last statement
-	return EvalResult{Rt: mstype.MS_NOTHING}
+	return res, err
 }

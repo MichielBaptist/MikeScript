@@ -2,7 +2,6 @@ package interp
 
 import (
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -24,12 +23,12 @@ func NewMSEvaluator() *MSEvaluator {
 	glb := env
 
 	// Add builtins to glb
-	glb.NewVar("print", MSBuiltinPrint(), &mstype.MSOperationTypeS{Right: mstype.MS_NOTHING})
+	glb.NewVar("print", MSBuiltinPrint())
 
 	return &MSEvaluator{env: env, glb: glb}
 }
 
-func (evaluator *MSEvaluator) Eval(ast ast.Program) EvalResult {
+func (evaluator *MSEvaluator) Eval(ast ast.Program) (MSVal, error) {
 
 	// set the ast
 	evaluator.ast = ast
@@ -46,21 +45,3 @@ func (evaluator *MSEvaluator) Errors() []error {
 func (evaluator *MSEvaluator) PrintEnv() {
 	evaluator.env.printEnv()
 }
-
-func (evaluator *MSEvaluator) statementError(e EvalResult) EvalResult{
-	evaluator.err = append(evaluator.err, e.Err...)
-	return e
-}
-
-type EvalError struct {
-	message string
-}
-
-func (ee *EvalError) Error() string {
-	return "Evaluation error: " + ee.message
-}
-
-func evalErr(msg string) EvalResult {
-	return EvalResult{Err: []error{&EvalError{msg}}}
-}
-

@@ -3,46 +3,42 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 	"mikescript/src/token"
 	"strconv"
 )
 
-func (evaluator *MSEvaluator) evaluateLiteralExpression(node *ast.LiteralExpNodeS) EvalResult {
+func (evaluator *MSEvaluator) evaluateLiteralExpression(node *ast.LiteralExpNodeS) (MSVal, error) {
 	switch node.Tk.Type {
 	case token.NUMBER_INT:		return evalIntLiteral(node)
 	case token.NUMBER_FLOAT:	return evalFloatLiteral(node)
-	case token.STRING:			return evalStringLiteral(node)
-	case token.TRUE:			return EvalResult{Rt: mstype.MS_BOOL, Val: true}
-	case token.FALSE:			return EvalResult{Rt: mstype.MS_BOOL, Val: false}
-	case token.IDENTIFIER:		return evalErr(fmt.Sprintf("Trying to evaluate identifier '%v' as a literal.", node.Tk.Lexeme))
-	default:					return evalErr(fmt.Sprintf("Literal type '%v' is not defined.", node.Tk.Type))
+	case token.STRING:			return MSString{Val: node.Tk.Lexeme}, nil
+	case token.TRUE:			return MSBool{Val: true}, nil
+	case token.FALSE:			return MSBool{Val: false}, nil
+	case token.IDENTIFIER:		return MSNothing{}, &EvalError{fmt.Sprintf("Trying to evaluate identifier '%v' as a literal.", node.Tk.Lexeme)}
+	default:					return MSNothing{}, &EvalError{fmt.Sprintf("Literal type '%v' is not defined.", node.Tk.Type)}
 	}
 }
 
-func evalIntLiteral(node *ast.LiteralExpNodeS) EvalResult {
+func evalIntLiteral(node *ast.LiteralExpNodeS) (MSVal, error) {
 	// convert the lexeme to an int
 	val, err := strconv.Atoi(node.Tk.Lexeme)
 
+	// Should never happen if parser works correctly.
 	if err != nil {
-		return evalErr(fmt.Sprintf("Could not convert '%v' to int.", node.Tk.Lexeme))
+		return MSNothing{}, &EvalError{fmt.Sprintf("Could not convert '%v' to 'int'", node.Tk.Lexeme)}
 	}
-
-	return EvalResult{Rt: mstype.MS_INT, Val: val}
+	
+	return MSInt{Val: val}, nil
 }
 
-func evalFloatLiteral(node *ast.LiteralExpNodeS) EvalResult {
+func evalFloatLiteral(node *ast.LiteralExpNodeS) (MSVal, error) {
 	// convert the lexeme to a float
 	val, err := strconv.ParseFloat(node.Tk.Lexeme, 64)
 
 	if err != nil {
-		return evalErr(fmt.Sprintf("Could not convert '%v' to float64.", node.Tk.Lexeme))
+		return MSNothing{}, &EvalError{fmt.Sprintf("Could not convert '%v' to 'int'", node.Tk.Lexeme)}
 	}
 
-	return EvalResult{Rt: mstype.MS_FLOAT, Val: val}
-}
-
-func evalStringLiteral(node *ast.LiteralExpNodeS) EvalResult {
-	return EvalResult{Rt: mstype.MS_STRING, Val: node.Tk.Lexeme}
+	return MSFloat{Val: val}, nil
 }
 

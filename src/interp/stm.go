@@ -3,11 +3,10 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 )
 
 
-func (evaluator *MSEvaluator) executeStatement(node *ast.StmtNodeI) EvalResult {
+func (evaluator *MSEvaluator) executeStatement(node *ast.StmtNodeI) (MSVal, error) {
 	switch node := (*node).(type) {
 	case ast.Program:			return evaluator.executeStatements(&node)
 	case ast.VarDeclNodeS:		return evaluator.executeDeclarationStatement(&node)
@@ -15,15 +14,15 @@ func (evaluator *MSEvaluator) executeStatement(node *ast.StmtNodeI) EvalResult {
 	case ast.BlockNodeS:		return evaluator.executeBlock(&node, NewEnvironment(evaluator.env))
 	case ast.IfNodeS:			return evaluator.executeIfstatement(&node)
 	case ast.WhileNodeS:		return evaluator.executeWhileStatement(&node)
-	case ast.ContinueNodeS:		return EvalResult{Rt: mstype.MS_CONTINUE}
-	case ast.BreakNodeS:		return EvalResult{Rt: mstype.MS_BREAK}
+	case ast.ContinueNodeS:		return MSContinue{}, nil
+	case ast.BreakNodeS:		return MSBreak{}, nil
 	case ast.ExStmtNodeS:		return evaluator.executeExpressionStatement(&node)
 	case ast.ReturnNodeS: 		return evaluator.executeReturnStatement(&node)
-	default:					return evalErr(fmt.Sprintf("Unknown statement type: %v", node))
+	default:					return MSNothing{}, &EvalError{fmt.Sprintf("Unknown statement type: %v", node)}
 	}
 }
 
-func (evaluator *MSEvaluator) executeExpressionStatement(node *ast.ExStmtNodeS) EvalResult {
+func (evaluator *MSEvaluator) executeExpressionStatement(node *ast.ExStmtNodeS) (MSVal, error) {
 	return evaluator.evaluateExpression(&node.Ex)
 }
 

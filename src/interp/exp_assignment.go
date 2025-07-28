@@ -5,55 +5,56 @@ import (
 )
 
 
-func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentNodeS) EvalResult {
+func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentNodeS) (MSVal, error) {
 	
 	// Evaluate the expression
-	res := evaluator.evaluateExpression(&node.Exp)
+	res, err := evaluator.evaluateExpression(&node.Exp)
 
-	if !res.Valid() {
-		return res
+	if err != nil {
+		return MSNothing{}, err
 	}
 
 	// set the variable in current scope
-	err := evaluator.env.SetVar(node.Identifier.Name.Lexeme, res)
+	name := node.Identifier.Name.Lexeme
+	err = evaluator.env.SetVar(name, res)
 
 	if err != nil {
-		return EvalResult{Err: []error{err}}
+		return MSNothing{}, err
 	}
 
-	return EvalResult{Rt: res.Rt, Val: res.Val}
+	return res, nil
 }
 
-func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) EvalResult {
+func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) (MSVal, error) {
 
 	// Get the value from the environment
 	val, err := evaluator.env.GetVar(node.Name.Lexeme)
 
 	if err != nil {
-		return EvalResult{Err: []error{err}}
+		return MSNothing{}, err
 	}
 
-	return val
+	return val, nil
 	
 }
 
-func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignNodeS) EvalResult {
+func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignNodeS) (MSVal, error) {
 	
 	
-	res := evaluator.evaluateExpression(&node.Exp)
+	res, err := evaluator.evaluateExpression(&node.Exp)
 
-	if !res.Valid() {
-		return res
+	if err != nil {
+		return MSNothing{}, err
 	}
 
 	// set val, even if res contains error.
 	name := node.Identifier.Name.Lexeme
-	err := evaluator.env.NewVar(name, res, res.Rt)
+	err = evaluator.env.NewVar(name, res)
 
 	if err != nil {
 		// Add errors to res errors
-		return EvalResult{Err: append(res.Err, err)}
+		return MSNothing{}, err
 	}
 
-	return res
+	return res, nil
 }

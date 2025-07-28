@@ -5,7 +5,7 @@ import (
 	"mikescript/src/ast"
 )
 
-func (evaluator *MSEvaluator) evaluateExpression(node *ast.ExpNodeI) EvalResult {
+func (evaluator *MSEvaluator) evaluateExpression(node *ast.ExpNodeI) (MSVal, error) {
 	switch node := (*node).(type) {
 	case ast.BinaryExpNodeS:	return evaluator.evaluateBinaryExpression(&node)
 	case ast.UnaryExpNodeS:		return evaluator.evaluateUnaryExpression(&node)
@@ -17,6 +17,6 @@ func (evaluator *MSEvaluator) evaluateExpression(node *ast.ExpNodeI) EvalResult 
 	case ast.FuncCallNodeS:		return evaluator.evaluateFunctionCall(&node)
 	case ast.VariableExpNodeS:	return evaluator.evalVariable(&node)
 	case ast.LogicalExpNodeS:	return evaluator.evaluateLogicalExpression(&node)
-	default:					return evalErr(fmt.Sprintf("Unknown expression type: %v", node))
+	default:					return MSNothing{}, &EvalError{fmt.Sprintf("Unknown expression type: %v", node)}
 	}
 }

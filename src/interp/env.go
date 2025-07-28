@@ -22,22 +22,23 @@ func stringCut(s string, n int) string {
 }
 
 type EnvRow struct {
-	name 	string				// Name of the variable
-	value 	*EvalResult			// Value of the variable (always an EvalResult)
-	rtype 	mstype.MSType		// Type of the variable (fixed, this can never change)
+	name 	string			// Name of the variable
+	value 	*MSVal	// Value of the variable (always an EvalResult)
 }
 
 func (er *EnvRow) String() string {
 	if er == nil {
 		return "ERROR"
 	}
-	return fmt.Sprintf("%v %v = %v", er.rtype, er.name, er.value)
+	return fmt.Sprintf("%v %v = %v", (*er.value).Type().String(), er.name, er.value)
 }
 
 func (er *EnvRow) rowRepr() string {
-	c1 := stringCut(er.rtype.String(), typecol_size)
+	val := *er.value
+
+	c1 := stringCut(val.Type().String(), typecol_size)
 	c2 := stringCut(er.name, namecol_size)
-	c3 := stringCut(er.value.String(), defcol_size)
+	c3 := stringCut(val.String(), defcol_size)
 	return fmt.Sprintf("| %-*v | %-*v | %-*v |", typecol_size, c1, namecol_size, c2, defcol_size, c3)
 }
 
@@ -73,11 +74,11 @@ func NewEnvironment(enclosing *Environment) *Environment {
 // Environment methods
 ////////////////////////////////////////
 
-func (env *Environment) GetVar(name string) (EvalResult, error) {
+func (env *Environment) GetVar(name string) (MSVal, error) {
 
 	// Checks at evaluation time if the variable is defined
 	if env.containsVar(name) {
-		return *(env.variables[name].value), nil
+		return *env.variables[name].value, nil
 	}
 
 	// Not found in this scope, check enclosing scope
@@ -86,40 +87,23 @@ func (env *Environment) GetVar(name string) (EvalResult, error) {
 	}
 
 	// No enclosing scope, return error
-	return EvalResult{}, &EnvironmentError{fmt.Sprintf("Variable '%v' is not defined", name)}
+	return MSNothing{}, &EnvironmentError{fmt.Sprintf("Variable '%v' is not defined", name)}
 }
 
-func (env *Environment) NewVar(name string, value EvalResult, rtype mstype.MSType) error {
-
-	// Check if the variable is empty
-	if !env.validVarName(name) {
-		return &EnvironmentError{fmt.Sprintf("Invalid variable name: '%v'", name)}
-	}
-
-	if err := env.validValue(name, value) ; err != nil {
-		return err
-	}
+func (env *Environment) NewVar(name string, value MSVal) error {
 
 	// Check if already in env. We don't allow re-declaring variables
 	if env.containsVar(name) {
 		return &EnvironmentError{fmt.Sprintf("Variable '%v' is already defined", name)}
 	}
 
-	env.variables[name] = EnvRow{name, &value, rtype}
+	// Set variable
+	env.variables[name] = EnvRow{name, &value}
 
 	return nil
 }
 
-func (env *Environment) SetVar(name string, value EvalResult) error {
-
-	// Check if the variable is empty
-	if !env.validVarName(name) {
-		return &EnvironmentError{fmt.Sprintf("Invalid variable name: '%v'", name)}
-	}
-
-	if err := env.validValue(name, value) ; err != nil {
-		return err
-	}
+func (env *Environment) SetVar(name string, value MSVal) error {
 
 	// Check if the variable is defined. If it's not
 	// check the enclosing scope for the variable.
@@ -137,30 +121,13 @@ func (env *Environment) SetVar(name string, value EvalResult) error {
 
 	// Variable is defined, first check for type compatibility.
 	if !env.compatibleType(name, value) {
-		envVarT := env.variables[name].rtype
-		valT := value.Rt
-		return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, envVarT, valT)}
+		expectedType := env.varType(name)
+		receivedType := value.Type()
+		return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, expectedType, receivedType)}
 	}
 
 	// Set the value, this is safe now
-	env.variables[name] = EnvRow{name, &value, env.variables[name].rtype}
-
-	return nil
-}
-
-func (env *Environment) validValue(name string, val EvalResult) error {
-
-	// Check if we're trying set a value not valid
-	if !val.Valid() {
-		return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a value containing an error: %s", name, val)}
-	}
-
-
-
-	// Check if we're binding a EvalResult containing 'nil' value, this should not happen.
-	// if val.val == nil {
-	// 	return &EnvironmentError{fmt.Sprintf("Trying to set '%s' with a 'nil' value: %s", name, val)}
-	// }
+	env.variables[name] = EnvRow{name, &value}
 
 	return nil
 }
@@ -168,6 +135,12 @@ func (env *Environment) validValue(name string, val EvalResult) error {
 ////////////////////////////////////////
 // Helper functions
 ////////////////////////////////////////
+
+func (env *Environment) varType(name string) mstype.MSType {
+	row := env.variables[name].value
+	typ := (*row).Type()
+	return typ
+}
 
 func (env *Environment) printEnv() int {
 
@@ -192,19 +165,16 @@ func (env *Environment) printEnv() int {
 	return depth + 1
 }
 
-func (env *Environment) validVarName(name string) bool {
-	return name != ""
-}
-
 func (env *Environment) containsVar(name string) bool {
 	_, ok := env.variables[name]
 	return ok
 }
 
-func (env *Environment) compatibleType(name string, value EvalResult) bool {
-	envVarT := env.variables[name].rtype
-	valueT := value.Rt
-	return envVarT.Eq(&valueT)
+func (env *Environment) compatibleType(name string, value MSVal) bool {
+	row := env.variables[name]
+	expectedType := (*row.value).Type()
+	receivedType := value.Type()
+	return expectedType.Eq(&receivedType)
 }
 
 func tblbar() string {

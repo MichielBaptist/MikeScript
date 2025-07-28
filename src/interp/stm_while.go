@@ -3,53 +3,45 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 )
 
-func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) EvalResult {
-
-	var res EvalResult
+func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) (MSVal, error) {
 
 	for {
 
 		// Evaluate expression
-		cond := evaluator.evaluateExpression(&node.Condition)
-		if !cond.Valid() {
-			return cond
-		}
-		if !cond.IsType(&mstype.MS_BOOL) {
-			return evalErr(fmt.Sprintf("Condition must be of type bool, got %v", cond.Rt))
+		cond, err := evaluator.evaluateExpression(&node.Condition)
+		if err != nil {
+			return MSNothing{}, err
 		}
 
-		// Get value of the bool
-		condb, ok := cond.Val.(bool)
+		// Cast to bool
+		bcond, ok := cond.(MSBool)
+
 		if !ok {
-			return evalErr(fmt.Sprintf("Condition value is not a bool: %v", cond.Val))
+			return MSNothing{}, &EvalError{fmt.Sprintf("Condition must be of type bool, got %v", cond.Type())}
 		}
 
 		// Here the condition should be a boolean
 		// If the condition is false, we break out of the loop
-		if !condb {
+		if !bcond.Val {
 			break
 		}
 
 		// Execute the body of the while loop
-		res = evaluator.executeBlock(&node.Body, NewEnvironment(evaluator.env))
+		res, err := evaluator.executeBlock(&node.Body, NewEnvironment(evaluator.env))
 
 		// Check if result has an error
-		if !res.Valid() {
-			return res
+		if err != nil {
+			return MSNothing{}, err
 		}
 
-		// Check if result is break, on break we exit
-		if res.IsType(&mstype.MS_BREAK){
-			return EvalResult{Rt: mstype.MS_NOTHING}
-		}
-		// Check if result is return, then we exit
-		if res.IsType(&mstype.MS_RETURN) {
-			return res
+		// Check for break or return
+		switch res.(type) {
+		case MSBreak:	return MSNothing{}, nil
+		case MSReturn:	return res, nil
 		}
 	}
 
-	return res
+	return MSNothing{}, nil
 }
