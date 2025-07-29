@@ -30,6 +30,12 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	// evaluate left side or "x, y, z >> f";
 	//////////////////////////////////////////////////
 
+	// Check if the arity of the function supports binding
+	if callable.Arity() < len(node.Args) {
+		err := fmt.Sprintf("Exceeded arity of '%s' expected maximum %v arguments but received %v", callable, callable.Arity(), len(node.Args))
+		return MSNothing{}, &BindingError{msg: err}
+	}
+
 	// First evaluate all arguments, keep track of any errors.
 	args := make([]MSVal, len(node.Args))
 	for i, arg := range node.Args {
@@ -63,6 +69,7 @@ func (evaluator *MSEvaluator) evaluateFunctionCall(node *ast.FuncCallNodeS) (MSV
 		err = &EvalError{fmt.Sprintf("Function call is not implemented for type '%s'", fn)}
 		return MSNothing{}, err
 	}
+
 	
 	return callable.Call(evaluator)
 }

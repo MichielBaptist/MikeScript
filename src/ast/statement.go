@@ -85,3 +85,7 @@ func (fd *FuncDeclNodeS) GetFuncType() *mstype.MSOperationTypeS {
 func (rs *ReturnNodeS) HasReturnValue() bool {
 	return rs.Node != nil
 }
+
+func (vd *VarDeclNodeS) VarName() string {
+	return vd.Identifier.Name.Lexeme
+}

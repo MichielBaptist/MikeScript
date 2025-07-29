@@ -24,6 +24,7 @@ func NewMSEvaluator() *MSEvaluator {
 
 	// Add builtins to glb
 	glb.NewVar("print", MSBuiltinPrint())
+	glb.NewVar("print_env", MSBuiltinPrintEnv())
 
 	return &MSEvaluator{env: env, glb: glb}
 }

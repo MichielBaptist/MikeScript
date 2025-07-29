@@ -2,44 +2,8 @@ package interp
 
 import (
 	"fmt"
-	"mikescript/src/ast"
 	"mikescript/src/mstype"
 )
-
-
-
-func NewMSFunction(decl *ast.FuncDeclNodeS) *MSFunction {
-
-	// Create the bindings for the function
-	bindings := make([]ParamBindingS, len(decl.Params))
-	for i, p := range decl.Params {
-		bindings[i] = paramToBinding(p)
-	}
-
-	return &MSFunction{
-		fbody: decl.Body,
-		unBoundParams: bindings,
-		returnType: decl.Rt,
-		name: &decl.Fname,
-	}
-
-}
-
-func MSFunctionFromType(t *mstype.MSOperationTypeS, name *ast.VariableExpNodeS) *MSFunction {
-
-	// Create the bindings for the function
-	bindings := make([]ParamBindingS, len(t.Left))
-	for i, t := range t.Left {
-		bindings[i] = typeToBinding(t)
-	}
-
-	return &MSFunction{
-		name: name,					// from var declaration
-		fbody: nil,					// no body since used in "var (... -> ...) f;"
-		unBoundParams: bindings,
-		returnType: t.Right,
-	}
-}
 
 // -----------------------------------------------------------
 // Implements FunctionResult
@@ -53,7 +17,7 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 	}
 
 	// Create a new environment with globals as base scope.
-	env := NewEnvironment(ev.glb)
+	env := NewEnvironment(f.closure)
 
 	// push all bindings in the env
 	for _, bind := range f.boundParams {
@@ -120,25 +84,6 @@ func (f *MSFunction) fname() string {
 	return f.name.String()
 }
 
-
-func (f *MSFunction) checkArity(args []MSVal) error {
-
-	// info
-	nargs := len(args)
-	npars := f.Arity()
-
-	// Get amount of parameters (definition)
-	if npars < nargs{
-		// TODO: allow returning as tuple when exceeding arity????
-		// Could be the move to be honest, but it MIGHT make the 
-		// language unusable, donno...
-		msg := fmt.Sprintf("Exceeded function arity. Expected %v arguments, but received %v (already bound: %v)", nargs, npars, len(f.boundParams))
-		return BindingError{msg: msg}
-	}
-
-	return nil
-}
-
 func (f *MSFunction) copyBound() []ParamBindingS {
 	new := make([]ParamBindingS, len(f.boundParams))
 	for i, bp := range f.boundParams {
@@ -157,12 +102,6 @@ func (f *MSFunction) copyUnBound() []ParamBindingS {
 
 
 func (f *MSFunction) bindArgs(args []MSVal) (*MSFunction, error) {
-
-	// check arity, if we don't have enough space
-	// in unbounded parameters, we can't bind all args.
-	if err := f.checkArity(args) ; err != nil {
-		return nil, err
-	}
 
 	// Copy bindings. Note we can't change the values of the
 	// binding directly as they are EvalResult pointers
@@ -198,6 +137,7 @@ func (f *MSFunction) bindArgs(args []MSVal) (*MSFunction, error) {
 		unBoundParams: newUnbound,
 		returnType: f.returnType,
 		name: f.name,
+		closure: f.closure,
 	}
 
 	return &fnew, nil

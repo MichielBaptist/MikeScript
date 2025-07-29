@@ -7,13 +7,8 @@ import (
 
 func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) (MSVal, error) {
 	
-	// When declaring a function, all it does is:
-	// 1. Create an EvalResult containing the function callable function object
-	// 2. Store the EvalResult in the current environment
-
 	// Wrap the decl with a callable
-	//callable := MSFunction{decl: node}
-	callable := NewMSFunction(node)
+	callable := NewMSFunction(node, evaluator.env)
 
 	// Add EvalResult to current scope
 	fname := node.Fname.Name.Lexeme

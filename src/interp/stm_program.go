@@ -13,7 +13,7 @@ func (evaluator *MSEvaluator) executeStatements(node *ast.Program) (MSVal, error
 		
 		res, err = evaluator.executeStatement(&stmt)
 
-		// On error, break a
+		// On error, break
 		if err != nil {
 			return MSNothing{}, err
 		}

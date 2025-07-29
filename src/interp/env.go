@@ -157,12 +157,22 @@ func (env *Environment) printEnv() int {
 	}
 
 	// Print table
-	fmt.Println(tblbar())
-	fmt.Println(strings.Join(rows, "\n"))
 	if depth == 0 {
-		fmt.Println(tblbar())
+		fmt.Println(tblbar(depth))
 	}
+	if len(rows) > 0 {
+		fmt.Println(strings.Join(rows, "\n"))
+	}
+	fmt.Println(tblbar(depth + 1))
+	
 	return depth + 1
+}
+
+func (env *Environment) depth() int {
+	if env == nil {
+		return 0
+	}
+	return 1 + env.enclosing.depth()
 }
 
 func (env *Environment) containsVar(name string) bool {
@@ -177,12 +187,17 @@ func (env *Environment) compatibleType(name string, value MSVal) bool {
 	return expectedType.Eq(&receivedType)
 }
 
-func tblbar() string {
+func tblbar(depth int) string {
+
+	middle := (namecol_size - 2) / 2
+
 	return strings.Join([]string{
 		"+-",
 		strings.Repeat("-", typecol_size),
 		"-+-",
-		strings.Repeat("-", namecol_size),
+		strings.Repeat("-", middle),
+		fmt.Sprintf("%02d", depth),
+		strings.Repeat("-", middle),
 		"-+-",
 		strings.Repeat("-", defcol_size),
 		"-+",
