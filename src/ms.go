@@ -7,9 +7,11 @@ import (
 	"log"
 	interp "mikescript/src/interp"
 	parser "mikescript/src/parser"
+	"mikescript/src/resolver"
 	scanner "mikescript/src/scanner"
 	"os"
 	"strings"
+	"time"
 )
 
 type colorLogger struct{
@@ -54,15 +56,11 @@ type MSRunner struct {
 	prompter 	*bufio.Scanner			// prompter
 	scanner 	scanner.MSScanner		// lexer/scanner
 	parser 		parser.MSParser			// parser
+	resolver 	resolver.MSResolver		// resolver for locals
 	evaluator 	interp.MSEvaluator		// evaluator
 	verbose 	bool
 }
 
-func (r MSRunner) log(input any) {
-	if r.verbose {
-		fmt.Println(input)
-	}
-}
 
 func (r MSRunner) run(input string) int {
 
@@ -76,7 +74,9 @@ func (r MSRunner) run(input string) int {
 	scannerlog.log("--------------- Scanner ---------------------")
 
 	// call scanner
+	startScan := time.Now()
 	tokens := r.scanner.Scan(input)
+	scanTime := time.Since(startScan)
 
 	// print the tokens
 	scannerlog.log(fmt.Sprintf("Tokens (%v): %v", len(tokens), tokens))
@@ -98,7 +98,9 @@ func (r MSRunner) run(input string) int {
 	r.parser.SetSrc(input)
 	r.parser.SetTokens(tokens)
 
+	startParse := time.Now()
 	ast, _ := r.parser.Parse(tokens)
+	parseTime := time.Since(startParse)
 
 	parserlog.log("AST:")
 	parserlog.log(ast)
@@ -113,8 +115,18 @@ func (r MSRunner) run(input string) int {
 	}
 
 	//////////////////////////////////////////////////////
+
+	startResolve := time.Now()
+	r.resolver.SetAst(&ast)
+	r.resolver.Reset()
+	locals := r.resolver.Resolve()
+	resolverTime := time.Since(startResolve)
+
+	//////////////////////////////////////////////////////
 	evallog.log("--------------- Evaluator ---------------------")
-	eval, err := r.evaluator.Eval(ast)
+	startEval := time.Now()
+	eval, err := r.evaluator.Eval(ast, locals)
+	evalTime := time.Since(startEval)
 
 	if err != nil {
 		errorlog.log(err)
@@ -127,8 +139,11 @@ func (r MSRunner) run(input string) int {
 	}
 
 	// Print the result
+	fmt.Printf("Time to scan: 	 %v\n", scanTime)
+	fmt.Printf("Time to parse: 	 %v\n", parseTime)
+	fmt.Printf("Time to resolve: %v\n", resolverTime)
+	fmt.Printf("Time to eval: 	 %v\n", evalTime)
 	fmt.Println(eval)
-	
 
 	return 0
 }

@@ -81,7 +81,7 @@ func (f *MSFunction) initialized() bool {
 }
 
 func (f *MSFunction) fname() string {
-	return f.name.String()
+	return f.name.VarName()
 }
 
 func (f *MSFunction) copyBound() []ParamBindingS {
@@ -142,4 +142,3 @@ func (f *MSFunction) bindArgs(args []MSVal) (*MSFunction, error) {
 
 	return &fnew, nil
 }
-

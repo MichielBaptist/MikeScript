@@ -42,7 +42,7 @@ func (res ResultType) String() string {
 
 	// statement types (not a real type, but used by interp)
 	case RT_INVALID:	return "invalid"
-	case RT_NOTHING:	return "nothing"
+	case RT_NOTHING:	return ""
 	case RT_BREAK:		return "break"
 	case RT_CONTINUE:	return "continue"
 	default:			return "UNKNOWN -- check expression.go"

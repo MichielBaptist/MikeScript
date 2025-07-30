@@ -66,3 +66,7 @@ func (LiteralExpNodeS) expressionPlaceholder() {}
 func (GroupExpNodeS) expressionPlaceholder() {}
 func (VariableExpNodeS) expressionPlaceholder() {}
 func (LogicalExpNodeS) expressionPlaceholder() {}
+
+func (ve *VariableExpNodeS) VarName() string {
+	return ve.Name.Lexeme
+}

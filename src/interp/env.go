@@ -74,20 +74,29 @@ func NewEnvironment(enclosing *Environment) *Environment {
 // Environment methods
 ////////////////////////////////////////
 
-func (env *Environment) GetVar(name string) (MSVal, error) {
+func (env *Environment) walkBack(depth int) *Environment {
+	target := env
+	for i := 0 ; i < depth ; i++ {
+		target = target.enclosing
+	}
+	return target
+}
+
+func (env *Environment) GetVar(name string, depth int) (MSVal, error) {
+
+	// Walk back depth environments
+	targetEnv := env.walkBack(depth)
 
 	// Checks at evaluation time if the variable is defined
-	if env.containsVar(name) {
-		return *env.variables[name].value, nil
+	if targetEnv.containsVar(name) {
+		vars := targetEnv.variables	// Get variables
+		row := vars[name]			// Get relevant row
+		val := row.value			// Get relevant val
+		return *val, nil			// TODO: check for errors, actually better to let program crash
+	} else {
+		// Not found in this env (though it should be here!)
+		return MSNothing{}, &EnvironmentError{fmt.Sprintf("Variable '%v' is not defined", name)}
 	}
-
-	// Not found in this scope, check enclosing scope
-	if env.enclosing != nil {
-		return env.enclosing.GetVar(name)
-	}
-
-	// No enclosing scope, return error
-	return MSNothing{}, &EnvironmentError{fmt.Sprintf("Variable '%v' is not defined", name)}
 }
 
 func (env *Environment) NewVar(name string, value MSVal) error {
@@ -103,24 +112,12 @@ func (env *Environment) NewVar(name string, value MSVal) error {
 	return nil
 }
 
-func (env *Environment) SetVar(name string, value MSVal) error {
+func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 
-	// Check if the variable is defined. If it's not
-	// check the enclosing scope for the variable.
-	if !env.containsVar(name) {
-
-		// Don't have the variable in this scope, but
-		// has enclosing scope, set the value there.
-		if env.enclosing != nil {
-			return env.enclosing.SetVar(name, value)
-		}
-
-		// No enclosing scope, and no variable found
-		return &EnvironmentError{fmt.Sprintf("Variable '%v' is not defined in scope", name)}
-	}
+	targetEnv := env.walkBack(depth)
 
 	// Variable is defined, first check for type compatibility.
-	if !env.compatibleType(name, value) {
+	if !targetEnv.compatibleType(name, value) {
 		expectedType := env.varType(name)
 		receivedType := value.Type()
 		return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, expectedType, receivedType)}
@@ -168,19 +165,14 @@ func (env *Environment) printEnv() int {
 	return depth + 1
 }
 
-func (env *Environment) depth() int {
-	if env == nil {
-		return 0
-	}
-	return 1 + env.enclosing.depth()
-}
-
 func (env *Environment) containsVar(name string) bool {
 	_, ok := env.variables[name]
 	return ok
 }
 
 func (env *Environment) compatibleType(name string, value MSVal) bool {
+
+	// Get relevant row; crash on issue
 	row := env.variables[name]
 	expectedType := (*row.value).Type()
 	receivedType := value.Type()

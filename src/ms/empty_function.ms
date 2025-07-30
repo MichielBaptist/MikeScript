@@ -1,5 +1,6 @@
 
 
+// Variable declarations
 var (->) f;
 var int x;
 var (int, int -> int) y;

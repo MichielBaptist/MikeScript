@@ -12,8 +12,10 @@ type MSEvaluator struct {
 	// Contains program state.
 	ast ast.Program			// The AST to evaluate
 	err []error				// Evaluation errors
-	env *Environment		// Environment of current scope
+	env *Environment		// Environment of curresnt scope
 	glb *Environment 		// Fixed reference to global scope (outermost env)
+
+	locals map[ast.ExpNodeI]int
 }
 
 func NewMSEvaluator() *MSEvaluator {
@@ -29,10 +31,13 @@ func NewMSEvaluator() *MSEvaluator {
 	return &MSEvaluator{env: env, glb: glb}
 }
 
-func (evaluator *MSEvaluator) Eval(ast ast.Program) (MSVal, error) {
-
+func (evaluator *MSEvaluator) Eval(ast ast.Program, locals map[ast.ExpNodeI]int) (MSVal, error) {
+	
 	// set the ast
 	evaluator.ast = ast
+
+	// set locals map
+	evaluator.locals = locals
 
 	// evaluate the ast
 	return evaluator.executeStatements(&evaluator.ast)

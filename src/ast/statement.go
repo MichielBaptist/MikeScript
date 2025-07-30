@@ -52,10 +52,6 @@ type FuncDeclNodeS struct {
 	Body *BlockNodeS					// Body of function, may be nil
 }
 
-type FuncParamS struct {
-	Type mstype.MSType		// Var type
-	Iden VariableExpNodeS 	// Var name
-}
 
 // forces possible structs for StmtNode
 func (Program) statmentPlaceholder() {}
@@ -74,6 +70,11 @@ func (ReturnNodeS) statmentPlaceholder() {}
 // Helpers
 ////////////////////////////////////////////////////////////
 
+type FuncParamS struct {
+	Type mstype.MSType		// Var type
+	Iden VariableExpNodeS 	// Var name
+}
+
 func (fd *FuncDeclNodeS) GetFuncType() *mstype.MSOperationTypeS {
 	typelist := []mstype.MSType{}
 	for _, par := range fd.Params {
@@ -88,4 +89,8 @@ func (rs *ReturnNodeS) HasReturnValue() bool {
 
 func (vd *VarDeclNodeS) VarName() string {
 	return vd.Identifier.Name.Lexeme
+}
+
+func (p *FuncParamS) VarName() string {
+	return p.Iden.VarName()
 }
