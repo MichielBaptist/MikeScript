@@ -72,15 +72,23 @@ func (r *MSResolver) define(name string) {
 	}
 }
 
-func (r *MSResolver) resolveLocal(v ast.VariableExpNodeS, name string) {
-	
+func (r *MSResolver) resolveLocal(v *ast.VariableExpNodeS, name string) {
+
+	if len(r.scopes) == 0 {
+		fmt.Printf(".   %p %v --> 0 (Global, no scopes)\n", v, v)
+		return
+	}
+
 	// traverse scopes from top to bottom (len(scopes) - 1) -> 0
 	for i := len(r.scopes) - 1 ; i >= 0 ; i-- {
 		current := r.scopes[i]
 		if _, ok := current[name] ; ok {
 			r.resolveInterp(v, len(r.scopes) - 1 - i)
+		} else {
+			fmt.Printf(".   %p %v --> 0 (Global, not found)\n", v, v)
 		}
 	}
+
 }
 
 func (r *MSResolver) resolveInterp(v ast.ExpNodeI, depth int) {
@@ -88,7 +96,7 @@ func (r *MSResolver) resolveInterp(v ast.ExpNodeI, depth int) {
 	if _, ok := r.locals[v] ; ok{
 		println("Tried assigning already existing expression in the local map...")
 	} else {
-		fmt.Printf(".   %v --> %d\n", v, depth)
+		fmt.Printf(".   %p %v --> %d\n", v, v, depth)
 	}
 	r.locals[v] = depth
 }
@@ -98,35 +106,35 @@ func (r *MSResolver) resolveInterp(v ast.ExpNodeI, depth int) {
 // --------------------------------------------------------
 
 func (r *MSResolver) Resolve() map[ast.ExpNodeI]int {
-	r.resolveStatement(*r.Ast)
+	r.resolveStatement(r.Ast)
 	return r.locals
 }
 
 func (r *MSResolver) resolveStatement(stm ast.StmtNodeI) {
 	switch st := stm.(type) {
-	case ast.Program:		r.resolveStatements(st.Statements)
-	case ast.BlockNodeS: 	r.resolveBlockNode(st)
-	case ast.VarDeclNodeS:	r.resolveVariableDeclaration(st)
-	case ast.ExStmtNodeS:	r.resolveExpressionStatement(st)
-	case ast.IfNodeS:		r.resolveIfNode(st)
-	case ast.WhileNodeS:	r.resolveWhileNode(st)
-	case ast.ReturnNodeS:	r.resolveExpression(st.Node)
-	case ast.FuncDeclNodeS:	r.resolveFuncDeclaration(st)
+	case *ast.Program:			r.resolveStatements(st.Statements)
+	case *ast.BlockNodeS: 		r.resolveBlockNode(st)
+	case *ast.VarDeclNodeS:		r.resolveVariableDeclaration(st)
+	case *ast.ExStmtNodeS:		r.resolveExpressionStatement(st)
+	case *ast.IfNodeS:			r.resolveIfNode(st)
+	case *ast.WhileNodeS:		r.resolveWhileNode(st)
+	case *ast.ReturnNodeS:		r.resolveExpression(st.Node)
+	case *ast.FuncDeclNodeS:	r.resolveFuncDeclaration(st)
 	}
 	
 }
 
 func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 	switch ex := n.(type){
-	case ast.AssignmentNodeS:	r.resolveAssignmentExpression(ex)
-	case ast.DeclAssignNodeS:	r.resolveDeclAssignExpression(ex)
-	case ast.FuncAppNodeS:		r.resolveFuncAppExpression(ex)
-	case ast.FuncCallNodeS:		r.resolveExpression(ex.Fun)
-	case ast.BinaryExpNodeS:	r.resolveBinaryExpression(ex)
-	case ast.LogicalExpNodeS:	r.resolveLogicalExpression(ex)
-	case ast.UnaryExpNodeS:		r.resolveExpression(ex.Node)
-	case ast.VariableExpNodeS:	r.resolveVariableExpression(ex)
-	case ast.GroupExpNodeS:		r.resolveExpression(ex.Node)
+	case *ast.AssignmentNodeS:	r.resolveAssignmentExpression(ex)
+	case *ast.DeclAssignNodeS:	r.resolveDeclAssignExpression(ex)
+	case *ast.FuncAppNodeS:		r.resolveFuncAppExpression(ex)
+	case *ast.FuncCallNodeS:	r.resolveExpression(ex.Fun)
+	case *ast.BinaryExpNodeS:	r.resolveBinaryExpression(ex)
+	case *ast.LogicalExpNodeS:	r.resolveLogicalExpression(ex)
+	case *ast.UnaryExpNodeS:	r.resolveExpression(ex.Node)
+	case *ast.VariableExpNodeS:	r.resolveVariableExpression(ex)
+	case *ast.GroupExpNodeS:	r.resolveExpression(ex.Node)
 	}
 }
 
@@ -134,7 +142,7 @@ func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 // statements
 // --------------------------------------------------------
 
-func (r *MSResolver) resolveExpressionStatement(n ast.ExStmtNodeS) {
+func (r *MSResolver) resolveExpressionStatement(n *ast.ExStmtNodeS) {
 	r.resolveExpression(n.Ex)
 }
 
@@ -144,7 +152,7 @@ func (r *MSResolver) resolveStatements(stmts []ast.StmtNodeI) {
 	}
 }
 
-func (r *MSResolver) resolveBlockNode(n ast.BlockNodeS) {
+func (r *MSResolver) resolveBlockNode(n *ast.BlockNodeS) {
 
 	r.enterScope()
 	r.resolveStatements(n.Statements)
@@ -152,12 +160,12 @@ func (r *MSResolver) resolveBlockNode(n ast.BlockNodeS) {
 
 }
 
-func (r *MSResolver) resolveVariableDeclaration(n ast.VarDeclNodeS) {
+func (r *MSResolver) resolveVariableDeclaration(n *ast.VarDeclNodeS) {
 	r.declare(n.VarName())
 	r.define(n.VarName())
 }
 
-func (r *MSResolver) resolveFuncDeclaration(n ast.FuncDeclNodeS) {
+func (r *MSResolver) resolveFuncDeclaration(n *ast.FuncDeclNodeS) {
 	
 	// Declare and define fname in current scope
 	r.declare(n.Fname.VarName())
@@ -174,7 +182,7 @@ func (r *MSResolver) resolveFuncDeclaration(n ast.FuncDeclNodeS) {
 }
 
 
-func (r *MSResolver) resolveIfNode(n ast.IfNodeS) {
+func (r *MSResolver) resolveIfNode(n *ast.IfNodeS) {
 	r.resolveExpression(n.Condition)
 	r.resolveStatement(n.ThenStmt)
 	if n.ElseStmt != nil {
@@ -182,7 +190,7 @@ func (r *MSResolver) resolveIfNode(n ast.IfNodeS) {
 	}
 }
 
-func (r *MSResolver) resolveWhileNode(n ast.WhileNodeS) {
+func (r *MSResolver) resolveWhileNode(n *ast.WhileNodeS) {
 	r.resolveExpression(n.Condition)
 	r.resolveStatement(n.Body)
 }
@@ -192,7 +200,7 @@ func (r *MSResolver) resolveWhileNode(n ast.WhileNodeS) {
 // --------------------------------------------------------
 
 
-func (r *MSResolver) resolveVariableExpression(v ast.VariableExpNodeS) {
+func (r *MSResolver) resolveVariableExpression(v *ast.VariableExpNodeS) {
 
 	// // Check if declared but not initialized (when initializer
 	// // contains the variable itself). Not used at the moment.
@@ -204,28 +212,28 @@ func (r *MSResolver) resolveVariableExpression(v ast.VariableExpNodeS) {
 	r.resolveLocal(v, v.Name.Lexeme)
 }
 
-func (r *MSResolver) resolveAssignmentExpression(a ast.AssignmentNodeS) {
+func (r *MSResolver) resolveAssignmentExpression(a *ast.AssignmentNodeS) {
 	r.resolveExpression(a.Exp)
 	r.resolveLocal(a.Identifier, a.Identifier.Name.Lexeme)
 }
 
-func (r *MSResolver) resolveBinaryExpression(b ast.BinaryExpNodeS) {
+func (r *MSResolver) resolveBinaryExpression(b *ast.BinaryExpNodeS) {
 	r.resolveExpression(b.Left)
 	r.resolveExpression(b.Right)
 }
 
-func (r *MSResolver) resolveLogicalExpression(b ast.LogicalExpNodeS) {
+func (r *MSResolver) resolveLogicalExpression(b *ast.LogicalExpNodeS) {
 	r.resolveExpression(b.Left)
 	r.resolveExpression(b.Right)
 }
 
-func (r *MSResolver) resolveDeclAssignExpression(da ast.DeclAssignNodeS) {
+func (r *MSResolver) resolveDeclAssignExpression(da *ast.DeclAssignNodeS) {
 	r.resolveExpression(da.Exp)
 	r.declare(da.Identifier.VarName())
 	r.define(da.Identifier.VarName())
 }
 
-func (r *MSResolver) resolveFuncAppExpression(fa ast.FuncAppNodeS) {
+func (r *MSResolver) resolveFuncAppExpression(fa *ast.FuncAppNodeS) {
 	r.resolveExpression(fa.Fun)
 	for _, e := range fa.Args{
 		r.resolveExpression(e)

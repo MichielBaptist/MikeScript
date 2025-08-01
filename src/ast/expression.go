@@ -3,12 +3,12 @@ package ast
 import "mikescript/src/token"
 
 type AssignmentNodeS struct {
-	Identifier VariableExpNodeS
+	Identifier *VariableExpNodeS
 	Exp        ExpNodeI
 }
 
 type DeclAssignNodeS struct {
-	Identifier 	VariableExpNodeS
+	Identifier 	*VariableExpNodeS
 	Exp 		ExpNodeI
 }
 
@@ -56,16 +56,17 @@ type GroupExpNodeS struct {
 }
 
 // forces possible structs for ExpNode
-func (AssignmentNodeS) expressionPlaceholder() {}
-func (DeclAssignNodeS) expressionPlaceholder() {}
-func (FuncAppNodeS) expressionPlaceholder() {}
-func (FuncCallNodeS) expressionPlaceholder() {}
-func (BinaryExpNodeS) expressionPlaceholder() {}
-func (UnaryExpNodeS) expressionPlaceholder() {}
-func (LiteralExpNodeS) expressionPlaceholder() {}
-func (GroupExpNodeS) expressionPlaceholder() {}
-func (VariableExpNodeS) expressionPlaceholder() {}
-func (LogicalExpNodeS) expressionPlaceholder() {}
+// pointer to these structs implement expression
+func (*AssignmentNodeS) expressionPlaceholder() {}
+func (*DeclAssignNodeS) expressionPlaceholder() {}
+func (*FuncAppNodeS) expressionPlaceholder() {}
+func (*FuncCallNodeS) expressionPlaceholder() {}
+func (*BinaryExpNodeS) expressionPlaceholder() {}
+func (*UnaryExpNodeS) expressionPlaceholder() {}
+func (*LiteralExpNodeS) expressionPlaceholder() {}
+func (*GroupExpNodeS) expressionPlaceholder() {}
+func (*VariableExpNodeS) expressionPlaceholder() {}
+func (*LogicalExpNodeS) expressionPlaceholder() {}
 
 func (ve *VariableExpNodeS) VarName() string {
 	return ve.Name.Lexeme

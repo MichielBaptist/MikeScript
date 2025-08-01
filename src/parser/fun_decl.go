@@ -7,7 +7,7 @@ import (
 	"mikescript/src/token"
 )
 
-func (parser *MSParser) parseFunctionDecl() (ast.FuncDeclNodeS, error) {
+func (parser *MSParser) parseFunctionDecl() (*ast.FuncDeclNodeS, error) {
 	// parses: arguments '>>' IDENTIFIER {'->' type}? '{' block
 	// 1. arguments
 	// 2. '>>'
@@ -15,24 +15,23 @@ func (parser *MSParser) parseFunctionDecl() (ast.FuncDeclNodeS, error) {
 	// 4. {'->' type}?
 	// 5. '{' block
 
-
 	// 1. Parse arguments
 	args, err := parser.parseFunctionArgs()
 	if (err != nil) {
-		return ast.FuncDeclNodeS{Params: args}, err
+		return &ast.FuncDeclNodeS{Params: args}, err
 	}
 
 	// 2. Parse '>>'
 	ok, tok := parser.expect(token.GREATER_GREATER)
 	if !ok {
 		err = parser.error(fmt.Sprintf("Expected '%s' but received '%s'", token.GREATER_GREATER, tok.Lexeme), tok.Line, tok.Col)
-		return ast.FuncDeclNodeS{Params: args}, err
+		return &ast.FuncDeclNodeS{Params: args}, err
 	}
 
 	// 3. Parse identifier "f", "g", ...
 	fname, err := parser.parseIdentifier()
 	if (err != nil){
-		return ast.FuncDeclNodeS{Params: args, Fname: fname}, err
+		return &ast.FuncDeclNodeS{Params: args, Fname: fname}, err
 	}
 
 	// 4. Parse {'->' type}?
@@ -44,12 +43,12 @@ func (parser *MSParser) parseFunctionDecl() (ast.FuncDeclNodeS, error) {
 		err = nil
 	}
 	if err != nil {
-		return ast.FuncDeclNodeS{}, err
+		return &ast.FuncDeclNodeS{}, err
 	}
 
 	// 5. '{' block
 	if ok, tok := parser.match(token.LEFT_BRACE) ; !ok {
-		return ast.FuncDeclNodeS{}, parser.unexpectedToken(tok, token.LEFT_BRACE)
+		return &ast.FuncDeclNodeS{}, parser.unexpectedToken(tok, token.LEFT_BRACE)
 	}
 
 	// Enter function context
@@ -61,16 +60,16 @@ func (parser *MSParser) parseFunctionDecl() (ast.FuncDeclNodeS, error) {
 	}
 
 	if err != nil {
-		return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: returnType}, err
+		return &ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: returnType}, err
 	}
 
 	// Always add a "return;" statement at the end of the function
 	// body so that if you specify no return it still returns a return val
-	block = ast.BlockNodeS{
-		Statements: append(block.Statements, ast.ReturnNodeS{Node: nil}),
+	block = &ast.BlockNodeS{
+		Statements: append(block.Statements, &ast.ReturnNodeS{Node: nil}),
 	}
 
-	return ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: returnType, Body: &block}, err
+	return &ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: returnType, Body: block}, err
 }
 
 func (parser *MSParser) parseFunctionArgs() ([]ast.FuncParamS, error) {

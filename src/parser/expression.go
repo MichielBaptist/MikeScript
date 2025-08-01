@@ -6,14 +6,14 @@ import (
 	token "mikescript/src/token"
 )
 
-func (parser *MSParser) parseExpressionStatement() (ast.ExStmtNodeS, error) {
+func (parser *MSParser) parseExpressionStatement() (*ast.ExStmtNodeS, error) {
 
 	// Parse the expression.
 	xpr, err := parser.parseExpression()
 
 	// Check for errors
 	if err != nil {
-		return ast.ExStmtNodeS{Ex: xpr}, err
+		return &ast.ExStmtNodeS{Ex: xpr}, err
 	}
 
 	// Expect a semicolon. If not found, return an error
@@ -23,7 +23,7 @@ func (parser *MSParser) parseExpressionStatement() (ast.ExStmtNodeS, error) {
 		err = parser.error(msg, tok.Line, tok.Col)
 	}
 
-	return ast.ExStmtNodeS{Ex: xpr}, err
+	return &ast.ExStmtNodeS{Ex: xpr}, err
 }
 
 func (parser *MSParser) parseExpression() (ast.ExpNodeI, error) {
@@ -50,7 +50,7 @@ func (parser *MSParser) parseLor() (ast.ExpNodeI, error) {
 
 		// Match
 		right, err := parser.parseLand()
-		land = ast.LogicalExpNodeS{Left: land, Op: op, Right: right}
+		land = &ast.LogicalExpNodeS{Left: land, Op: op, Right: right}
 
 		// check for errors
 		if err != nil {
@@ -69,7 +69,7 @@ func (parser *MSParser) parseLand() (ast.ExpNodeI, error) {
 	for {
 		if ok, op := parser.match(token.AMP_AMP); ok {
 			right, err := parser.parseFuncop()
-			comp = ast.LogicalExpNodeS{Left: comp, Op: op, Right: right}
+			comp = &ast.LogicalExpNodeS{Left: comp, Op: op, Right: right}
 			if err != nil {
 				return comp, err
 			}
@@ -92,7 +92,7 @@ func (parser *MSParser) parseTuple() (ast.ExpNodeI, error) {
 	for {
 		if ok, op := parser.match(token.COMMA); ok {
 			right, err := parser.parseEquality()
-			node = ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
+			node = &ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
 
 			// check for errors
 			if err != nil {
@@ -128,12 +128,12 @@ func (parser *MSParser) parseEquality() (ast.ExpNodeI, error) {
 
 			// build binary node
 			eqop := token.Token{Type: token.EQ_EQ, Lexeme: "==", Col: op.Col, Line: op.Line}
-			node = ast.BinaryExpNodeS{Left: node, Op: eqop, Right: right}
+			node = &ast.BinaryExpNodeS{Left: node, Op: eqop, Right: right}
 
 			// If the operator was neq, we wrap the binary node
 			if is_neq {
 				neg := token.Token{Type: token.EXCLAMATION, Lexeme: "!", Col: op.Col, Line: op.Line}
-				node = ast.UnaryExpNodeS{Op: neg, Node: node}
+				node = &ast.UnaryExpNodeS{Op: neg, Node: node}
 			}
 
 			if err != nil {
@@ -161,7 +161,7 @@ func (parser *MSParser) parseComp() (ast.ExpNodeI, error) {
 		if ok, op := parser.match(token.LESS, token.GREATER, token.LESS_EQ, token.GREATER_EQ); ok {
 			right, err := parser.parseTerm()
 
-			node = ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
+			node = &ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
 
 			if err != nil {
 				return node, err
@@ -190,10 +190,10 @@ func (parser *MSParser) parseTerm() (ast.ExpNodeI, error) {
 			// node in a unary node with - operator
 			// x - y => x + (-y)
 			if op.Type == token.MINUS {
-				right = ast.UnaryExpNodeS{Op: op, Node: right}        // x (-y)
+				right = &ast.UnaryExpNodeS{Op: op, Node: right}        // x (-y)
 				op = token.Token{Type: token.PLUS, Lexeme: "+", Col: op.Col, Line: op.Line} // x + (-y)
 			}
-			node = ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
+			node = &ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
 
 			if err != nil {
 				return node, err
@@ -218,7 +218,7 @@ func (parser *MSParser) parseFactor() (ast.ExpNodeI, error) {
 	for {
 		if ok, op := parser.match(token.MULT, token.SLASH, token.PERCENT); ok {
 			right, err := parser.parseUnary()
-			node = ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
+			node = &ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
 
 			if err != nil {
 				return node, err
@@ -234,11 +234,11 @@ func (parser *MSParser) parseFactor() (ast.ExpNodeI, error) {
 
 
 
-func (parser *MSParser) parseIdentifier() (ast.VariableExpNodeS, error) {
+func (parser *MSParser) parseIdentifier() (*ast.VariableExpNodeS, error) {
 
 	// Handles "x", "f", ...
 	if ok, id := parser.match(token.IDENTIFIER); ok {
-		return ast.VariableExpNodeS{Name: id}, nil
+		return &ast.VariableExpNodeS{Name: id}, nil
 	}
 
 	// // Handles "(x)", "(f)", "((x))", ...
@@ -266,7 +266,7 @@ func (parser *MSParser) parseIdentifier() (ast.VariableExpNodeS, error) {
 	msg := fmt.Sprintf("Expected identifier got '%v': '%v'", tok.Type.String(), tok.Lexeme)
 	err := parser.error(msg, tok.Line, tok.Col)
 
-	return ast.VariableExpNodeS{}, err
+	return &ast.VariableExpNodeS{}, err
 }
 
 

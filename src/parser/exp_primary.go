@@ -13,12 +13,12 @@ func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
 
 	// matches a primary expression
 	if ok, tok := parser.match(token.NUMBER_INT, token.NUMBER_FLOAT, token.STRING, token.TRUE, token.FALSE); ok {
-		return ast.LiteralExpNodeS{Tk: tok}, err
+		return &ast.LiteralExpNodeS{Tk: tok}, err
 	}
 
 	// matches an identifier
 	if ok, id := parser.match(token.IDENTIFIER); ok {
-		return ast.VariableExpNodeS{Name: id}, err
+		return &ast.VariableExpNodeS{Name: id}, err
 	}
 
 	// matches parenthesis
@@ -43,7 +43,7 @@ func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
 		}
 
 		// wrap node in parenthesis
-		return ast.GroupExpNodeS{Node: node, TokenLeft: lpar, TokenRight: rpar}, err
+		return &ast.GroupExpNodeS{Node: node, TokenLeft: lpar, TokenRight: rpar}, err
 	}
 
 	// If we reach this point, we couldn't match any

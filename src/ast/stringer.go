@@ -1,6 +1,13 @@
 package ast
 
-// func (node Program) String() string {
+// import (
+// 	"fmt"
+// 	"mikescript/src/token"
+// 	"mikescript/src/utils"
+// 	"strings"
+// )
+
+// func (node *Program) String() string {
 // 	s := ""
 // 	for i, stmt := range node.Statements {
 // 		s += fmt.Sprintf("[%v] %v\n", i, stmt)
@@ -8,11 +15,11 @@ package ast
 // 	return s
 // }
 
-// func (node ExStmtNodeS) String() string {
+// func (node *ExStmtNodeS) String() string {
 // 	return fmt.Sprintf("%v;", node.Ex)
 // }
 
-// func (node BinaryExpNodeS) String() string {
+// func (node *BinaryExpNodeS) String() string {
 // 	switch node.Op.Type {
 // 	case token.GREATER_GREATER:	return fmt.Sprintf("%v(%v)", node.Right, node.Left)
 // 	case token.COMMA:			return fmt.Sprintf("(%v, %v)", node.Left, node.Right)
@@ -20,11 +27,11 @@ package ast
 // 	}
 // }
 
-// func (node UnaryExpNodeS) String() string {
+// func (node *UnaryExpNodeS) String() string {
 // 	return fmt.Sprintf("(%v %v)", node.Op.Lexeme, node.Node)
 // }
 
-// func (node LiteralExpNodeS) String() string {
+// func (node *LiteralExpNodeS) String() string {
 // 	switch node.Tk.Type{
 // 	case token.STRING:			return fmt.Sprintf("\"%v\"", node.Tk.Lexeme)
 // 	case token.NUMBER_FLOAT:	return fmt.Sprintf("%v", node.Tk.Lexeme)
@@ -33,19 +40,19 @@ package ast
 // 	}
 // }
 
-// func (node GroupExpNodeS) String() string {
+// func (node *GroupExpNodeS) String() string {
 // 	return fmt.Sprintf("(%v)", node.Node)
 // }
 
-// func (node VarDeclNodeS) String() string {
+// func (node *VarDeclNodeS) String() string {
 // 	return fmt.Sprintf("%v %v", node.Vartype, node.Identifier)
 // }
 
-// func (node AssignmentNodeS) String() string {
+// func (node *AssignmentNodeS) String() string {
 // 	return fmt.Sprintf("(%v -> %v)", node.Exp, node.Identifier)
 // }
 
-// func (node FuncAppNodeS) String() string {
+// func (node *FuncAppNodeS) String() string {
 
 // 	// map array to strings
 // 	args := utils.MapArrayString(node.Args)
@@ -56,11 +63,11 @@ package ast
 // 	return fmt.Sprintf("(%v)>>%v", argsStr, node.Fun)
 // }
 
-// func (node VariableExpNodeS) String() string {
+// func (node *VariableExpNodeS) String() string {
 // 	return node.Name.Lexeme
 // }
 
-// func (node BlockNodeS) String() string {
+// func (node *BlockNodeS) String() string {
 // 	s := "{\n"
 // 	for _, stmt := range node.Statements {
 // 		s += fmt.Sprintf("%v\n", stmt)
@@ -69,7 +76,7 @@ package ast
 // 	return s
 // }
 
-// func (node IfNodeS) String() string {
+// func (node *IfNodeS) String() string {
 // 	s := fmt.Sprintf("if %v %v", node.Condition, node.ThenStmt)
 // 	if node.ElseStmt != nil {
 // 		s += fmt.Sprintf(" else %v", node.ElseStmt)
@@ -77,27 +84,27 @@ package ast
 // 	return s
 // }
 
-// func (node LogicalExpNodeS) String() string {
+// func (node *LogicalExpNodeS) String() string {
 // 	return fmt.Sprintf("(%v %v %v)", node.Left, node.Op.Lexeme, node.Right)
 // }
 
-// func (node WhileNodeS) String() string {
+// func (node *WhileNodeS) String() string {
 // 	return fmt.Sprintf("while %v %v", node.Condition, node.Body)
 // }
 
-// func (node ContinueNodeS) String() string {
+// func (node *ContinueNodeS) String() string {
 // 	return "continue"
 // }
 
-// func (node BreakNodeS) String() string {
+// func (node *BreakNodeS) String() string {
 // 	return "break"
 // }
 
-// func (node ReturnNodeS) String() string {
+// func (node *ReturnNodeS) String() string {
 // 	return fmt.Sprintf("return %s", node.Node)
 // }
 
-// func (node FuncDeclNodeS) String() string {
+// func (node *FuncDeclNodeS) String() string {
 
 // 	// Get args string
 // 	argss := []string{}
@@ -116,7 +123,7 @@ package ast
 // 	)
 // }
 
-// func (fa FuncParamS) String() string {
+// func (fa *FuncParamS) String() string {
 // 	typeS := fa.Type.String()
 // 	nameS := fa.Iden.Name.Lexeme
 // 	return fmt.Sprintf("%s %s", typeS, nameS)

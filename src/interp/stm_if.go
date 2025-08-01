@@ -9,7 +9,7 @@ import (
 func (evaluator *MSEvaluator) executeIfstatement(node *ast.IfNodeS) (MSVal, error) {
 
 	// Evaluate the condition
-	cond, err := evaluator.evaluateExpression(&node.Condition)
+	cond, err := evaluator.evaluateExpression(node.Condition)
 
 	// Sanity checks
 	if err != nil {
@@ -24,9 +24,9 @@ func (evaluator *MSEvaluator) executeIfstatement(node *ast.IfNodeS) (MSVal, erro
 
 	// Execute the then or else statement based on the condition
 	if bcond.Val {
-		return evaluator.executeStatement(&node.ThenStmt)
+		return evaluator.executeStatement(node.ThenStmt)
 	} else if node.ElseStmt != nil {
-		return evaluator.executeStatement(&node.ElseStmt)
+		return evaluator.executeStatement(node.ElseStmt)
 	}
 
 	

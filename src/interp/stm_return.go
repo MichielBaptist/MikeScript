@@ -11,7 +11,7 @@ func (evaluator *MSEvaluator) executeReturnStatement(node *ast.ReturnNodeS) (MSV
 	var err error
 
 	if node.HasReturnValue() {
-		res, err = evaluator.evaluateExpression(&node.Node)
+		res, err = evaluator.evaluateExpression(node.Node)
 	} else {
 		res = MSNothing{}
 	}

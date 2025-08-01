@@ -9,7 +9,7 @@ import (
 func (evaluator *MSEvaluator) evaluateUnaryExpression(node *ast.UnaryExpNodeS) (MSVal, error) {
 	
 	// evaluate the node
-	res, err := evaluator.evaluateExpression(&node.Node)
+	res, err := evaluator.evaluateExpression(node.Node)
 
 	// check if the evaluation was.Valid()
 	if err != nil {
@@ -47,7 +47,7 @@ func evaluateExcl(res MSVal) (MSVal, error) {
 }
 
 func (evaluator *MSEvaluator) evaluateGroupExpression(node *ast.GroupExpNodeS) (MSVal, error) {
-	return evaluator.evaluateExpression(&node.Node)
+	return evaluator.evaluateExpression(node.Node)
 }
 
 

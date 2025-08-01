@@ -12,10 +12,10 @@ import (
 ////////////////////////////////////////////////////////////
 
 type MSParser struct {
-	src    string			// source code
+	src string				// source code
 	tokens []token.Token	// token list from tokenizer
-	pos  int     			// current position in tokens
-	pnc  bool    			// panic flag
+	pos int     			// current position in tokens
+	pnc bool    			// panic flag
 	Errors []ParserError	// parser errors
 	context []ParserConext	// nothing, loop, function...
 }
@@ -141,7 +141,7 @@ func (parser *MSParser) synchronize() {
 // 						Parse
 ////////////////////////////////////////////////////////////
 
-func (parser *MSParser) Parse(tokens []token.Token) (ast.Program, error) {
+func (parser *MSParser) Parse(tokens []token.Token) (*ast.Program, error) {
 	// Parses: START -> Program EOF
 
 	// parse block

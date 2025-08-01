@@ -6,7 +6,7 @@ import (
 )
 
 // -----------------------------------------------------------
-// Implements FunctionResult
+// Implements MSCallable
 // -----------------------------------------------------------
 
 func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
@@ -21,7 +21,7 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 
 	// push all bindings in the env
 	for _, bind := range f.boundParams {
-		env.NewVar(bind.strName(), *bind.Value)
+		env.NewVar(bind.strName(), bind.Value)
 	}
 
 	// Call the body using env

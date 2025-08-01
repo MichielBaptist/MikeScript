@@ -9,14 +9,14 @@ import (
 func (evaluator *MSEvaluator) evaluateBinaryExpression(node *ast.BinaryExpNodeS) (MSVal, error) {
 
 	// Evaluate left and right side of the expression
-	lval, lerr := evaluator.evaluateExpression(&node.Left)
+	lval, lerr := evaluator.evaluateExpression(node.Left)
 
 	// quit on error
 	if lerr != nil {
 		return MSNothing{}, lerr
 	}
 
-	rval, rerr := evaluator.evaluateExpression(&node.Right)
+	rval, rerr := evaluator.evaluateExpression(node.Right)
 
 	// quit on error
 	if rerr != nil {

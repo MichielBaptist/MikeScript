@@ -7,7 +7,7 @@ import (
 	"mikescript/src/token"
 )
 
-func (parser *MSParser) parseVarDeclaration() (ast.VarDeclNodeS, error) {
+func (parser *MSParser) parseVarDeclaration() (*ast.VarDeclNodeS, error) {
 	// type IDENTIFIER ';'
 
 	var vtype mstype.MSType
@@ -23,7 +23,7 @@ func (parser *MSParser) parseVarDeclaration() (ast.VarDeclNodeS, error) {
 	// }
 
 	if err != nil {
-		return ast.VarDeclNodeS{}, nil
+		return &ast.VarDeclNodeS{}, nil
 	}
 
 	// Case 2 & 3: ignore for now
@@ -35,7 +35,7 @@ func (parser *MSParser) parseVarDeclaration() (ast.VarDeclNodeS, error) {
 	if err != nil {
 		// If we encounter an error parsing the identifier
 		// We return the error and empty declaration node
-		return ast.VarDeclNodeS{}, err
+		return &ast.VarDeclNodeS{}, err
 	}
 
 	// expect a semicolon
@@ -44,6 +44,6 @@ func (parser *MSParser) parseVarDeclaration() (ast.VarDeclNodeS, error) {
 		err = parser.error(msg, tok.Line, tok.Col)
 	}
 
-	return ast.VarDeclNodeS{Identifier: ident, Vartype: vtype}, err
+	return &ast.VarDeclNodeS{Identifier: ident, Vartype: vtype}, err
 
 }

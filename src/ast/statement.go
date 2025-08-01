@@ -14,7 +14,7 @@ type BlockNodeS struct {
 }
 
 type VarDeclNodeS struct {
-	Identifier 	VariableExpNodeS	// Name
+	Identifier 	*VariableExpNodeS	// Name
 	Vartype 	mstype.MSType		// Type 
 }
 
@@ -30,7 +30,7 @@ type IfNodeS struct {
 
 type WhileNodeS struct {
 	Condition 	ExpNodeI
-	Body 		BlockNodeS
+	Body 		*BlockNodeS
 }
 
 type ContinueNodeS struct {
@@ -46,7 +46,7 @@ type ReturnNodeS struct {
 }
 
 type FuncDeclNodeS struct {
-	Fname VariableExpNodeS				// Name
+	Fname *VariableExpNodeS				// Name
 	Params []FuncParamS 				// Parameters
 	Rt mstype.MSType					// Return type
 	Body *BlockNodeS					// Body of function, may be nil
@@ -54,16 +54,16 @@ type FuncDeclNodeS struct {
 
 
 // forces possible structs for StmtNode
-func (Program) statmentPlaceholder() {}
-func (BlockNodeS) statmentPlaceholder() {}
-func (VarDeclNodeS) statmentPlaceholder() {}
-func (ExStmtNodeS) statmentPlaceholder() {}
-func (IfNodeS) statmentPlaceholder() {}
-func (WhileNodeS) statmentPlaceholder() {}
-func (ContinueNodeS) statmentPlaceholder() {}
-func (BreakNodeS) statmentPlaceholder() {}
-func (FuncDeclNodeS) statmentPlaceholder() {}
-func (ReturnNodeS) statmentPlaceholder() {}
+func (*Program) statmentPlaceholder() {}
+func (*BlockNodeS) statmentPlaceholder() {}
+func (*VarDeclNodeS) statmentPlaceholder() {}
+func (*ExStmtNodeS) statmentPlaceholder() {}
+func (*IfNodeS) statmentPlaceholder() {}
+func (*WhileNodeS) statmentPlaceholder() {}
+func (*ContinueNodeS) statmentPlaceholder() {}
+func (*BreakNodeS) statmentPlaceholder() {}
+func (*FuncDeclNodeS) statmentPlaceholder() {}
+func (*ReturnNodeS) statmentPlaceholder() {}
 
 
 ////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ func (ReturnNodeS) statmentPlaceholder() {}
 
 type FuncParamS struct {
 	Type mstype.MSType		// Var type
-	Iden VariableExpNodeS 	// Var name
+	Iden *VariableExpNodeS 	// Var name
 }
 
 func (fd *FuncDeclNodeS) GetFuncType() *mstype.MSOperationTypeS {

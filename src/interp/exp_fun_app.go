@@ -10,7 +10,7 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	//////////////////////////////////////////////////
 	// evaluate right side or "x, y, z >> f";
 	//////////////////////////////////////////////////
-	fn, err := evaluator.evaluateExpression(&node.Fun)
+	fn, err := evaluator.evaluateExpression(node.Fun)
 
 	// Check for errors
 	if err != nil {
@@ -39,7 +39,7 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	// First evaluate all arguments, keep track of any errors.
 	args := make([]MSVal, len(node.Args))
 	for i, arg := range node.Args {
-		arg, err := evaluator.evaluateExpression(&arg)
+		arg, err := evaluator.evaluateExpression(arg)
 
 		if err != nil {
 			return MSNothing{}, err
@@ -55,7 +55,7 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 }
 
 func (evaluator *MSEvaluator) evaluateFunctionCall(node *ast.FuncCallNodeS) (MSVal, error) {
-	fn, err := evaluator.evaluateExpression(&node.Fun)
+	fn, err := evaluator.evaluateExpression(node.Fun)
 
 	// Check for errors
 	if err != nil {

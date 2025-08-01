@@ -7,7 +7,7 @@ import (
 )
 
 
-func (parser *MSParser) parseBlock() (ast.BlockNodeS, error) {
+func (parser *MSParser) parseBlock() (*ast.BlockNodeS, error) {
 	// This function expects that a '{' was already matched before
 	// but WILL consume the closing '}'.
 
@@ -29,7 +29,7 @@ func (parser *MSParser) parseBlock() (ast.BlockNodeS, error) {
 			stmts = append(stmts, stmt)
 		} else {
 			// Provide the statements we were able to parse.
-			return ast.BlockNodeS{Statements: stmts}, err
+			return &ast.BlockNodeS{Statements: stmts}, err
 		}
 	}
 
@@ -39,6 +39,6 @@ func (parser *MSParser) parseBlock() (ast.BlockNodeS, error) {
 		err = parser.error(msg, tok.Line, tok.Col)
 	}
 
-	return ast.BlockNodeS{Statements: stmts}, err
+	return &ast.BlockNodeS{Statements: stmts}, err
 }
 

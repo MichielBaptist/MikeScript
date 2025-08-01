@@ -7,7 +7,7 @@ import (
 
 
 
-func (parser *MSParser) parseProgram() (ast.Program, error) {
+func (parser *MSParser) parseProgram() (*ast.Program, error) {
 	// parses program -> statement *
 
 	// as long as we haven't reached the end of the tokens
@@ -18,7 +18,8 @@ func (parser *MSParser) parseProgram() (ast.Program, error) {
 
 	for !parser.atend() && parser.peek().Type != token.EOF {
 
-		// parse next statement and check for error
+		// parse next statement and check for error.
+		// Returns stmt is a pointer, not struct.
 		stmt, err = parser.parseStatement()
 
 		// Only add to the statements if there was no error
@@ -37,5 +38,5 @@ func (parser *MSParser) parseProgram() (ast.Program, error) {
 
 	// Returns all successfully parsed statements
 	// and the last error encountered.
-	return ast.Program{Statements: statements}, err
+	return &ast.Program{Statements: statements}, err
 }

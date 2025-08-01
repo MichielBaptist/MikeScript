@@ -10,7 +10,7 @@ import (
 
 type MSEvaluator struct {
 	// Contains program state.
-	ast ast.Program			// The AST to evaluate
+	ast *ast.Program		// The AST to evaluate
 	err []error				// Evaluation errors
 	env *Environment		// Environment of curresnt scope
 	glb *Environment 		// Fixed reference to global scope (outermost env)
@@ -28,19 +28,23 @@ func NewMSEvaluator() *MSEvaluator {
 	glb.NewVar("print", MSBuiltinPrint())
 	glb.NewVar("print_env", MSBuiltinPrintEnv())
 
-	return &MSEvaluator{env: env, glb: glb}
+	return &MSEvaluator{env: env, glb: glb, locals: make(map[ast.ExpNodeI]int)}
 }
 
-func (evaluator *MSEvaluator) Eval(ast ast.Program, locals map[ast.ExpNodeI]int) (MSVal, error) {
-	
+func (evaluator *MSEvaluator) UpdateLocals(locals map[ast.ExpNodeI]int) {
+	// add all locals to current locals
+	for k, v := range locals {
+		evaluator.locals[k] = v
+	}
+}
+
+func (evaluator *MSEvaluator) Eval(ast *ast.Program) (MSVal, error) {
+
 	// set the ast
 	evaluator.ast = ast
 
-	// set locals map
-	evaluator.locals = locals
-
 	// evaluate the ast
-	return evaluator.executeStatements(&evaluator.ast)
+	return evaluator.executeStatements(evaluator.ast)
 	
 }
 

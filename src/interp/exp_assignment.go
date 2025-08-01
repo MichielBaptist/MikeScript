@@ -8,7 +8,7 @@ import (
 func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentNodeS) (MSVal, error) {
 	
 	// Evaluate the expression
-	res, err := evaluator.evaluateExpression(&node.Exp)
+	res, err := evaluator.evaluateExpression(node.Exp)
 
 	if err != nil {
 		return MSNothing{}, err
@@ -35,7 +35,7 @@ func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) (MSVal, e
 	var val MSVal
 	var err error
 
-	if depth, ok := evaluator.locals[*node] ; ok {
+	if depth, ok := evaluator.locals[node] ; ok {
 		val, err = evaluator.env.GetVar(node.VarName(), depth)
 	} else {
 		val, err = evaluator.glb.GetVar(node.VarName(), 0)
@@ -53,7 +53,7 @@ func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) (MSVal, e
 func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignNodeS) (MSVal, error) {
 	
 	
-	res, err := evaluator.evaluateExpression(&node.Exp)
+	res, err := evaluator.evaluateExpression(node.Exp)
 
 	if err != nil {
 		return MSNothing{}, err

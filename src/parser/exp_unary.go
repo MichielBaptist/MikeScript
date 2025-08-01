@@ -19,9 +19,9 @@ func (parser *MSParser) parseUnary() (ast.ExpNodeI, error) {
 		// though they are the same "priority", namely the highest
 
 		if op.Type == token.EQ {
-			return ast.FuncCallNodeS{Op: op, Fun: right}, nil
+			return &ast.FuncCallNodeS{Op: op, Fun: right}, nil
 		} else {
-			return ast.UnaryExpNodeS{Op: op, Node: right}, nil
+			return &ast.UnaryExpNodeS{Op: op, Node: right}, nil
 		}
 	}
 

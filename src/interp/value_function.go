@@ -19,7 +19,7 @@ to contain all information required to run "run":
 	- A return type. Either derived from function or var declaration
 	- A Name.
 	- A closure, the environment when the function was declared:
-		- When declared using "function () >> f {...}" 
+		- When declared using "function () >> f {...}"
 		- When declared using "var (->) f;" (bodyless).
 
 Note: 	using "var (->) f;" allows you to capture a closure for
@@ -55,7 +55,7 @@ func NewMSFunction(decl *ast.FuncDeclNodeS, closure *Environment) *MSFunction {
 		fbody: decl.Body,			// function body
 		unBoundParams: bindings,	// current bincings
 		returnType: decl.Rt,		// declared return type
-		name: &decl.Fname,			// name
+		name: decl.Fname,			// name
 		closure: closure,			// env at declaration
 	}
 

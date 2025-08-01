@@ -8,8 +8,8 @@ import (
 
 type ParamBindingS struct {
 	Type mstype.MSType				// expected type of param
-	Name ast.VariableExpNodeS 		// Name
-	Value *MSVal					// Can be nil when unbound
+	Name *ast.VariableExpNodeS 		// Name
+	Value MSVal						// Can be nil when unbound
 }
 
 
@@ -62,7 +62,7 @@ func (b *ParamBindingS) bind(val MSVal) (ParamBindingS, error) {
 	}
 	
 	// Bind value
-	b.Value = &val
+	b.Value = val
 
 	// done
 	return *b, nil
@@ -77,7 +77,7 @@ func (b *ParamBindingS) String() string {
 	if b.Value == nil {
 		vals = "_"
 	} else {
-		vals = (*b.Value).String()
+		vals = b.Value.String()
 	}
 
 	return fmt.Sprintf("%s %s = %s", b.Type.String(), b.Name.VarName(), vals)

@@ -11,7 +11,7 @@ func (evaluator *MSEvaluator) executeStatements(node *ast.Program) (MSVal, error
 
 	for _, stmt := range node.Statements {
 		
-		res, err = evaluator.executeStatement(&stmt)
+		res, err = evaluator.executeStatement(stmt)
 
 		// On error, break
 		if err != nil {

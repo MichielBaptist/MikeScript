@@ -7,23 +7,23 @@ import (
 )
 
 
-func (parser *MSParser) parseIf() (ast.IfNodeS, error) {
+func (parser *MSParser) parseIf() (*ast.IfNodeS, error) {
 
 	// Parse conditional expression
 	cond, err := parser.parseExpression()
 	if err != nil {
-		return ast.IfNodeS{}, err
+		return &ast.IfNodeS{}, err
 	}
 
 	// Expect a block statement so we check for opening brace.
 	if ok, tok := parser.expect(token.LEFT_BRACE); !ok {
 		msg := fmt.Sprintf("Expected '{' got '%v'", tok.Type.String())
 		err = parser.error(msg, tok.Line, tok.Col)
-		return ast.IfNodeS{}, err
+		return &ast.IfNodeS{}, err
 	}
 	stmt, err := parser.parseBlock()
 	if err != nil {
-		return ast.IfNodeS{}, err
+		return &ast.IfNodeS{}, err
 	}
 
 	// Check for if statement else branch
@@ -34,16 +34,16 @@ func (parser *MSParser) parseIf() (ast.IfNodeS, error) {
 		if ok, tok := parser.expect(token.LEFT_BRACE); !ok {
 			msg := fmt.Sprintf("Expected '{' got '%v'", tok.Type.String())
 			err = parser.error(msg, tok.Line, tok.Col)
-			return ast.IfNodeS{}, err
+			return &ast.IfNodeS{}, err
 		}
 		elsestmt, err := parser.parseBlock()
 		if err != nil {
-			return ast.IfNodeS{}, err
+			return &ast.IfNodeS{}, err
 		}
 
-		return ast.IfNodeS{Condition: cond, ThenStmt: stmt, ElseStmt: elsestmt}, err
+		return &ast.IfNodeS{Condition: cond, ThenStmt: stmt, ElseStmt: elsestmt}, err
 	}
 
-	return ast.IfNodeS{Condition: cond, ThenStmt: stmt, ElseStmt: nil}, err
+	return &ast.IfNodeS{Condition: cond, ThenStmt: stmt, ElseStmt: nil}, err
 
 }

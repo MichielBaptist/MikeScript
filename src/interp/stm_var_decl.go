@@ -10,7 +10,7 @@ import (
 func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS) (MSVal, error) {
 
 	// Get the default value for the type
-	val := declaredTypeDefaultValue(&node.Vartype, &node.Identifier, evaluator.env)
+	val := declaredTypeDefaultValue(&node.Vartype, node.Identifier, evaluator.env)
 
 	if val == nil {
 		_ = []int{}[0]

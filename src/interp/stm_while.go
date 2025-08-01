@@ -10,7 +10,7 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) (MSVal
 	for {
 
 		// Evaluate expression
-		cond, err := evaluator.evaluateExpression(&node.Condition)
+		cond, err := evaluator.evaluateExpression(node.Condition)
 		if err != nil {
 			return MSNothing{}, err
 		}
@@ -29,7 +29,7 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) (MSVal
 		}
 
 		// Execute the body of the while loop
-		res, err := evaluator.executeBlock(&node.Body, NewEnvironment(evaluator.env))
+		res, err := evaluator.executeBlock(node.Body, NewEnvironment(evaluator.env))
 
 		// Check if result has an error
 		if err != nil {

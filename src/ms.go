@@ -69,6 +69,7 @@ func (r MSRunner) run(input string) int {
 	parserlog := colorLogger{c: GRAY, enable: false}
 	evallog := colorLogger{c: BLUE, enable: false}
 	errorlog := colorLogger{c: RED, enable: true}
+	resolverlog := colorLogger{c: GREEN, enable: true}
 
 	//////////////////////////////////////////////////////
 	scannerlog.log("--------------- Scanner ---------------------")
@@ -115,9 +116,10 @@ func (r MSRunner) run(input string) int {
 	}
 
 	//////////////////////////////////////////////////////
+	resolverlog.log("---------------- Resolver -------------------")
 
 	startResolve := time.Now()
-	r.resolver.SetAst(&ast)
+	r.resolver.SetAst(ast)
 	r.resolver.Reset()
 	locals := r.resolver.Resolve()
 	resolverTime := time.Since(startResolve)
@@ -125,7 +127,8 @@ func (r MSRunner) run(input string) int {
 	//////////////////////////////////////////////////////
 	evallog.log("--------------- Evaluator ---------------------")
 	startEval := time.Now()
-	eval, err := r.evaluator.Eval(ast, locals)
+	r.evaluator.UpdateLocals(locals)
+	eval, err := r.evaluator.Eval(ast)
 	evalTime := time.Since(startEval)
 
 	if err != nil {

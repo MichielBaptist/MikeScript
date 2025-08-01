@@ -8,7 +8,3 @@ type ExpNodeI interface {
 type StmtNodeI interface {
 	statmentPlaceholder()
 }
-
-// type TypeNodeI interface {
-// 	typePlaceholder()
-// }
