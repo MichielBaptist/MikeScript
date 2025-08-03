@@ -74,19 +74,27 @@ func (b *ParamBindingS) strName() string {
 
 func (b *ParamBindingS) String() string {
 	var vals string
+	var names string
+
 	if b.Value == nil {
 		vals = "_"
 	} else {
 		vals = b.Value.String()
 	}
 
-	return fmt.Sprintf("%s %s = %s", b.Type.String(), b.Name.VarName(), vals)
+	if b.Name == nil {
+		names = "_"
+	} else {
+		names = b.Name.VarName()
+	}
+
+	return fmt.Sprintf("%s %s = %s", b.Type.String(), names, vals)
 }
 
 func (b *ParamBindingS) ValidBindingEvalResult(t *MSVal) bool {
 	expectedType := b.Type
 	receivedType := (*t).Type()
-	return expectedType.Eq(&receivedType)
+	return expectedType.Eq(receivedType)
 }
 
 // -----------------------------------------------------------

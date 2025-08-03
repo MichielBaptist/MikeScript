@@ -62,7 +62,7 @@ func TokenToType(tok *token.Token) (MSType, error) {
 
 ////////////////////////////////////////////////////////////
 type MSType interface {
-	Eq(other *MSType) bool	// compare types
+	Eq(other MSType) bool	// compare types
 	String() string			// show type
 	Nullable() bool			// Can values of this type be <nil>?
 }

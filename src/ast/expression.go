@@ -1,6 +1,9 @@
 package ast
 
-import "mikescript/src/token"
+import (
+	"mikescript/src/mstype"
+	"mikescript/src/token"
+)
 
 type AssignmentNodeS struct {
 	Identifier *VariableExpNodeS
@@ -55,6 +58,17 @@ type GroupExpNodeS struct {
 	TokenRight token.Token
 }
 
+type ArrayIndexNodeS struct {
+	Target ExpNodeI
+	Index ExpNodeI
+}
+
+type ArrayConstructorNodeS struct {
+	// '['']' type '{' {expression ','} * '}' 
+	Type mstype.MSType	
+	Vals []ExpNodeI
+}
+
 // forces possible structs for ExpNode
 // pointer to these structs implement expression
 func (*AssignmentNodeS) expressionPlaceholder() {}
@@ -67,6 +81,8 @@ func (*LiteralExpNodeS) expressionPlaceholder() {}
 func (*GroupExpNodeS) expressionPlaceholder() {}
 func (*VariableExpNodeS) expressionPlaceholder() {}
 func (*LogicalExpNodeS) expressionPlaceholder() {}
+func (*ArrayIndexNodeS) expressionPlaceholder() {}
+func (*ArrayConstructorNodeS) expressionPlaceholder() {}
 
 func (ve *VariableExpNodeS) VarName() string {
 	return ve.Name.Lexeme

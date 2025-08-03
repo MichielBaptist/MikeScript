@@ -98,20 +98,16 @@ func (f MSFunction) Type() mstype.MSType {
 
 func (f MSFunction) String() string {
 
+	if !f.initialized() {
+		return "{}"
+	}
+
 	ps := []string{}
 	for _, bp := range f.boundParams {
 		ps = append(ps, "(" + bp.String() + ")")
 	}
 	for _, up := range f.unBoundParams {
 		ps = append(ps, "(" + up.String() + ")")
-	}
-
-	// check if body is nil
-	var bodys string
-	if f.initialized() {
-		bodys = "{...}"
-	} else {
-		bodys = "{}"
 	}
 
 	strs := []string{}
@@ -121,7 +117,7 @@ func (f MSFunction) String() string {
 	if pss != "" {
 		strs = append(strs, pss)
 	}
-	strs = append(strs, ">>", f.fname(), "->", f.returnType.String(), bodys)
+	strs = append(strs, ">>", f.fname(), "->", f.returnType.String(), "{...}")
 	
 	// bindings >> fname -> rt
 	return strings.Join(strs, " ")

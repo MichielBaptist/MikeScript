@@ -10,18 +10,18 @@ type MSOperationTypeS struct {
 	Right MSType 	// output types
 }
 
-func (t *MSOperationTypeS) Eq(o *MSType) bool {
-	switch other := (*o).(type) {
+func (t *MSOperationTypeS) Eq(o MSType) bool {
+	switch other := o.(type) {
 	case *MSOperationTypeS:
 
 		// Compare output of op
-		e := t.Right.Eq(&other.Right)
+		e := t.Right.Eq(other.Right)
 
 		// Compare parameters of op, note this
 		// circuit breaks on a single false
 		e = e && len(t.Left) == len(other.Left)
 		for i := 0; e && i < len(t.Left) ; i++ {
-			e = e && t.Left[i].Eq(&other.Left[i])
+			e = e && t.Left[i].Eq(other.Left[i])
 		}
 		return e
 	}

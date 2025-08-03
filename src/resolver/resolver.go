@@ -126,21 +126,34 @@ func (r *MSResolver) resolveStatement(stm ast.StmtNodeI) {
 
 func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 	switch ex := n.(type){
-	case *ast.AssignmentNodeS:	r.resolveAssignmentExpression(ex)
-	case *ast.DeclAssignNodeS:	r.resolveDeclAssignExpression(ex)
-	case *ast.FuncAppNodeS:		r.resolveFuncAppExpression(ex)
-	case *ast.FuncCallNodeS:	r.resolveExpression(ex.Fun)
-	case *ast.BinaryExpNodeS:	r.resolveBinaryExpression(ex)
-	case *ast.LogicalExpNodeS:	r.resolveLogicalExpression(ex)
-	case *ast.UnaryExpNodeS:	r.resolveExpression(ex.Node)
-	case *ast.VariableExpNodeS:	r.resolveVariableExpression(ex)
-	case *ast.GroupExpNodeS:	r.resolveExpression(ex.Node)
+	case *ast.AssignmentNodeS:			r.resolveAssignmentExpression(ex)
+	case *ast.DeclAssignNodeS:			r.resolveDeclAssignExpression(ex)
+	case *ast.FuncAppNodeS:				r.resolveFuncAppExpression(ex)
+	case *ast.FuncCallNodeS:			r.resolveExpression(ex.Fun)
+	case *ast.BinaryExpNodeS:			r.resolveBinaryExpression(ex)
+	case *ast.LogicalExpNodeS:			r.resolveLogicalExpression(ex)
+	case *ast.UnaryExpNodeS:			r.resolveExpression(ex.Node)
+	case *ast.VariableExpNodeS:			r.resolveVariableExpression(ex)
+	case *ast.GroupExpNodeS:			r.resolveExpression(ex.Node)
+	case *ast.ArrayConstructorNodeS:	r.resolveArrayConstructor(ex)
+	case *ast.ArrayIndexNodeS:			r.resolveArrayIndex(ex)
 	}
 }
 
 // --------------------------------------------------------
 // statements
 // --------------------------------------------------------
+
+func (r *MSResolver) resolveArrayConstructor(n *ast.ArrayConstructorNodeS) {
+	for _, v := range n.Vals {
+		r.resolveExpression(v)
+	}
+}
+
+func (r *MSResolver) resolveArrayIndex(n *ast.ArrayIndexNodeS) {
+	r.resolveExpression(n.Target)
+	r.resolveExpression(n.Index)
+}
 
 func (r *MSResolver) resolveExpressionStatement(n *ast.ExStmtNodeS) {
 	r.resolveExpression(n.Ex)

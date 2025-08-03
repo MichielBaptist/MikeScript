@@ -39,7 +39,7 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 	// Type check the return value against the
 	// declared return type.
 	if !returnVal.Type().Eq(f.GetOutputType()) {
-		msg := fmt.Sprintf("Tried returning '%s' of type '%s', expected type '%s'", returnVal, returnVal.Type(), *f.GetOutputType())
+		msg := fmt.Sprintf("Tried returning '%s' of type '%s', expected type '%s'", returnVal, returnVal.Type(), f.GetOutputType())
 		return MSNothing{}, &EvalError{msg}
 	}
 
@@ -72,8 +72,8 @@ func (f MSFunction) Bind(args []MSVal) (MSVal, error) {
 // helpers
 // -----------------------------------------------------------
 
-func (f *MSFunction) GetOutputType() *mstype.MSType{
-	return &f.returnType
+func (f *MSFunction) GetOutputType() mstype.MSType{
+	return f.returnType
 }
 
 func (f *MSFunction) initialized() bool {

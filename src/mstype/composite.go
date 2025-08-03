@@ -6,9 +6,9 @@ type MSCompositeTypeS struct {
 	Types []MSType
 }
 
-func (t *MSCompositeTypeS) Eq(o *MSType) bool {
+func (t *MSCompositeTypeS) Eq(o MSType) bool {
 
-	switch other := (*o).(type){
+	switch other := o.(type){
 	case *MSCompositeTypeS:
 
 		// Check if the same length
@@ -18,7 +18,7 @@ func (t *MSCompositeTypeS) Eq(o *MSType) bool {
 
 		// Check all types if they are equal
 		for i := range t.Types {
-			if !t.Types[i].Eq(&other.Types[i]){
+			if !t.Types[i].Eq(other.Types[i]){
 				return false
 			}
 		}

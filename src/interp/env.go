@@ -176,7 +176,7 @@ func (env *Environment) compatibleType(name string, value MSVal) bool {
 	row := env.variables[name]
 	expectedType := (*row.value).Type()
 	receivedType := value.Type()
-	return expectedType.Eq(&receivedType)
+	return expectedType.Eq(receivedType)
 }
 
 func tblbar(depth int) string {

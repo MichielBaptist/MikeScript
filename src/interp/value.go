@@ -158,6 +158,22 @@ func (n MSNothing) String() string {
 }
 
 ////////////////////////////////////////////////////////////
-// Nothing
+// Array
 ////////////////////////////////////////////////////////////
 
+type MSArray struct {
+	Values []MSVal
+	VType mstype.MSType
+}
+func (n MSArray) Type() mstype.MSType {
+	return &mstype.MSArrayType{Type: n.VType}
+}
+func (n MSArray) String() string {
+
+	strs := make([]string, len(n.Values))
+	for i, v := range n.Values {
+		strs[i] = v.String()
+	}
+
+	return fmt.Sprintf("[%s]", strings.Join(strs, ","))
+}

@@ -46,6 +46,11 @@ func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
 		return &ast.GroupExpNodeS{Node: node, TokenLeft: lpar, TokenRight: rpar}, err
 	}
 
+	// matches '['
+	if ok, _ := parser.match(token.LEFT_SQUARE) ; ok {
+		return parser.parseArrayConstructor()
+	}
+
 	// If we reach this point, we couldn't match any
 	// of the primary expressions, so we need to return an error.
 	tok := parser.peek()
@@ -54,4 +59,50 @@ func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
 	parser.panic()
 
 	return nil, err
+}
+
+func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
+	// ']' type '{' {expression ','} * '}' --> array constructor
+
+	// Need ']'
+	if ok, tk := p.match(token.RIGHT_SQUARE) ; !ok {
+		return nil, p.unexpectedToken(tk, token.RIGHT_SQUARE)
+	}
+
+	// Parse type
+	atype, err := p.parseType()
+
+	fmt.Printf("Type: %+v\n", atype)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Need '{'
+	if ok, tk := p.match(token.LEFT_BRACE) ; !ok {
+		return nil, p.unexpectedToken(tk, token.LEFT_BRACE)
+	}
+
+	// check for empty constructor
+	if ok, _ := p.match(token.RIGHT_BRACE) ; ok {
+		vals := make([]ast.ExpNodeI, 0)
+		return &ast.ArrayConstructorNodeS{Type: atype, Vals: vals}, nil
+	}
+
+	// Parse expressions
+	tuple, err := p.parseExpression()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Flatten tuple expression into list of expressions
+	exprs := flattenExpNode(tuple)
+
+	// Need '}'
+	if ok, tk := p.match(token.RIGHT_BRACE) ; !ok {
+		return nil, p.unexpectedToken(tk, token.RIGHT_BRACE)
+	}
+
+	return &ast.ArrayConstructorNodeS{Type: atype, Vals: exprs}, nil
 }
