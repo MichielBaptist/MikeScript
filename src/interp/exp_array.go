@@ -19,7 +19,7 @@ func (e *MSEvaluator) evalArrayIndexExpression(n *ast.ArrayIndexNodeS) (MSVal, e
 	}
 
 	// Check if the resulting value is indexable
-	listVal := val.(*MSArray)
+	listVal := val.(MSArray)
 
 	// if !ok {
 	// 	msg := fmt.Sprintf("Value '%s' of type '%s' is not indexable.", val, val.Type())
@@ -75,5 +75,5 @@ func (e *MSEvaluator) evaluateArrayConstructor(n *ast.ArrayConstructorNodeS) (MS
 		vals = append(vals, val)
 	}
 
-	return &MSArray{Values: vals, VType: n.Type}, nil
+	return MSArray{Values: vals, VType: n.Type}, nil
 }
