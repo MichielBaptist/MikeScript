@@ -19,6 +19,7 @@ func (evaluator *MSEvaluator) evaluateExpression(node ast.ExpNodeI) (MSVal, erro
 	case *ast.LogicalExpNodeS:			return evaluator.evaluateLogicalExpression(node)
 	case *ast.ArrayIndexNodeS:			return evaluator.evalArrayIndexExpression(node)
 	case *ast.ArrayConstructorNodeS:	return evaluator.evaluateArrayConstructor(node)
+	case *ast.ArrayAssignmentNodeS:		return evaluator.evaluateArrayAssignment(node)
 	default:							return MSNothing{}, &EvalError{fmt.Sprintf("Unknown expression type: '%+v'", node)}
 	}
 }

@@ -69,6 +69,12 @@ type ArrayConstructorNodeS struct {
 	Vals []ExpNodeI
 }
 
+type ArrayAssignmentNodeS struct {
+	Target ExpNodeI
+	Index ExpNodeI
+	Value ExpNodeI
+}
+
 // forces possible structs for ExpNode
 // pointer to these structs implement expression
 func (*AssignmentNodeS) expressionPlaceholder() {}
@@ -83,6 +89,7 @@ func (*VariableExpNodeS) expressionPlaceholder() {}
 func (*LogicalExpNodeS) expressionPlaceholder() {}
 func (*ArrayIndexNodeS) expressionPlaceholder() {}
 func (*ArrayConstructorNodeS) expressionPlaceholder() {}
+func (*ArrayAssignmentNodeS) expressionPlaceholder() {}
 
 func (ve *VariableExpNodeS) VarName() string {
 	return ve.Name.Lexeme

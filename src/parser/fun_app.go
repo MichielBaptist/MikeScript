@@ -72,8 +72,10 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 			switch v := right.(type) {
 			case *ast.VariableExpNodeS:
 				left = &ast.AssignmentNodeS{Identifier: v, Exp: left}
+			case *ast.ArrayIndexNodeS:
+				left = &ast.ArrayAssignmentNodeS{Target: v.Target, Index: v.Index, Value: left}
 			default:
-				err = parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
+				err = parser.error(fmt.Sprintf("Expected an assignable target, got '%v'", v), op.Line, op.Col)
 			}
 		case token.EQ_GREATER:
 			// => create && assignment
@@ -81,8 +83,10 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 			switch v := right.(type) {
 			case *ast.VariableExpNodeS:
 				left = &ast.DeclAssignNodeS{Identifier: v, Exp: left}
+			case *ast.ArrayIndexNodeS:
+				left = &ast.ArrayAssignmentNodeS{Target: v.Target, Index: v.Index, Value: left}
 			default:
-				err = parser.error(fmt.Sprintf("Expected a variable, got '%v'", v), op.Line, op.Col)
+				err = parser.error(fmt.Sprintf("Expected an assignable target, got '%v'", v), op.Line, op.Col)
 			}
 		}
 
