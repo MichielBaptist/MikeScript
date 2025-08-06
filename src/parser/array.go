@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 	token "mikescript/src/token"
 )
 
@@ -50,7 +51,23 @@ func (parser *MSParser) parseAccess() (ast.ExpNodeI, error) {
 
 
 func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
-	// ']' type '{' {expression ','} * '}' --> array constructor
+	// exp? ']' type '{' {expression ','} * '}' --> array constructor
+
+	var atype mstype.MSType
+	var n ast.ExpNodeI
+	var err error
+
+	// Check if there is an expression between '[' exp ']'
+	if ok, _ := p.lookahead(token.RIGHT_SQUARE) ; !ok {
+		n, err = p.parseExpression()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("%v\n", n)
+	println(p.peek().Lexeme)
 
 	// Need ']'
 	if ok, tk := p.match(token.RIGHT_SQUARE) ; !ok {
@@ -58,7 +75,7 @@ func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
 	}
 
 	// Parse type
-	atype, err := p.parseType()
+	atype, err = p.parseType()
 
 	fmt.Printf("Type: %+v\n", atype)
 
@@ -73,8 +90,14 @@ func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
 
 	// check for empty constructor
 	if ok, _ := p.match(token.RIGHT_BRACE) ; ok {
+		println("Closing brace found, empty initializer")
 		vals := make([]ast.ExpNodeI, 0)
-		return &ast.ArrayConstructorNodeS{Type: atype, Vals: vals}, nil
+		return &ast.ArrayConstructorNodeS{Type: atype, Vals: vals, N: n}, nil
+	}
+
+	if n != nil {
+		msg := "Cannot initialize an array with values if an initialize amount was provided."
+		return nil, p.error(msg, 0, 0)
 	}
 
 	// Parse expressions
@@ -92,5 +115,5 @@ func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
 		return nil, p.unexpectedToken(tk, token.RIGHT_BRACE)
 	}
 
-	return &ast.ArrayConstructorNodeS{Type: atype, Vals: exprs}, nil
+	return &ast.ArrayConstructorNodeS{Type: atype, Vals: exprs, N: n}, nil
 }

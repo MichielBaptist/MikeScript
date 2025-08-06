@@ -10,6 +10,7 @@ func (p *MSParser) parseType() (mstype.MSType, error) {
 	// arg: type of declartion;
 	// Need to consider 3 cases:
 	// 1. basic types 'int', 'bool', 'float', 'string'
+	// 2. Named types like 'point', 'car', ...
 	// 2. composite types (type, type), ()
 	// 3. function types (type, type, type -> type), ( -> type), (->)
 	// 4. array types 'type[]'
@@ -21,6 +22,10 @@ func (p *MSParser) parseType() (mstype.MSType, error) {
 	case token.BOOLEAN_TYPE:	return mstype.MS_BOOL, nil
 	case token.STRING_TYPE:		return mstype.MS_STRING, nil
 	case token.NOTHING_TYPE:	return mstype.MS_NOTHING, nil
+	}
+
+	if ok, tok := p.match(token.IDENTIFIER) ; ok {
+		return &mstype.MSNamedTypeS{Name: tok.Lexeme}, nil
 	}
 
 	// Array type

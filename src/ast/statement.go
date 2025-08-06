@@ -52,6 +52,10 @@ type FuncDeclNodeS struct {
 	Body *BlockNodeS					// Body of function, may be nil
 }
 
+type TypeDeclarationNode struct {
+	Tname *VariableExpNodeS		// Interpreted as type name
+	Type mstype.MSType			// Defined type
+}
 
 // forces possible structs for StmtNode
 func (*Program) statmentPlaceholder() {}
@@ -64,6 +68,7 @@ func (*ContinueNodeS) statmentPlaceholder() {}
 func (*BreakNodeS) statmentPlaceholder() {}
 func (*FuncDeclNodeS) statmentPlaceholder() {}
 func (*ReturnNodeS) statmentPlaceholder() {}
+func (*TypeDeclarationNode) statmentPlaceholder() {}
 
 
 ////////////////////////////////////////////////////////////

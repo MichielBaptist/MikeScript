@@ -25,6 +25,5 @@ func (evaluator *MSEvaluator) executeStatements(node *ast.Program) (MSVal, error
 		}
 	}
 
-	// Ignore result of the last statement
 	return res, err
 }

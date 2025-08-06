@@ -67,6 +67,7 @@ type ArrayConstructorNodeS struct {
 	// '['']' type '{' {expression ','} * '}' 
 	Type mstype.MSType	
 	Vals []ExpNodeI
+	N ExpNodeI
 }
 
 type ArrayAssignmentNodeS struct {
@@ -92,5 +93,11 @@ func (*ArrayConstructorNodeS) expressionPlaceholder() {}
 func (*ArrayAssignmentNodeS) expressionPlaceholder() {}
 
 func (ve *VariableExpNodeS) VarName() string {
+
+	// 'anonymous' functions have no name
+	if ve == nil {
+		return ""
+	}
+
 	return ve.Name.Lexeme
 }

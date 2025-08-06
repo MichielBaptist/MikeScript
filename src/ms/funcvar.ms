@@ -8,3 +8,6 @@ function () >> f -> (->) {
 }
 
 =f -> hello;
+
+// print hello world
+=hello;

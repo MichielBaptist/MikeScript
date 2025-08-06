@@ -103,13 +103,10 @@ func (f *MSFunction) copyUnBound() []ParamBindingS {
 
 func (f *MSFunction) bindArgs(args []MSVal) (*MSFunction, error) {
 
-	// Copy bindings. Note we can't change the values of the
-	// binding directly as they are EvalResult pointers
+	// Copy bindings
 	newBound := f.copyBound()
 	newUnbound := f.copyUnBound()
 
-	// Loop over args and compare the return type to the
-	// expected type.
 	for i, arg := range args {
 
 		// Get unbound param

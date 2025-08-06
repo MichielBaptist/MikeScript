@@ -23,7 +23,7 @@ func stringCut(s string, n int) string {
 
 type EnvRow struct {
 	name 	string			// Name of the variable
-	value 	*MSVal	// Value of the variable (always an EvalResult)
+	value 	*MSVal			// Value of the variable (always an EvalResult)
 }
 
 func (er *EnvRow) String() string {
@@ -40,18 +40,6 @@ func (er *EnvRow) rowRepr() string {
 	c2 := stringCut(er.name, namecol_size)
 	c3 := stringCut(val.String(), defcol_size)
 	return fmt.Sprintf("| %-*v | %-*v | %-*v |", typecol_size, c1, namecol_size, c2, defcol_size, c3)
-}
-
-////////////////////////////////////////
-// Error
-////////////////////////////////////////
-
-type EnvironmentError struct {
-	message string
-}
-
-func (e *EnvironmentError) Error() string {
-	return "Environment Error: " + e.message
 }
 
 ////////////////////////////////////////
@@ -116,11 +104,14 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 
 	targetEnv := env.walkBack(depth)
 
+	// If env does not contain the var, throw error
+	if !env.containsVar(name) {
+		return varNotFound(name)
+	}
+
 	// Variable is defined, first check for type compatibility.
-	if !targetEnv.compatibleType(name, value) {
-		expectedType := env.varType(name)
-		receivedType := value.Type()
-		return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, expectedType, receivedType)}
+	if err := targetEnv.compatibleType(name, value) ; err != nil {
+		return err
 	}
 
 	// Set the value, this is safe now
@@ -132,12 +123,6 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 ////////////////////////////////////////
 // Helper functions
 ////////////////////////////////////////
-
-func (env *Environment) varType(name string) mstype.MSType {
-	row := env.variables[name].value
-	typ := (*row).Type()
-	return typ
-}
 
 func (env *Environment) printEnv() int {
 
@@ -170,13 +155,26 @@ func (env *Environment) containsVar(name string) bool {
 	return ok
 }
 
-func (env *Environment) compatibleType(name string, value MSVal) bool {
+func (env *Environment) compatibleType(name string, value MSVal) error {
 
 	// Get relevant row; crash on issue
-	row := env.variables[name]
+	row, ok := env.variables[name]
+
+	// ok check, should never trigger normally
+	if !ok {
+		return varNotFound(name)
+	}
+
+	// Crash on dereferencing nil, then there is an issue.
 	expectedType := (*row.value).Type()
 	receivedType := value.Type()
-	return expectedType.Eq(receivedType)
+	ok = expectedType.Eq(receivedType)
+
+	if ok {
+		return nil
+	} else {
+		return incompatibleTypes(name, expectedType, receivedType)
+	}
 }
 
 func tblbar(depth int) string {
@@ -194,4 +192,12 @@ func tblbar(depth int) string {
 		strings.Repeat("-", defcol_size),
 		"-+",
 	}, "")
+}
+
+func varNotFound(name string) error {
+	return &EnvironmentError{message: fmt.Sprintf("Variable '%s' is not defined", name)}
+}
+
+func incompatibleTypes(name string, target, val mstype.MSType) error {
+	return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, target, val)}
 }

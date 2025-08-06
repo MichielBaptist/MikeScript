@@ -33,6 +33,9 @@ func (parser *MSParser) parseStatement() (ast.StmtNodeI, error){
 	if ok, _ := parser.match(token.VAR); ok {
 		return parser.parseVarDeclaration()
 	}
+	if ok, _ := parser.match(token.TYPE) ; ok {
+		return parser.parseTypeDeclaration()
+	}
 	// CONTINUE
 	if ok, tk := parser.match(token.CONTINUE); ok {
 		return parser.parseContinue(tk)

@@ -112,14 +112,15 @@ func (r *MSResolver) Resolve() map[ast.ExpNodeI]int {
 
 func (r *MSResolver) resolveStatement(stm ast.StmtNodeI) {
 	switch st := stm.(type) {
-	case *ast.Program:			r.resolveStatements(st.Statements)
-	case *ast.BlockNodeS: 		r.resolveBlockNode(st)
-	case *ast.VarDeclNodeS:		r.resolveVariableDeclaration(st)
-	case *ast.ExStmtNodeS:		r.resolveExpressionStatement(st)
-	case *ast.IfNodeS:			r.resolveIfNode(st)
-	case *ast.WhileNodeS:		r.resolveWhileNode(st)
-	case *ast.ReturnNodeS:		r.resolveExpression(st.Node)
-	case *ast.FuncDeclNodeS:	r.resolveFuncDeclaration(st)
+	case *ast.Program:				r.resolveStatements(st.Statements)
+	case *ast.BlockNodeS: 			r.resolveBlockNode(st)
+	case *ast.VarDeclNodeS:			r.resolveVariableDeclaration(st)
+	case *ast.ExStmtNodeS:			r.resolveExpressionStatement(st)
+	case *ast.IfNodeS:				r.resolveIfNode(st)
+	case *ast.WhileNodeS:			r.resolveWhileNode(st)
+	case *ast.ReturnNodeS:			r.resolveExpression(st.Node)
+	case *ast.FuncDeclNodeS:		r.resolveFuncDeclaration(st)
+	case *ast.TypeDeclarationNode: 	return
 	}
 	
 }
@@ -145,6 +146,7 @@ func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 // --------------------------------------------------------
 
 func (r *MSResolver) resolveArrayConstructor(n *ast.ArrayConstructorNodeS) {
+	r.resolveExpression(n.N)
 	for _, v := range n.Vals {
 		r.resolveExpression(v)
 	}

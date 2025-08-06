@@ -139,6 +139,7 @@ func (r MSRunner) run(input string) int {
 	evallog.log("Environment:")
 	if r.verbose {
 		r.evaluator.PrintEnv()
+		r.evaluator.PrintTypes()
 	}
 
 	// Print the result

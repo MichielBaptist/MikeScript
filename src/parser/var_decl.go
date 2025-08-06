@@ -15,6 +15,8 @@ func (parser *MSParser) parseVarDeclaration() (*ast.VarDeclNodeS, error) {
 
 	vtype, err = parser.parseType()
 
+	fmt.Printf("%v", vtype)
+
 	// For now, we cannor declare MSOperationTypeS
 	// Because they are declared using function keyword
 	// if _, ok := vtype.(*mstype.MSOperationTypeS) ; ok {

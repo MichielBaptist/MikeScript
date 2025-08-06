@@ -14,7 +14,7 @@ func (t *MSArrayType) Eq(o MSType) bool {
 }
 
 func (t *MSArrayType) String() string {
-	return fmt.Sprintf("%s[]", t.Type.String())
+	return fmt.Sprintf("[]%s", t.Type.String())
 }
 
 func (t *MSArrayType) Nullable() bool {

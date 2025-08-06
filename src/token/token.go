@@ -70,6 +70,7 @@ const(
 	CONTINUE 						// continue
 	BREAK 							// break
 	VAR								// var
+	TYPE							// type
 
 	// Types
 	INT_TYPE 						// int (64)
@@ -144,6 +145,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	CONTINUE: "continue",
 	BREAK: "break",
 	VAR: "var",
+	TYPE: "type",
 }
 
 // Map of keywords
@@ -165,6 +167,7 @@ var Keywords map[string]TokenType = map[string]TokenType{
 	"continue": CONTINUE,
 	"break": BREAK,
 	"var": VAR,
+	"type": TYPE,
 	"nothing": NOTHING_TYPE,
 }
 

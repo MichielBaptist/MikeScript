@@ -1,6 +1,7 @@
 package interp
 
 import (
+	"fmt"
 	"mikescript/src/ast"
 )
 
@@ -9,13 +10,12 @@ import (
 ////////////////////////////////////////////////////////////////////////
 
 type MSEvaluator struct {
-	// Contains program state.
-	ast *ast.Program		// The AST to evaluate
-	err []error				// Evaluation errors
-	env *Environment		// Environment of curresnt scope
-	glb *Environment 		// Fixed reference to global scope (outermost env)
-
-	locals map[ast.ExpNodeI]int
+	ast *ast.Program				// The AST to evaluate
+	err []error						// Evaluation errors
+	env *Environment				// Environment of curresnt scope
+	glb *Environment 				// Fixed reference to global scope (outermost env)
+	types *TypeEnv					// Type definitions
+	locals map[ast.ExpNodeI]int		// How deep do we need to go to resolve variables?
 }
 
 func NewMSEvaluator() *MSEvaluator {
@@ -28,7 +28,15 @@ func NewMSEvaluator() *MSEvaluator {
 	glb.NewVar("print", MSBuiltinPrint())
 	glb.NewVar("print_env", MSBuiltinPrintEnv())
 
-	return &MSEvaluator{env: env, glb: glb, locals: make(map[ast.ExpNodeI]int)}
+	// Create type env
+	types := NewTypeEnv()
+
+	return &MSEvaluator{
+		env: env,
+		glb: glb,
+		locals: make(map[ast.ExpNodeI]int),
+		types: types,
+	}
 }
 
 func (evaluator *MSEvaluator) UpdateLocals(locals map[ast.ExpNodeI]int) {
@@ -54,4 +62,10 @@ func (evaluator *MSEvaluator) Errors() []error {
 
 func (evaluator *MSEvaluator) PrintEnv() {
 	evaluator.env.printEnv()
+}
+
+func (e *MSEvaluator) PrintTypes() {
+	fmt.Println("-------------------------------------------------------")
+	e.types.printEnv()
+	fmt.Println("-------------------------------------------------------")
 }
