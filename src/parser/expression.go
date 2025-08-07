@@ -81,30 +81,44 @@ func (parser *MSParser) parseLand() (ast.ExpNodeI, error) {
 }
 
 func (parser *MSParser) parseTuple() (ast.ExpNodeI, error) {
+
+	var node ast.ExpNodeI
+	var err error
+	var exprs []ast.ExpNodeI
 	
-	// parse the first expression
-	node, err := parser.parseEquality()
+	// parse the first expression, we should always expect
+	// that this expression exists.
+	node, err = parser.parseEquality()
 
 	if err != nil {
 		return node, err
 	}
 
-	for {
-		if ok, op := parser.match(token.COMMA); ok {
-			right, err := parser.parseEquality()
-			node = &ast.BinaryExpNodeS{Left: node, Op: op, Right: right}
+	exprs = append(exprs, node)
 
-			// check for errors
+	for {
+		if ok, _ := parser.match(token.COMMA); ok {
+			// Keep parsing as long as we see commas
+			
+			right, err := parser.parseEquality()
+
 			if err != nil {
 				return node, err
 			}
+
+			exprs = append(exprs, right)
 
 		} else {
 			break
 		}
 	}
 
-	return node, err
+	if len(exprs) == 1 {
+		return exprs[0], nil
+	} else {
+		return &ast.TupleNodeS{Expressions: exprs}, nil
+	}
+
 }
 
 func (parser *MSParser) parseEquality() (ast.ExpNodeI, error) {

@@ -56,7 +56,7 @@ func TokenToType(tok *token.Token) (MSType, error) {
 	case token.INT_TYPE:		return &MSSimpleTypeS{Rt: RT_INT}, nil
 	case token.STRING_TYPE:		return &MSSimpleTypeS{Rt: RT_STRING}, nil
 	case token.BOOLEAN_TYPE:	return &MSSimpleTypeS{Rt: RT_BOOL}, nil
-	default:					return nil, &MSTypeError{Msg: fmt.Sprintf("Cannot convert token: %s to type", tok) }
+	default:					return nil, &MSTypeError{Msg: fmt.Sprintf("Cannot convert token: %v to type", tok) }
 	}
 }
 

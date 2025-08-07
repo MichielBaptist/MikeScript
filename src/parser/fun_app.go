@@ -52,10 +52,9 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 
 		switch op.Type {
 		case token.GREATER_GREATER, token.GREATER_GREATER_EQ:
-			// >> function application (parameter binding)
-			// >>= function application && call
+			// >>  function application (parameter binding)
+			// >>= function application && call. 'e1, e2 >>= f' is syntactic sugar for '=(e1, e2 ... >> f)'
 
-			// TODO: remove tuple alltogether?
 			lexpressions := flattenExpNode(left)
 
 			// Function application
@@ -100,25 +99,9 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 }
 
 func flattenExpNode(n ast.ExpNodeI) []ast.ExpNodeI {
-
-	// nil node might happen when for example calling a
-	// function without arguments.
-	if (n == nil) {
-		return []ast.ExpNodeI{}
+	switch t := n.(type) {
+	case *ast.TupleNodeS: 	return t.Expressions
+	case nil:				return []ast.ExpNodeI{}
+	default: 				return []ast.ExpNodeI{n}
 	}
-
-	// By default, flatten returns the node wrapped in a slice
-	lexpressions := []ast.ExpNodeI{n}
-	
-	// If the node is a tuple, we need to flatten
-	// the left side and append the right side.
-	switch node := n.(type) {
-	case *ast.BinaryExpNodeS:
-		switch node.Op.Type {
-		case token.COMMA:
-			lexpressions = append(flattenExpNode(node.Left), node.Right)
-		}
-	}
-
-	return lexpressions
 }

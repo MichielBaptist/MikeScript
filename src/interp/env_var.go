@@ -105,7 +105,7 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 	targetEnv := env.walkBack(depth)
 
 	// If env does not contain the var, throw error
-	if !env.containsVar(name) {
+	if !targetEnv.containsVar(name) {
 		return varNotFound(name)
 	}
 
@@ -115,7 +115,7 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 	}
 
 	// Set the value, this is safe now
-	env.variables[name] = EnvRow{name, &value}
+	targetEnv.variables[name] = EnvRow{name, &value}
 
 	return nil
 }

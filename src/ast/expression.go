@@ -44,6 +44,10 @@ type UnaryExpNodeS struct {
 	Node ExpNodeI
 }
 
+type TupleNodeS struct {
+	Expressions []ExpNodeI
+}
+
 type LiteralExpNodeS struct {
 	Tk token.Token
 }
@@ -91,6 +95,7 @@ func (*LogicalExpNodeS) expressionPlaceholder() {}
 func (*ArrayIndexNodeS) expressionPlaceholder() {}
 func (*ArrayConstructorNodeS) expressionPlaceholder() {}
 func (*ArrayAssignmentNodeS) expressionPlaceholder() {}
+func (*TupleNodeS) expressionPlaceholder() {}
 
 func (ve *VariableExpNodeS) VarName() string {
 
