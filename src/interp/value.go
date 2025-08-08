@@ -3,7 +3,6 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/mstype"
-	"strings"
 )
 
 
@@ -77,30 +76,6 @@ func (i MSBool) String() string {
 }
 
 ////////////////////////////////////////////////////////////
-// tuple
-////////////////////////////////////////////////////////////
-
-type MSTuple struct {
-	Values []MSVal
-}
-
-func (t MSTuple) Type() mstype.MSType {
-	types := make([]mstype.MSType, len(t.Values))
-	for i, arg := range t.Values {
-		types[i] = arg.Type()
-	}
-	return &mstype.MSCompositeTypeS{Types: types}
-}
-
-func (i MSTuple) String() string {
-	strs := make([]string, len(i.Values))
-	for i, v := range i.Values{
-		strs[i] = v.String()
-	}
-	return "(" + strings.Join(strs, ", ") + ")"
-}
-
-////////////////////////////////////////////////////////////
 // return
 ////////////////////////////////////////////////////////////
 
@@ -155,25 +130,4 @@ func (n MSNothing) Type() mstype.MSType {
 }
 func (n MSNothing) String() string {
 	return "nothing"
-}
-
-////////////////////////////////////////////////////////////
-// Array
-////////////////////////////////////////////////////////////
-
-type MSArray struct {
-	Values []MSVal
-	VType mstype.MSType
-}
-func (n MSArray) Type() mstype.MSType {
-	return &mstype.MSArrayType{Type: n.VType}
-}
-func (n MSArray) String() string {
-
-	strs := make([]string, len(n.Values))
-	for i, v := range n.Values {
-		strs[i] = v.String()
-	}
-
-	return fmt.Sprintf("[%s]", strings.Join(strs, ","))
 }

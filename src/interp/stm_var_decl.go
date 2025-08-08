@@ -138,5 +138,6 @@ type TypeResolutionError struct {
 }
 
 func (e *TypeResolutionError) Error() string {
+	
 	return "Type resolution error:" + e.msg
 }

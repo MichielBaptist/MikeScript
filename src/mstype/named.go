@@ -2,6 +2,7 @@ package mstype
 
 type MSNamedTypeS struct {
 	Name string
+	Ref MSType 		// is nil if not resolved
 }
 
 func (t *MSNamedTypeS) Eq(o MSType) bool {
