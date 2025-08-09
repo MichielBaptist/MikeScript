@@ -7,3 +7,5 @@ function (int n) >> fib -> int {
     n - 2 >>= fib => fib_2;
     return fib_1 + fib_2;
 }
+
+10 >>= fib >>= print;

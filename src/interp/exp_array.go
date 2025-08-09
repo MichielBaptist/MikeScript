@@ -7,6 +7,7 @@ import (
 )
 
 func (e *MSEvaluator) evalArrayIndexExpression(n *ast.ArrayIndexNodeS) (MSVal, error) {
+	// target[index]
 
 	// Evaluate the target first
 	val, err := e.evaluateExpression(n.Target)
@@ -35,6 +36,7 @@ func (e *MSEvaluator) evalArrayIndexExpression(n *ast.ArrayIndexNodeS) (MSVal, e
 }
 
 func (e *MSEvaluator) evaluateArrayConstructor(n *ast.ArrayConstructorNodeS) (MSVal, error) {
+	// [n]type{vals...}
 
 
 	// Cases:
@@ -131,7 +133,7 @@ func (e *MSEvaluator) evaluateArrayConstructorWithSize(n *ast.ArrayConstructorNo
 	// create an array of proper size and init values
 	vals = make([]MSVal, sizeInt.Val)
 	for i := 0 ; i < sizeInt.Val ; i++ {
-		vals[i] = e.typeToVal(resolvedType, nil)
+		vals[i] = e.typeToVal(resolvedType)
 	}
 
 	return MSArray{Values: vals, VType: resolvedType}, nil

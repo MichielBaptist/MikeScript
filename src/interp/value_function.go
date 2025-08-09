@@ -59,7 +59,7 @@ func NewMSFunction(decl *ast.FuncDeclNodeS, closure *Environment) *MSFunction {
 
 }
 
-func MSFunctionFromType(t *mstype.MSOperationTypeS, name *ast.VariableExpNodeS, closure *Environment) *MSFunction {
+func MSFunctionFromType(t *mstype.MSOperationTypeS, closure *Environment) *MSFunction {
 
 	bindings := make([]ParamBindingS, len(t.Left))
 	for i, t := range t.Left {
@@ -67,7 +67,7 @@ func MSFunctionFromType(t *mstype.MSOperationTypeS, name *ast.VariableExpNodeS, 
 	}
 
 	return &MSFunction{
-		name: name,					// from var declaration
+		name: nil,					// from var declaration
 		fbody: nil,					// no body since used in "var (... -> ...) f;"
 		unBoundParams: bindings,	// 
 		returnType: t.Right,

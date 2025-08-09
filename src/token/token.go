@@ -168,6 +168,7 @@ var Keywords map[string]TokenType = map[string]TokenType{
 	"break": BREAK,
 	"var": VAR,
 	"type": TYPE,
+	"struct": STRUCT,
 	"nothing": NOTHING_TYPE,
 }
 
@@ -176,12 +177,7 @@ func (t TokenType) String() string {
 	return stmp[t]
 }
 
-// func (t Token) String() string {
-// 	return "(" + t.Type.String() + ", " + t.Lexeme + ")"
-// }
-
 // List of tokens which define a builtin type
-var TypeKeywords []TokenType = []TokenType{INT_TYPE, FLOAT_TYPE, STRING_TYPE, BOOLEAN_TYPE, NOTHING_TYPE}
 var SimpleTypeKeywords []TokenType = []TokenType{
 	INT_TYPE,
 	FLOAT_TYPE,

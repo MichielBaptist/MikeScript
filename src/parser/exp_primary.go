@@ -8,46 +8,32 @@ import (
 
 
 func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
+	// parses:
+	// 1. literal
+	// 2. IDENTIFIER
+	// 3. IDENTIFIER '{' ... '}'
+	// 4. '(' expr ')'
+	// 5. '[' exp ']' type '{' exp ? {',' exp}* '}'
 
 	var err error = nil
 
-
-	// matches a primary expression
+	// 1. Literal
 	if ok, tok := parser.match(token.NUMBER_INT, token.NUMBER_FLOAT, token.STRING, token.TRUE, token.FALSE); ok {
 		return &ast.LiteralExpNodeS{Tk: tok}, err
 	}
 
-	// matches an identifier
-	if ok, id := parser.match(token.IDENTIFIER); ok {
-		return &ast.VariableExpNodeS{Name: id}, err
+	// 2. IDENTIFIER
+	// 3. IDENTIFIER '{' ... '}'
+	if ok, _ := parser.lookahead(token.IDENTIFIER); ok {
+		return parser.parseStructConstructor()
 	}
 
-	// matches parenthesis
-	if ok, lpar := parser.match(token.LEFT_PAREN); ok {
-
-		// parse the expression inside the parenthesis
-		node, err := parser.parseExpression()
-
-		// When encountering an error, return the error
-		// and the parser should synchronize this statment.
-		if err != nil {
-			return node, err
-		}
-
-		// We expect a closing parenthesis
-		// after the expression
-		ok, rpar := parser.expect(token.RIGHT_PAREN)
-
-		if !ok {
-			msg := fmt.Sprintf("Expected ')' got '%v'", rpar.Type.String())
-			err = parser.error(msg, rpar.Line, rpar.Col)
-		}
-
-		// wrap node in parenthesis
-		return &ast.GroupExpNodeS{Node: node, TokenLeft: lpar, TokenRight: rpar}, err
+	// 4. '(' expr ')'
+	if ok, _ := parser.lookahead(token.LEFT_PAREN); ok {
+		return parser.parseGroupExpression()
 	}
 
-	// matches '['
+	// 5. '[' exp ']' type '{' exp ? {',' exp}* '}'
 	if ok, _ := parser.match(token.LEFT_SQUARE) ; ok {
 		return parser.parseArrayConstructor()
 	}

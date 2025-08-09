@@ -6,10 +6,29 @@ import (
 )
 
 
-func (p *MSParser) parseTypeDeclaration() (*ast.TypeDeclarationNode, error) {
+func (p *MSParser) parseTypeDeclaration() (ast.StmtNodeI, error) {
 
 	// Parses: "type" type identifier ";"
+	// Parses: "type" "struct" identifier '{' ... '}'
 
+	var node ast.StmtNodeI
+	var err error
+
+	if ok, _ := p.match(token.STRUCT) ; ok {
+		node, err = p.parseStructDeclaration()
+	} else {
+		node, err = p.parseTypedefStatement()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return node, nil
+
+}
+
+func (p *MSParser) parseTypedefStatement() (*ast.TypeDefStatementS, error) {
 	// parse type
 	t, err := p.parseType()
 
@@ -24,10 +43,12 @@ func (p *MSParser) parseTypeDeclaration() (*ast.TypeDeclarationNode, error) {
 		return nil, err
 	}
 
+
 	// expect ';'
 	if ok, tok := p.expect(token.SEMICOLON) ; !ok {
 		return nil, p.unexpectedToken(tok, token.SEMICOLON)
 	}
 
-	return &ast.TypeDeclarationNode{Tname: v, Type: t}, nil
+
+	return &ast.TypeDefStatementS{Tname: v, Type: t}, nil
 }

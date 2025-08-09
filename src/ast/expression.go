@@ -80,6 +80,22 @@ type ArrayAssignmentNodeS struct {
 	Value ExpNodeI
 }
 
+type StructConstructorNodeS struct {
+	Name *mstype.MSNamedTypeS
+	Fields map[*VariableExpNodeS]ExpNodeI
+}
+
+type FieldAccessNodeS struct {
+	Target ExpNodeI
+	Field *VariableExpNodeS
+}
+
+type FieldAssignmentNode struct {
+	Target ExpNodeI
+	Field *VariableExpNodeS
+	Value ExpNodeI
+}
+
 // forces possible structs for ExpNode
 // pointer to these structs implement expression
 func (*AssignmentNodeS) expressionPlaceholder() {}
@@ -96,6 +112,9 @@ func (*ArrayIndexNodeS) expressionPlaceholder() {}
 func (*ArrayConstructorNodeS) expressionPlaceholder() {}
 func (*ArrayAssignmentNodeS) expressionPlaceholder() {}
 func (*TupleNodeS) expressionPlaceholder() {}
+func (*StructConstructorNodeS) expressionPlaceholder() {}
+func (*FieldAccessNodeS) expressionPlaceholder() {}
+func (*FieldAssignmentNode) expressionPlaceholder() {}
 
 func (ve *VariableExpNodeS) VarName() string {
 

@@ -14,7 +14,7 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 
 	// Check for errors
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// Cast the value to FunctionResult (interface)
@@ -23,7 +23,7 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	// Cast to function, if not ok error
 	if !ok {
 		err = &EvalError{fmt.Sprintf("Function application is not implemented for type '%s'", fn)}
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	//////////////////////////////////////////////////
@@ -33,7 +33,7 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	// Check if the arity of the function supports binding
 	if callable.Arity() < len(node.Args) {
 		err := fmt.Sprintf("Exceeded arity of '%s' expected maximum %v arguments but received %v", callable, callable.Arity(), len(node.Args))
-		return MSNothing{}, &BindingError{msg: err}
+		return nil, &BindingError{msg: err}
 	}
 
 	// First evaluate all arguments, keep track of any errors.
@@ -42,7 +42,7 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 		arg, err := evaluator.evaluateExpression(arg)
 
 		if err != nil {
-			return MSNothing{}, err
+			return nil, err
 		}
 
 		args[i] = arg
@@ -59,7 +59,7 @@ func (evaluator *MSEvaluator) evaluateFunctionCall(node *ast.FuncCallNodeS) (MSV
 
 	// Check for errors
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// Cast the value to FunctionResult (interface)
@@ -67,7 +67,7 @@ func (evaluator *MSEvaluator) evaluateFunctionCall(node *ast.FuncCallNodeS) (MSV
 
 	if !ok {
 		err = &EvalError{fmt.Sprintf("Function call is not implemented for type '%s'", fn)}
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	

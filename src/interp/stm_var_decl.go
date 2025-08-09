@@ -18,7 +18,7 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 	}
 
 	// Get the default value for the type
-	val := evaluator.typeToVal(typ, node.Identifier)
+	val := evaluator.typeToVal(typ)
 
 	if val == nil {
 		_ = []int{}[0]
@@ -34,7 +34,7 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 // type to default value
 ////////////////////////////////////////////////////////////////////////
 
-func (e *MSEvaluator) typeToVal(tk mstype.MSType, name *ast.VariableExpNodeS) MSVal {
+func (e *MSEvaluator) typeToVal(tk mstype.MSType) MSVal {
 	// cases:
 	// 1. simple type
 	// 2. composite
@@ -43,9 +43,10 @@ func (e *MSEvaluator) typeToVal(tk mstype.MSType, name *ast.VariableExpNodeS) MS
 
 	switch t := tk.(type){
 	case *mstype.MSSimpleTypeS: 	return e.simpleTypeToVal(t)
-	case *mstype.MSCompositeTypeS:	return e.compositeTypeToVal(t, name)
-	case *mstype.MSOperationTypeS:	return MSFunctionFromType(t, name, e.env)
+	case *mstype.MSCompositeTypeS:	return e.compositeTypeToVal(t)
+	case *mstype.MSOperationTypeS:	return MSFunctionFromType(t, e.env)
 	case *mstype.MSArrayType:		return e.arrayTypeToVal(t)
+	case *mstype.MSStructTypeS:		return e.structTypeToVal(t)
 	default:						fmt.Printf("Found unknown type: '%s'\n", t)
 	}
 	return nil
@@ -61,16 +62,24 @@ func (e *MSEvaluator) simpleTypeToVal(rt *mstype.MSSimpleTypeS) MSVal {
 	}
 }
 
-func (e *MSEvaluator) compositeTypeToVal(ct *mstype.MSCompositeTypeS, name *ast.VariableExpNodeS) MSVal {
+func (e *MSEvaluator) compositeTypeToVal(ct *mstype.MSCompositeTypeS) MSVal {
 	vals := make([]MSVal, len(ct.Types))
 	for i, t := range ct.Types {
-		vals[i] = e.typeToVal(t, name)
+		vals[i] = e.typeToVal(t)
 	}
 	return MSTuple{Values: vals}
 }
 
 func (e *MSEvaluator) arrayTypeToVal(t *mstype.MSArrayType) MSVal {
 	return MSArray{Values: make([]MSVal, 0), VType: t.Type}
+}
+
+func (e *MSEvaluator) structTypeToVal(st *mstype.MSStructTypeS) MSVal {
+	values := make(map[string]MSVal)
+	for name, field := range st.Fields {
+		values[name] = e.typeToVal(field)
+	}
+	return MSStruct{Name: st.Name, Fields: values}
 }
 
 
@@ -85,6 +94,7 @@ func (e *MSEvaluator) resolveType(typ mstype.MSType) (mstype.MSType, error) {
 	case *mstype.MSCompositeTypeS:	return e.resolveCompositeType(t)
 	case *mstype.MSOperationTypeS:	return e.resolveOperationType(t)
 	case *mstype.MSSimpleTypeS:		return t, nil
+	case *mstype.MSStructTypeS:		return e.resolveStructType(t)
 	}
 
 	return nil, &TypeResolutionError{msg: fmt.Sprintf("Unknown type '%v'", typ)}
@@ -140,4 +150,20 @@ type TypeResolutionError struct {
 func (e *TypeResolutionError) Error() string {
 	
 	return "Type resolution error:" + e.msg
+}
+
+func (e *MSEvaluator) resolveStructType(n *mstype.MSStructTypeS) (mstype.MSType, error) {
+	fieldsResolved := make(map[string]mstype.MSType)
+	for name, typ := range n.Fields {
+
+		resolved, err := e.resolveType(typ)
+
+		if err != nil {
+			return nil, err
+		}
+
+		fieldsResolved[name] = resolved
+	}
+
+	return &mstype.MSStructTypeS{Name: n.Name, Fields: fieldsResolved}, nil
 }

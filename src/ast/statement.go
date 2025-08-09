@@ -52,9 +52,14 @@ type FuncDeclNodeS struct {
 	Body *BlockNodeS					// Body of function, may be nil
 }
 
-type TypeDeclarationNode struct {
+type TypeDefStatementS struct {
 	Tname *VariableExpNodeS		// Interpreted as type name
 	Type mstype.MSType			// Defined type
+}
+
+type StructDeclarationNodeS struct {
+	Name *VariableExpNodeS
+	Fields map[*VariableExpNodeS]mstype.MSType
 }
 
 // forces possible structs for StmtNode
@@ -68,7 +73,8 @@ func (*ContinueNodeS) statmentPlaceholder() {}
 func (*BreakNodeS) statmentPlaceholder() {}
 func (*FuncDeclNodeS) statmentPlaceholder() {}
 func (*ReturnNodeS) statmentPlaceholder() {}
-func (*TypeDeclarationNode) statmentPlaceholder() {}
+func (*TypeDefStatementS) statmentPlaceholder() {}
+func (*StructDeclarationNodeS) statmentPlaceholder() {}
 
 
 ////////////////////////////////////////////////////////////

@@ -21,6 +21,8 @@ func (evaluator *MSEvaluator) evaluateExpression(node ast.ExpNodeI) (MSVal, erro
 	case *ast.ArrayConstructorNodeS:	return evaluator.evaluateArrayConstructor(node)
 	case *ast.ArrayAssignmentNodeS:		return evaluator.evaluateArrayAssignment(node)
 	case *ast.TupleNodeS:				return evaluator.evaluateTuple(node)
-	default:							return MSNothing{}, &EvalError{fmt.Sprintf("Unknown expression type: '%+v'", node)}
+	case *ast.FieldAccessNodeS:			return evaluator.evaluateFieldAccess(node)
+	case *ast.FieldAssignmentNode:		return evaluator.evaluateFieldAssign(node)
+	default:							return nil, &EvalError{fmt.Sprintf("Unknown expression type: '%#v'", node)}
 	}
 }

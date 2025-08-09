@@ -22,33 +22,73 @@ func (parser *MSParser) parseAccess() (ast.ExpNodeI, error) {
 	
 	for {
 
-		// match '['
-		ok, _ := parser.match(token.LEFT_SQUARE)
+		// look for '.' or '['
+		ok, tok := parser.lookahead(token.LEFT_SQUARE, token.DOT)
 
+		// no more access tokens
 		if !ok {
-			break;
+			break
 		}
-		
-		// parse expression
-		index, err := parser.parseExpression()
+
+		switch tok.Type {
+		case token.LEFT_SQUARE:	left, err = parser.parseIndexing(left)
+		case token.DOT:			left, err = parser.parseStructFieldAccess(left)
+		}
 
 		if err != nil {
-			return &ast.ArrayIndexNodeS{}, err
-		}
-
-		fmt.Printf("target: %s\n", left)
-		fmt.Printf("index: %s\n", index)
-		left = &ast.ArrayIndexNodeS{Target: left, Index: index}
-
-		// Expect closing brace
-		if ok, op := parser.expect(token.RIGHT_SQUARE) ; !ok {
-			return &ast.ArrayIndexNodeS{}, parser.unexpectedToken(op, token.RIGHT_SQUARE)
+			return nil, err
 		}
 	}
 
 	return left, err
 }
 
+func (p *MSParser) parseIndexing(target ast.ExpNodeI) (*ast.ArrayIndexNodeS, error) {
+	// parses: primary '[' exp ']'
+	// target (primary) is already parsed and given
+
+	// '['
+	ok, tok := p.match(token.LEFT_SQUARE)
+
+	if !ok {
+		return nil, p.unexpectedToken(tok, token.LEFT_SQUARE)
+	}
+
+	// exp
+	index, err := p.parseExpression()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// ']'
+	if ok, op := p.expect(token.RIGHT_SQUARE) ; !ok {
+		return nil, p.unexpectedToken(op, token.RIGHT_SQUARE)
+	}
+
+	return &ast.ArrayIndexNodeS{Target: target, Index: index}, nil
+
+}
+
+func (p *MSParser) parseStructFieldAccess(target ast.ExpNodeI) (*ast.FieldAccessNodeS, error) {
+	// parses: primary '.' IDENTIFIER
+	// target (primary) is parsed and given
+
+	// '.'
+	if ok, tok := p.match(token.DOT) ; !ok {
+		return nil, p.unexpectedToken(tok, token.DOT)
+	}
+
+	// IDENTIFIER
+	fieldName, err := p.parseIdentifier()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ast.FieldAccessNodeS{Target: target, Field: fieldName}, nil
+
+}
 
 func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
 	// exp? ']' type '{' {expression ','} * '}' --> array constructor

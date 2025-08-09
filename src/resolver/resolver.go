@@ -112,17 +112,18 @@ func (r *MSResolver) Resolve() map[ast.ExpNodeI]int {
 
 func (r *MSResolver) resolveStatement(stm ast.StmtNodeI) {
 	switch st := stm.(type) {
-	case *ast.Program:				r.resolveStatements(st.Statements)
-	case *ast.BlockNodeS: 			r.resolveBlockNode(st)
-	case *ast.VarDeclNodeS:			r.resolveVariableDeclaration(st)
-	case *ast.ExStmtNodeS:			r.resolveExpressionStatement(st)
-	case *ast.IfNodeS:				r.resolveIfNode(st)
-	case *ast.WhileNodeS:			r.resolveWhileNode(st)
-	case *ast.ReturnNodeS:			r.resolveExpression(st.Node)
-	case *ast.FuncDeclNodeS:		r.resolveFuncDeclaration(st)
-	case *ast.TypeDeclarationNode: 	return
+	case *ast.Program:					r.resolveStatements(st.Statements)
+	case *ast.BlockNodeS: 				r.resolveBlockNode(st)
+	case *ast.VarDeclNodeS:				r.resolveVariableDeclaration(st)
+	case *ast.ExStmtNodeS:				r.resolveExpressionStatement(st)
+	case *ast.IfNodeS:					r.resolveIfNode(st)
+	case *ast.WhileNodeS:				r.resolveWhileNode(st)
+	case *ast.ReturnNodeS:				r.resolveExpression(st.Node)
+	case *ast.FuncDeclNodeS:			r.resolveFuncDeclaration(st)
+	case *ast.TypeDefStatementS: 		return	// nothing to resolve
+	case *ast.StructDeclarationNodeS:	return 	// nothing to resolve
+	default:							_ = []int{}[0]
 	}
-	
 }
 
 func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
@@ -134,10 +135,17 @@ func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 	case *ast.BinaryExpNodeS:			r.resolveBinaryExpression(ex)
 	case *ast.LogicalExpNodeS:			r.resolveLogicalExpression(ex)
 	case *ast.UnaryExpNodeS:			r.resolveExpression(ex.Node)
+	case *ast.TupleNodeS:				r.resolveExpressions(ex.Expressions)
 	case *ast.VariableExpNodeS:			r.resolveVariableExpression(ex)
 	case *ast.GroupExpNodeS:			r.resolveExpression(ex.Node)
 	case *ast.ArrayConstructorNodeS:	r.resolveArrayConstructor(ex)
 	case *ast.ArrayIndexNodeS:			r.resolveArrayIndex(ex)
+	case *ast.ArrayAssignmentNodeS:		r.resolveArrayAssignment(ex)
+	case *ast.FieldAccessNodeS:			r.resolveExpression(ex.Target)
+	case *ast.StructConstructorNodeS:	r.resolveStructConstructor(ex)
+	case *ast.FieldAssignmentNode:		r.resolveFieldAssignment(ex)
+	case *ast.LiteralExpNodeS:			return 	// nothing to resolve
+	default:							_ = []int{}[0]
 	}
 }
 
@@ -145,11 +153,26 @@ func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 // statements
 // --------------------------------------------------------
 
+func (r *MSResolver) resolveFieldAssignment(n *ast.FieldAssignmentNode) {
+	r.resolveExpression(n.Target)
+	r.resolveExpression(n.Value)
+}
+
+func (r *MSResolver) resolveStructConstructor(n *ast.StructConstructorNodeS) {
+	for _, exp := range n.Fields {
+		r.resolveExpression(exp)
+	}
+}
+
+func (r *MSResolver) resolveArrayAssignment(n *ast.ArrayAssignmentNodeS) {
+	r.resolveExpression(n.Index)
+	r.resolveExpression(n.Target)
+	r.resolveExpression(n.Value)
+}
+
 func (r *MSResolver) resolveArrayConstructor(n *ast.ArrayConstructorNodeS) {
 	r.resolveExpression(n.N)
-	for _, v := range n.Vals {
-		r.resolveExpression(v)
-	}
+	r.resolveExpressions(n.Vals)
 }
 
 func (r *MSResolver) resolveArrayIndex(n *ast.ArrayIndexNodeS) {
@@ -210,6 +233,12 @@ func (r *MSResolver) resolveWhileNode(n *ast.WhileNodeS) {
 	r.resolveStatement(n.Body)
 }
 
+func (r *MSResolver) resolveExpressions(es []ast.ExpNodeI) {
+	for _, e := range es {
+		r.resolveExpression(e)
+	}
+}
+
 // --------------------------------------------------------
 // expressions
 // --------------------------------------------------------
@@ -250,7 +279,5 @@ func (r *MSResolver) resolveDeclAssignExpression(da *ast.DeclAssignNodeS) {
 
 func (r *MSResolver) resolveFuncAppExpression(fa *ast.FuncAppNodeS) {
 	r.resolveExpression(fa.Fun)
-	for _, e := range fa.Args{
-		r.resolveExpression(e)
-	}
+	r.resolveExpressions(fa.Args)
 }

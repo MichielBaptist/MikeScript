@@ -113,6 +113,7 @@ func (parser *MSParser) error(msg string, line, col int) error {
 
 func (parser *MSParser) unexpectedToken(got token.Token, expected ...token.TokenType) error {
 	msg := fmt.Sprintf("expected '%s' got '%v'", expected, got)
+	_ = []int{}[0]
 	return parser.error(msg, got.Line, got.Col)
 }
 
