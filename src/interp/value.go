@@ -8,6 +8,7 @@ import (
 
 type MSVal interface {
 	Type() mstype.MSType
+	Nullable() bool
 	String() string
 }
 
@@ -27,6 +28,10 @@ func (i MSInt) String() string {
 	return fmt.Sprintf("%v", i.Val)
 }
 
+func (i MSInt) Nullable() bool {
+	return false
+}
+
 ////////////////////////////////////////////////////////////
 // float
 ////////////////////////////////////////////////////////////
@@ -41,6 +46,10 @@ func (i MSFloat) Type() mstype.MSType {
 
 func (i MSFloat) String() string {
 	return fmt.Sprintf("%v", i.Val)
+}
+
+func (i MSFloat) Nullable() bool {
+	return false
 }
 
 ////////////////////////////////////////////////////////////
@@ -59,6 +68,10 @@ func (i MSString) String() string {
 	return i.Val
 }
 
+func (i MSString) Nullable() bool {
+	return false
+}
+
 ////////////////////////////////////////////////////////////
 // bool
 ////////////////////////////////////////////////////////////
@@ -73,6 +86,10 @@ func (b MSBool) Type() mstype.MSType {
 
 func (i MSBool) String() string {
 	return fmt.Sprintf("%v", i.Val)
+}
+
+func (i MSBool) Nullable() bool {
+	return false
 }
 
 ////////////////////////////////////////////////////////////
@@ -91,6 +108,10 @@ func (r MSReturn) String() string {
 	return fmt.Sprintf("Return[%s]", r.Val.String())
 }
 
+func (r MSReturn) Nullable() bool {
+	return false
+}
+
 ////////////////////////////////////////////////////////////
 // break
 ////////////////////////////////////////////////////////////
@@ -105,6 +126,9 @@ func (r MSBreak) String() string {
 	return "break"
 }
 
+func (r MSBreak) Nullable() bool {
+	return false
+}
 
 ////////////////////////////////////////////////////////////
 // continue
@@ -120,6 +144,10 @@ func (r MSContinue) String() string {
 	return "continue"
 }
 
+func (r MSContinue) Nullable() bool {
+	return false
+}
+
 ////////////////////////////////////////////////////////////
 // Nothing
 ////////////////////////////////////////////////////////////
@@ -130,4 +158,8 @@ func (n MSNothing) Type() mstype.MSType {
 }
 func (n MSNothing) String() string {
 	return "nothing"
+}
+
+func (r MSNothing) Nullable() bool {
+	return true
 }

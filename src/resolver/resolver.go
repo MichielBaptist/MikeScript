@@ -3,6 +3,7 @@ package resolver
 import (
 	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 )
 
 type scope map[string]bool
@@ -25,13 +26,15 @@ func (r *MSResolver) SetAst(ast *ast.Program) {
 
 func (r *MSResolver) Reset() {
 	r.scopes = make([]scope, 0, 10)
-	r.locals = make(map[ast.ExpNodeI]int)
+	r.vlocals = make(map[*ast.VariableExpNodeS]int)
+	r.tlocals = make(map[*mstype.MSNamedTypeS]int)
 }
 
 type MSResolver struct {
 	Ast *ast.Program
 	scopes []scope
-	locals map[ast.ExpNodeI]int
+	vlocals map[*ast.VariableExpNodeS]int
+	tlocals map[*mstype.MSNamedTypeS]int
 }
 
 func (r *MSResolver) currentScope() *scope {
@@ -53,12 +56,14 @@ func (r *MSResolver) declare(name string) {
 	// If there is a current scope, we set the
 	// name to false (declared but not yet init)
 
+	fmt.Printf(".   Setting: scopes[%d][%s] --> false\n", len(r.scopes) - 1, name)
 	if current := r.currentScope() ; current != nil {
 
 		if _, ok := (*current)[name] ; ok {
 			// TODO: return error
 			println(fmt.Sprintf("Re-definition of variable %s", name))
 		}
+		
 		(*current)[name] = false
 	}
 }
@@ -67,66 +72,95 @@ func (r *MSResolver) define(name string) {
 	// If there is a current scope, we set the
 	// name to false (declared but not yet init)
 
+	fmt.Printf(".   Setting: scopes[%d][%s] --> true\n", len(r.scopes) -1, name)
 	if current := r.currentScope() ; current != nil {
 		(*current)[name] = true
 	}
 }
 
-func (r *MSResolver) resolveLocal(v *ast.VariableExpNodeS, name string) {
+func (r *MSResolver) resolveLocalVariable(v *ast.VariableExpNodeS, name string) {
 
-	if len(r.scopes) == 0 {
-		fmt.Printf(".   %p %v --> 0 (Global, no scopes)\n", v, v)
+	depth, found, _ := r.findName(name)
+
+	// Found nowhere in scopes
+	if !found {
+		fmt.Printf(".   VARI: %p %v --> Global\n", v, v)
 		return
 	}
 
-	// traverse scopes from top to bottom (len(scopes) - 1) -> 0
-	for i := len(r.scopes) - 1 ; i >= 0 ; i-- {
-		current := r.scopes[i]
-		if _, ok := current[name] ; ok {
-			r.resolveInterp(v, len(r.scopes) - 1 - i)
-		} else {
-			fmt.Printf(".   %p %v --> 0 (Global, not found)\n", v, v)
+	if _, ok := r.vlocals[v] ; ok {
+		println("Tried assigning already existing expression in the local map...")
+	} else {
+		fmt.Printf(".   VARI: %p %v --> %d\n", v, v, depth)
+	}
+	r.vlocals[v] = depth
+}
+
+func (r *MSResolver) resolveLocalType(t *mstype.MSNamedTypeS, name string) {
+
+	depth, found, _ := r.findName(name)
+
+	if !found {
+		fmt.Printf(".   TYPE: %p %v --> Global\n", t, t)
+		return
+	}
+
+	if _, ok := r.tlocals[t] ; ok{
+		println("Tried assigning already existing expression in the local map...")
+	} else {
+		fmt.Printf(".   TYPE: %p %v --> %d\n", t, t, depth)
+	}
+	r.tlocals[t] = depth
+}
+
+func (r *MSResolver) findName(name string) (int, bool, bool) {
+	/* Walk back scope stack to look for name */
+
+	var l int = len(r.scopes) - 1
+	var i int = l
+	var s scope
+
+	for ; i >= 0 ; i-- {
+		s = r.scopes[i]
+
+		// check if it's in this scope
+		if defined, ok := s[name] ; ok {
+			return l - i, true, defined
 		}
 	}
 
-}
-
-func (r *MSResolver) resolveInterp(v ast.ExpNodeI, depth int) {
-
-	if _, ok := r.locals[v] ; ok{
-		println("Tried assigning already existing expression in the local map...")
-	} else {
-		fmt.Printf(".   %p %v --> %d\n", v, v, depth)
-	}
-	r.locals[v] = depth
+	return l - i, false, false
 }
 
 // --------------------------------------------------------
 // resolve
 // --------------------------------------------------------
 
-func (r *MSResolver) Resolve() map[ast.ExpNodeI]int {
+func (r *MSResolver) Resolve() (map[*ast.VariableExpNodeS]int, map[*mstype.MSNamedTypeS]int) {
 	r.resolveStatement(r.Ast)
-	return r.locals
+	return r.vlocals, r.tlocals
 }
 
 func (r *MSResolver) resolveStatement(stm ast.StmtNodeI) {
+	// fmt.Printf("%p // %#v\n", stm, stm)
 	switch st := stm.(type) {
 	case *ast.Program:					r.resolveStatements(st.Statements)
 	case *ast.BlockNodeS: 				r.resolveBlockNode(st)
 	case *ast.VarDeclNodeS:				r.resolveVariableDeclaration(st)
-	case *ast.ExStmtNodeS:				r.resolveExpressionStatement(st)
+	case *ast.ExStmtNodeS:				r.resolveExpression(st.Ex)
 	case *ast.IfNodeS:					r.resolveIfNode(st)
 	case *ast.WhileNodeS:				r.resolveWhileNode(st)
 	case *ast.ReturnNodeS:				r.resolveExpression(st.Node)
 	case *ast.FuncDeclNodeS:			r.resolveFuncDeclaration(st)
-	case *ast.TypeDefStatementS: 		return	// nothing to resolve
-	case *ast.StructDeclarationNodeS:	return 	// nothing to resolve
+	case *ast.TypeDefStatementS: 		r.resolveTypeDeclaration(st)
+	case *ast.StructDeclarationNodeS:	r.resolveStructDeclaration(st)
+	case *ast.BreakNodeS:				return 	// nothing to resolve
 	default:							_ = []int{}[0]
 	}
 }
 
 func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
+	// fmt.Printf("%p // %#v\n", n, n)
 	switch ex := n.(type){
 	case *ast.AssignmentNodeS:			r.resolveAssignmentExpression(ex)
 	case *ast.DeclAssignNodeS:			r.resolveDeclAssignExpression(ex)
@@ -145,7 +179,20 @@ func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 	case *ast.StructConstructorNodeS:	r.resolveStructConstructor(ex)
 	case *ast.FieldAssignmentNode:		r.resolveFieldAssignment(ex)
 	case *ast.LiteralExpNodeS:			return 	// nothing to resolve
-	default:							_ = []int{}[0]
+	default:							fmt.Printf("%v\n", ex) ; _ = []int{}[0]
+	}
+}
+
+func (r *MSResolver) resolveType(n mstype.MSType) {
+	// fmt.Printf("%p // %#v\n", n, n)
+	switch t := n.(type){
+	case *mstype.MSSimpleTypeS:		return
+	case *mstype.MSCompositeTypeS:	r.resolveTypes(t.Types)
+	case *mstype.MSArrayType:		r.resolveType(t.Type)
+	case *mstype.MSOperationTypeS:	r.resolveOperationType(t)
+	case *mstype.MSStructTypeS:		r.resolveStructType(t)
+	case *mstype.MSNamedTypeS:		r.resolveNamedType(t)
+	default:						_ = []int{}[0]
 	}
 }
 
@@ -153,36 +200,21 @@ func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 // statements
 // --------------------------------------------------------
 
-func (r *MSResolver) resolveFieldAssignment(n *ast.FieldAssignmentNode) {
-	r.resolveExpression(n.Target)
-	r.resolveExpression(n.Value)
-}
-
-func (r *MSResolver) resolveStructConstructor(n *ast.StructConstructorNodeS) {
-	for _, exp := range n.Fields {
-		r.resolveExpression(exp)
+func (r *MSResolver) resolveStructDeclaration(sd *ast.StructDeclarationNodeS) {
+	r.declare(sd.Name.VarName())
+	for _, field := range sd.Fields {
+		r.resolveType(field)
 	}
+	r.define(sd.Name.VarName())
 }
 
-func (r *MSResolver) resolveArrayAssignment(n *ast.ArrayAssignmentNodeS) {
-	r.resolveExpression(n.Index)
-	r.resolveExpression(n.Target)
-	r.resolveExpression(n.Value)
+func (r *MSResolver) resolveTypeDeclaration(td *ast.TypeDefStatementS) {
+	// Note: declare before resolve to detect recursive type defs
+	r.declare(td.Tname.VarName())
+	r.resolveType(td.Type)
+	r.define(td.Tname.VarName())
 }
 
-func (r *MSResolver) resolveArrayConstructor(n *ast.ArrayConstructorNodeS) {
-	r.resolveExpression(n.N)
-	r.resolveExpressions(n.Vals)
-}
-
-func (r *MSResolver) resolveArrayIndex(n *ast.ArrayIndexNodeS) {
-	r.resolveExpression(n.Target)
-	r.resolveExpression(n.Index)
-}
-
-func (r *MSResolver) resolveExpressionStatement(n *ast.ExStmtNodeS) {
-	r.resolveExpression(n.Ex)
-}
 
 func (r *MSResolver) resolveStatements(stmts []ast.StmtNodeI) {
 	for _, stmt := range stmts{
@@ -191,16 +223,15 @@ func (r *MSResolver) resolveStatements(stmts []ast.StmtNodeI) {
 }
 
 func (r *MSResolver) resolveBlockNode(n *ast.BlockNodeS) {
-
 	r.enterScope()
 	r.resolveStatements(n.Statements)
 	r.leaveScope()
-
 }
 
 func (r *MSResolver) resolveVariableDeclaration(n *ast.VarDeclNodeS) {
 	r.declare(n.VarName())
 	r.define(n.VarName())
+	r.resolveType(n.Vartype)
 }
 
 func (r *MSResolver) resolveFuncDeclaration(n *ast.FuncDeclNodeS) {
@@ -208,6 +239,12 @@ func (r *MSResolver) resolveFuncDeclaration(n *ast.FuncDeclNodeS) {
 	// Declare and define fname in current scope
 	r.declare(n.Fname.VarName())
 	r.define(n.Fname.VarName())
+
+	// Resolve function types
+	for _, t := range n.Params {
+		r.resolveType(t.Type)
+	}
+	r.resolveType(n.Rt)
 
 	// push scope before declaring params
 	r.enterScope()
@@ -243,6 +280,35 @@ func (r *MSResolver) resolveExpressions(es []ast.ExpNodeI) {
 // expressions
 // --------------------------------------------------------
 
+func (r *MSResolver) resolveFieldAssignment(n *ast.FieldAssignmentNode) {
+	r.resolveExpression(n.Target)
+	r.resolveExpression(n.Value)
+}
+
+func (r *MSResolver) resolveStructConstructor(n *ast.StructConstructorNodeS) {
+	for _, exp := range n.Fields {
+		r.resolveExpression(exp)
+	}
+}
+
+func (r *MSResolver) resolveArrayAssignment(n *ast.ArrayAssignmentNodeS) {
+	r.resolveExpression(n.Index)
+	r.resolveExpression(n.Target)
+	r.resolveExpression(n.Value)
+}
+
+func (r *MSResolver) resolveArrayConstructor(n *ast.ArrayConstructorNodeS) {
+	if n.N != nil {
+		r.resolveExpression(n.N)
+	}
+	r.resolveExpressions(n.Vals)
+	r.resolveType(n.Type)
+}
+
+func (r *MSResolver) resolveArrayIndex(n *ast.ArrayIndexNodeS) {
+	r.resolveExpression(n.Target)
+	r.resolveExpression(n.Index)
+}
 
 func (r *MSResolver) resolveVariableExpression(v *ast.VariableExpNodeS) {
 
@@ -253,12 +319,12 @@ func (r *MSResolver) resolveVariableExpression(v *ast.VariableExpNodeS) {
 	// 	msg := fmt.Sprintf("Cannot resolve variable in own initializer: %s", v.Name.Lexeme)
 	// 	return ResolveError{msg: msg}
 	// }
-	r.resolveLocal(v, v.Name.Lexeme)
+	r.resolveLocalVariable(v, v.Name.Lexeme)
 }
 
 func (r *MSResolver) resolveAssignmentExpression(a *ast.AssignmentNodeS) {
 	r.resolveExpression(a.Exp)
-	r.resolveLocal(a.Identifier, a.Identifier.Name.Lexeme)
+	r.resolveLocalVariable(a.Identifier, a.Identifier.Name.Lexeme)
 }
 
 func (r *MSResolver) resolveBinaryExpression(b *ast.BinaryExpNodeS) {
@@ -280,4 +346,25 @@ func (r *MSResolver) resolveDeclAssignExpression(da *ast.DeclAssignNodeS) {
 func (r *MSResolver) resolveFuncAppExpression(fa *ast.FuncAppNodeS) {
 	r.resolveExpression(fa.Fun)
 	r.resolveExpressions(fa.Args)
+}
+
+func (r *MSResolver) resolveTypes(ts []mstype.MSType) {
+	for _, t := range ts {
+		r.resolveType(t)
+	}
+}
+
+func (r *MSResolver) resolveOperationType(ot *mstype.MSOperationTypeS) {
+	r.resolveTypes(ot.Left)
+	r.resolveType(ot.Right)
+}
+
+func (r *MSResolver) resolveStructType(st *mstype.MSStructTypeS) {
+	for _, t := range st.Fields {
+		r.resolveType(t)
+	}
+}
+
+func (r *MSResolver) resolveNamedType(nt *mstype.MSNamedTypeS) {
+	r.resolveLocalType(nt, nt.Name)
 }

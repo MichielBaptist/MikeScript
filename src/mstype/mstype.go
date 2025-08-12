@@ -1,10 +1,5 @@
 package mstype
 
-import (
-	"fmt"
-	"mikescript/src/token"
-)
-
 ////////////////////////////////////////////////////////////
 
 // Result type basically defines how to interpret an EvalResult
@@ -50,20 +45,20 @@ func (res ResultType) String() string {
 }
 
 // Interface between token and ast
-func TokenToType(tok *token.Token) (MSType, error) {
-	switch tok.Type {
-	case token.FLOAT_TYPE: 		return &MSSimpleTypeS{Rt: RT_FLOAT}, nil
-	case token.INT_TYPE:		return &MSSimpleTypeS{Rt: RT_INT}, nil
-	case token.STRING_TYPE:		return &MSSimpleTypeS{Rt: RT_STRING}, nil
-	case token.BOOLEAN_TYPE:	return &MSSimpleTypeS{Rt: RT_BOOL}, nil
-	default:					return nil, &MSTypeError{Msg: fmt.Sprintf("Cannot convert token: %v to type", tok) }
-	}
-}
+// func TokenToType(tok *token.Token) (MSType, error) {
+// 	switch tok.Type {
+// 	case token.FLOAT_TYPE: 		return &MSSimpleTypeS{Rt: RT_FLOAT}, nil
+// 	case token.INT_TYPE:		return &MSSimpleTypeS{Rt: RT_INT}, nil
+// 	case token.STRING_TYPE:		return &MSSimpleTypeS{Rt: RT_STRING}, nil
+// 	case token.BOOLEAN_TYPE:	return &MSSimpleTypeS{Rt: RT_BOOL}, nil
+// 	default:					return nil, &MSTypeError{Msg: fmt.Sprintf("Cannot convert token: %v to type", tok) }
+// 	}
+// }
 
 ////////////////////////////////////////////////////////////
 type MSType interface {
 	Eq(other MSType) bool	// compare types
-	String() string			// show type
+	//String() string			// show type
 	Nullable() bool			// Can values of this type be <nil>?
 }
 

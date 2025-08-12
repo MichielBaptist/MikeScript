@@ -36,6 +36,10 @@ func (pf PrintEnvFunction) String() string {
 	return ">> print_env -> nothing"
 }
 
+func (pf PrintEnvFunction) Nullable() bool {
+	return false
+}
+
 // --------------------------------------------------------
 // Implements FunctionResult
 // --------------------------------------------------------

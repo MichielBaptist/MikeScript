@@ -1,8 +1,8 @@
 package interp
 
 import (
-	"fmt"
 	"mikescript/src/ast"
+	"mikescript/src/mstype"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -14,8 +14,8 @@ type MSEvaluator struct {
 	err []error						// Evaluation errors
 	env *Environment				// Environment of curresnt scope
 	glb *Environment 				// Fixed reference to global scope (outermost env)
-	types *TypeEnv					// Type definitions
-	locals map[ast.ExpNodeI]int		// How deep do we need to go to resolve variables?
+	vlocals map[*ast.VariableExpNodeS]int	// How deep do we need to go to resolve variables?
+	tlocals map[*mstype.MSNamedTypeS]int 	// How deep do we need to go to resolve types?
 }
 
 func NewMSEvaluator() *MSEvaluator {
@@ -28,21 +28,25 @@ func NewMSEvaluator() *MSEvaluator {
 	glb.NewVar("print", MSBuiltinPrint())
 	glb.NewVar("print_env", MSBuiltinPrintEnv())
 
-	// Create type env
-	types := NewTypeEnv()
-
 	return &MSEvaluator{
 		env: env,
 		glb: glb,
-		locals: make(map[ast.ExpNodeI]int),
-		types: types,
+		vlocals: make(map[*ast.VariableExpNodeS]int),
+		tlocals: make(map[*mstype.MSNamedTypeS]int),
 	}
 }
 
-func (evaluator *MSEvaluator) UpdateLocals(locals map[ast.ExpNodeI]int) {
+func (evaluator *MSEvaluator) UpdateVLocals(vlocals map[*ast.VariableExpNodeS]int) {
 	// add all locals to current locals
-	for k, v := range locals {
-		evaluator.locals[k] = v
+	for k, v := range vlocals {
+		evaluator.vlocals[k] = v
+	}
+}
+
+func (evaluator *MSEvaluator) UpdateTLocals(vlocals map[*mstype.MSNamedTypeS]int) {
+	// add all locals to current locals
+	for k, v := range vlocals {
+		evaluator.tlocals[k] = v
 	}
 }
 
@@ -62,10 +66,4 @@ func (evaluator *MSEvaluator) Errors() []error {
 
 func (evaluator *MSEvaluator) PrintEnv() {
 	evaluator.env.printEnv()
-}
-
-func (e *MSEvaluator) PrintTypes() {
-	fmt.Println("-------------------------------------------------------")
-	e.types.printEnv()
-	fmt.Println("-------------------------------------------------------")
 }

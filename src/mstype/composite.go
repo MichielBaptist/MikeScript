@@ -1,7 +1,5 @@
 package mstype
 
-import "strings"
-
 type MSCompositeTypeS struct {
 	Types []MSType
 }
@@ -27,13 +25,13 @@ func (t *MSCompositeTypeS) Eq(o MSType) bool {
 	return false
 }
 
-func (t *MSCompositeTypeS) String() string {
-	lefts := []string{}
-	for _, l := range t.Types {
-		lefts = append(lefts, l.String())
-	}
-	return "(" + strings.Join(lefts, ", ") + ")"
-}
+// func (t *MSCompositeTypeS) String() string {
+// 	lefts := []string{}
+// 	for _, l := range t.Types {
+// 		lefts = append(lefts, l.String())
+// 	}
+// 	return "(" + strings.Join(lefts, ", ") + ")"
+// }
 
 func (t *MSCompositeTypeS) Nullable() bool {
 	return false

@@ -14,7 +14,7 @@ func (e *MSEvaluator) executeStructDeclaration(n *ast.StructDeclarationNodeS) (M
 	}
 
 	// add new type
-	err := e.types.NewType(sname, &mstype.MSStructTypeS{Name: sname, Fields: fields})
+	err := e.env.NewType(sname, &mstype.MSStructTypeS{Name: sname, Fields: fields})
 
 	return MSNothing{}, err
 }

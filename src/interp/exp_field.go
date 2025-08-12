@@ -17,15 +17,6 @@ func (e *MSEvaluator) evaluateFieldAccess(n *ast.FieldAccessNodeS) (MSVal, error
 
 	fieldable := target.(MSFieldable)
 
-	// if !ok {
-	// 	msg := fmt.Sprintf("Object '%v' of type '%v' does not have field property '%v'", target, target.Type(), n.Field)
-	// 	return nil, &EvalError{message: msg}
-	// }
-
-	// Check if field is valid
-	if err := fieldable.ValidField(fieldName) ; err != nil {
-		return nil, err
-	}
 
 	return fieldable.Get(fieldName)
 }

@@ -51,6 +51,10 @@ func (pf PrintFunction) String() string {
 	return fmt.Sprintf("%s %s", strings.Join(strs, ", "), fs)
 }
 
+func (pf PrintFunction) Nullable() bool {
+	return false
+}
+
 // --------------------------------------------------------
 // Implements FunctionResult
 // --------------------------------------------------------

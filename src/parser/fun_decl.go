@@ -65,8 +65,10 @@ func (parser *MSParser) parseFunctionDecl() (*ast.FuncDeclNodeS, error) {
 
 	// Always add a "return;" statement at the end of the function
 	// body so that if you specify no return it still returns a return val
+	nothingToken := token.Token{Type: token.NOTHING_TYPE, Lexeme: "nothing"}
+	nothingLiteral := &ast.LiteralExpNodeS{Tk: nothingToken}
 	block = &ast.BlockNodeS{
-		Statements: append(block.Statements, &ast.ReturnNodeS{Node: nil}),
+		Statements: append(block.Statements, &ast.ReturnNodeS{Node: nothingLiteral}),
 	}
 
 	return &ast.FuncDeclNodeS{Params: args, Fname: fname, Rt: returnType, Body: block}, err

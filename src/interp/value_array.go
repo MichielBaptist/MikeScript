@@ -25,6 +25,10 @@ func (n MSArray) String() string {
 	return fmt.Sprintf("[%s]", strings.Join(strs, ","))
 }
 
+func (r MSArray) Nullable() bool {
+	return false
+}
+
 // --------------------------------------------------------
 // implmeents indexable
 // --------------------------------------------------------

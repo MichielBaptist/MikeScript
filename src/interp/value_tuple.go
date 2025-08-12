@@ -26,6 +26,10 @@ func (i MSTuple) String() string {
 	return "(" + strings.Join(strs, ", ") + ")"
 }
 
+func (r MSTuple) Nullable() bool {
+	return false
+}
+
 // --------------------------------------------------------
 // implmeents indexable
 // --------------------------------------------------------

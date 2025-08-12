@@ -14,8 +14,9 @@ func (evaluator *MSEvaluator) evaluateLiteralExpression(node *ast.LiteralExpNode
 	case token.STRING:			return MSString{Val: node.Tk.Lexeme}, nil
 	case token.TRUE:			return MSBool{Val: true}, nil
 	case token.FALSE:			return MSBool{Val: false}, nil
+	case token.NOTHING_TYPE:	return MSNothing{}, nil
 	case token.IDENTIFIER:		return MSNothing{}, &EvalError{fmt.Sprintf("Trying to evaluate identifier '%v' as a literal.", node.Tk.Lexeme)}
-	default:					return MSNothing{}, &EvalError{fmt.Sprintf("Literal type '%v' is not defined.", node.Tk.Type)}
+	default:					return MSNothing{}, &EvalError{fmt.Sprintf("Literal type '%#v' is not defined.", node)}
 	}
 }
 

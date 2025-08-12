@@ -1,6 +1,7 @@
 package interp
 
 import (
+	"fmt"
 	"mikescript/src/ast"
 	"mikescript/src/mstype"
 	"strings"
@@ -115,7 +116,7 @@ func (f MSFunction) String() string {
 	if pss != "" {
 		strs = append(strs, pss)
 	}
-	strs = append(strs, ">>", f.fname(), "->", f.returnType.String(), "{...}")
+	strs = append(strs, ">>", f.fname(), "->", fmt.Sprintf("%v", f.returnType), "{...}")
 	
 	// bindings >> fname -> rt
 	return strings.Join(strs, " ")
@@ -124,4 +125,8 @@ func (f MSFunction) String() string {
 
 func (f MSFunction) Initialized() bool {
 	return f.fbody != nil
+}
+
+func (r MSFunction) Nullable() bool {
+	return true
 }

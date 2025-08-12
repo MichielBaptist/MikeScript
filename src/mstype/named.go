@@ -12,9 +12,9 @@ func (t *MSNamedTypeS) Eq(o MSType) bool {
 	}
 }
 
-func (t *MSNamedTypeS) String() string {
-	return t.Name
-}
+// func (t *MSNamedTypeS) String() string {
+// 	return fmt.Sprintf("%v{%v}", t.Name, t.Ref)
+// }
 
 func (t *MSNamedTypeS) Nullable() bool {
 	return false

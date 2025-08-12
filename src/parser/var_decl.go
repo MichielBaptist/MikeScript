@@ -15,7 +15,7 @@ func (parser *MSParser) parseVarDeclaration() (*ast.VarDeclNodeS, error) {
 
 	vtype, err = parser.parseType()
 
-	fmt.Printf("%v", vtype)
+	fmt.Printf("%p -- %+v\n", vtype, vtype)
 
 	// For now, we cannor declare MSOperationTypeS
 	// Because they are declared using function keyword
@@ -25,7 +25,7 @@ func (parser *MSParser) parseVarDeclaration() (*ast.VarDeclNodeS, error) {
 	// }
 
 	if err != nil {
-		return &ast.VarDeclNodeS{}, nil
+		return nil, err
 	}
 
 	// Case 2 & 3: ignore for now
@@ -33,11 +33,8 @@ func (parser *MSParser) parseVarDeclaration() (*ast.VarDeclNodeS, error) {
 	// We expect an identifier next so we parse it
 	ident, err := parser.parseIdentifier()
 
-	// check for errors
 	if err != nil {
-		// If we encounter an error parsing the identifier
-		// We return the error and empty declaration node
-		return &ast.VarDeclNodeS{}, err
+		return nil, err
 	}
 
 	// expect a semicolon

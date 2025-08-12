@@ -10,9 +10,9 @@ const typecol_size int = 20
 const namecol_size int = 20
 const defcol_size int = 40
 
-////////////////////////////////////////
-// Environment row
-////////////////////////////////////////
+// ////////////////////////////////////////
+// // Environment row
+// ////////////////////////////////////////
 
 func stringCut(s string, n int) string {
 	if (len(s) > n && len(s) > 3){
@@ -21,39 +21,41 @@ func stringCut(s string, n int) string {
 	return s
 }
 
-type EnvRow struct {
-	name 	string			// Name of the variable
-	value 	*MSVal			// Value of the variable (always an EvalResult)
-}
+// type EnvRow struct {
+// 	name 	string			// Name of the variable
+// 	value 	*MSVal			// Value of the variable (always an EvalResult)
+// }
 
-func (er *EnvRow) String() string {
-	if er == nil {
-		return "ERROR"
-	}
-	return fmt.Sprintf("%v %v = %v", (*er.value).Type().String(), er.name, er.value)
-}
+// func (er *EnvRow) String() string {
+// 	if er == nil {
+// 		return "ERROR"
+// 	}
+// 	return fmt.Sprintf("%v %v = %v", (*er.value).Type(), er.name, er.value)
+// }
 
-func (er *EnvRow) rowRepr() string {
-	val := *er.value
+// func (er *EnvRow) rowRepr() string {
+// 	val := *er.value
 
-	c1 := stringCut(val.Type().String(), typecol_size)
-	c2 := stringCut(er.name, namecol_size)
-	c3 := stringCut(val.String(), defcol_size)
-	return fmt.Sprintf("| %-*v | %-*v | %-*v |", typecol_size, c1, namecol_size, c2, defcol_size, c3)
-}
+// 	c1 := stringCut(fmt.Sprintf("%v", val.Type()), typecol_size)
+// 	c2 := stringCut(er.name, namecol_size)
+// 	c3 := stringCut(val.String(), defcol_size)
+// 	return fmt.Sprintf("| %-*v | %-*v | %-*v |", typecol_size, c1, namecol_size, c2, defcol_size, c3)
+// }
 
 ////////////////////////////////////////
 // Environment & constructor
 ////////////////////////////////////////
 
 type Environment struct {
-	variables map[string]EnvRow
+	variables map[string]MSVal
+	types map[string]mstype.MSType
 	enclosing *Environment
 }
 
 func NewEnvironment(enclosing *Environment) *Environment {
 	return &Environment{
-		variables: make(map[string]EnvRow),
+		variables: make(map[string]MSVal),
+		types: make(map[string]mstype.MSType),
 		enclosing: enclosing,
 	}
 }
@@ -76,13 +78,9 @@ func (env *Environment) GetVar(name string, depth int) (MSVal, error) {
 	targetEnv := env.walkBack(depth)
 
 	// Checks at evaluation time if the variable is defined
-	if targetEnv.containsVar(name) {
-		vars := targetEnv.variables	// Get variables
-		row := vars[name]			// Get relevant row
-		val := row.value			// Get relevant val
-		return *val, nil			// TODO: check for errors, actually better to let program crash
+	if val, ok := targetEnv.variables[name] ; ok{
+		return val, nil
 	} else {
-		// Not found in this env (though it should be here!)
 		return MSNothing{}, &EnvironmentError{fmt.Sprintf("Variable '%v' is not defined", name)}
 	}
 }
@@ -90,12 +88,12 @@ func (env *Environment) GetVar(name string, depth int) (MSVal, error) {
 func (env *Environment) NewVar(name string, value MSVal) error {
 
 	// Check if already in env. We don't allow re-declaring variables
-	if env.containsVar(name) {
-		return &EnvironmentError{fmt.Sprintf("Variable '%v' is already defined", name)}
+	if val, ok := env.variables[name] ; ok {
+		return &EnvironmentError{fmt.Sprintf("Variable '%v' is already defined as '%v'", name, val)}
 	}
 
 	// Set variable
-	env.variables[name] = EnvRow{name, &value}
+	env.variables[name] = value
 
 	return nil
 }
@@ -105,7 +103,7 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 	targetEnv := env.walkBack(depth)
 
 	// If env does not contain the var, throw error
-	if !targetEnv.containsVar(name) {
+	if _, ok := targetEnv.variables[name] ; !ok {
 		return varNotFound(name)
 	}
 
@@ -115,7 +113,7 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 	}
 
 	// Set the value, this is safe now
-	targetEnv.variables[name] = EnvRow{name, &value}
+	targetEnv.variables[name] = value
 
 	return nil
 }
@@ -123,6 +121,13 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 ////////////////////////////////////////
 // Helper functions
 ////////////////////////////////////////
+
+func rowRepr(name string, value MSVal) string {
+	c1 := stringCut(fmt.Sprintf("%v", value.Type()), typecol_size)
+	c2 := stringCut(name, namecol_size)
+	c3 := stringCut(value.String(), defcol_size)
+	return fmt.Sprintf("| %-*v | %-*v | %-*v |", typecol_size, c1, namecol_size, c2, defcol_size, c3)
+}
 
 func (env *Environment) printEnv() int {
 
@@ -134,8 +139,8 @@ func (env *Environment) printEnv() int {
 	depth := env.enclosing.printEnv()
 
 	rows := []string{}
-	for _, v := range env.variables {
-		rows = append(rows, v.rowRepr())
+	for name, value := range env.variables {
+		rows = append(rows, rowRepr(name, value))
 	}
 
 	// Print table
@@ -150,15 +155,11 @@ func (env *Environment) printEnv() int {
 	return depth + 1
 }
 
-func (env *Environment) containsVar(name string) bool {
-	_, ok := env.variables[name]
-	return ok
-}
 
-func (env *Environment) compatibleType(name string, value MSVal) error {
+func (env *Environment) compatibleType(name string, newValue MSVal) error {
 
 	// Get relevant row; crash on issue
-	row, ok := env.variables[name]
+	oldValue, ok := env.variables[name]
 
 	// ok check, should never trigger normally
 	if !ok {
@@ -166,8 +167,8 @@ func (env *Environment) compatibleType(name string, value MSVal) error {
 	}
 
 	// Crash on dereferencing nil, then there is an issue.
-	expectedType := (*row.value).Type()
-	receivedType := value.Type()
+	expectedType := oldValue.Type()
+	receivedType := newValue.Type()
 	ok = expectedType.Eq(receivedType)
 
 	if ok {
@@ -200,4 +201,35 @@ func varNotFound(name string) error {
 
 func incompatibleTypes(name string, target, val mstype.MSType) error {
 	return &EnvironmentError{fmt.Sprintf("Variable '%v' is of type '%v' and cannot be assigned a value of type '%v'", name, target, val)}
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+func (env *Environment) GetType(name string, depth int) (mstype.MSType, error) {
+
+	targetEnv := env.walkBack(depth)
+
+	t, ok := targetEnv.types[name]
+
+	if !ok {
+		msg := fmt.Sprintf("Could not resolve type '%s'", name)
+		return nil, &EnvironmentError{message: msg}
+	}
+
+	return t, nil
+}
+
+func (env *Environment) NewType(name string, t mstype.MSType) error {
+
+	// Check if already in env. We don't allow re-declaring variables
+	if typ, ok := env.types[name] ; ok {
+		return &EnvironmentError{fmt.Sprintf("Type '%v' is already defined as '%v'", name, typ)}
+	}
+
+	// Set variable
+	env.types[name] = t
+
+	return nil
 }

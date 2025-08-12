@@ -17,7 +17,7 @@ func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentN
 	// set the variable in target scope
 	name := node.Identifier.Name.Lexeme
 
-	if depth, ok := evaluator.locals[node.Identifier] ; ok {
+	if depth, ok := evaluator.vlocals[node.Identifier] ; ok {
 		err = evaluator.env.SetVar(name, res, depth)
 	} else {
 		err = evaluator.glb.SetVar(name, res, 0)
@@ -35,7 +35,7 @@ func (evaluator *MSEvaluator) evalVariable(node *ast.VariableExpNodeS) (MSVal, e
 	var val MSVal
 	var err error
 
-	if depth, ok := evaluator.locals[node] ; ok {
+	if depth, ok := evaluator.vlocals[node] ; ok {
 		val, err = evaluator.env.GetVar(node.VarName(), depth)
 	} else {
 		val, err = evaluator.glb.GetVar(node.VarName(), 0)

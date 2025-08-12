@@ -57,6 +57,7 @@ type MSRunner struct {
 	scanner 	scanner.MSScanner		// lexer/scanner
 	parser 		parser.MSParser			// parser
 	resolver 	resolver.MSResolver		// resolver for locals
+	//typeResolver resolver.MSTypeResolver
 	evaluator 	interp.MSEvaluator		// evaluator
 	verbose 	bool
 }
@@ -121,13 +122,20 @@ func (r MSRunner) run(input string) int {
 	startResolve := time.Now()
 	r.resolver.SetAst(ast)
 	r.resolver.Reset()
-	locals := r.resolver.Resolve()
+	vlocals, tlocals := r.resolver.Resolve()
 	resolverTime := time.Since(startResolve)
+
+	startTypeResolve := time.Now()
+	//r.typeResolver.SetAst(ast)
+	// r.typeResolver.Reset()
+	//r.typeResolver.Resolve()
+	typeResolverTime := time.Since(startTypeResolve)
 
 	//////////////////////////////////////////////////////
 	evallog.log("--------------- Evaluator ---------------------")
 	startEval := time.Now()
-	r.evaluator.UpdateLocals(locals)
+	r.evaluator.UpdateVLocals(vlocals)
+	r.evaluator.UpdateTLocals(tlocals)
 	eval, err := r.evaluator.Eval(ast)
 	evalTime := time.Since(startEval)
 
@@ -139,14 +147,14 @@ func (r MSRunner) run(input string) int {
 	evallog.log("Environment:")
 	if r.verbose {
 		r.evaluator.PrintEnv()
-		r.evaluator.PrintTypes()
 	}
 
 	// Print the result
-	fmt.Printf("Time to scan: 	 %v\n", scanTime)
-	fmt.Printf("Time to parse: 	 %v\n", parseTime)
-	fmt.Printf("Time to resolve: %v\n", resolverTime)
-	fmt.Printf("Time to eval: 	 %v\n", evalTime)
+	fmt.Printf("Time to scan:           %v\n", scanTime)
+	fmt.Printf("Time to parse:          %v\n", parseTime)
+	fmt.Printf("Time to resolve:        %v\n", resolverTime)
+	fmt.Printf("Time to resolve types:  %v\n", typeResolverTime)
+	fmt.Printf("Time to eval:           %v\n", evalTime)
 	fmt.Println(eval)
 
 	return 0

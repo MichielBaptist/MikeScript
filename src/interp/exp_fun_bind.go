@@ -54,9 +54,9 @@ func (b *ParamBindingS) bind(val MSVal) (ParamBindingS, error) {
 	// Validate correct types
 	if !b.ValidBindingEvalResult(&val) {
 		vals := val.String()
-		typs := val.Type().String()
+		typs := fmt.Sprintf("%v", val.Type())
 		pname := b.Name.VarName()
-		ptype := b.Type.String()
+		ptype := fmt.Sprintf("%v", b.Type)
 		msg := fmt.Sprintf("Cannot bind '%s' of type '%s' to parameter '%s' of type '%s'", vals, typs, pname, ptype)
 		return *b, BindingError{msg: msg}
 	}
@@ -88,7 +88,7 @@ func (b *ParamBindingS) String() string {
 		names = b.Name.VarName()
 	}
 
-	return fmt.Sprintf("%s %s = %s", b.Type.String(), names, vals)
+	return fmt.Sprintf("%v %s = %s", b.Type, names, vals)
 }
 
 func (b *ParamBindingS) ValidBindingEvalResult(t *MSVal) bool {
