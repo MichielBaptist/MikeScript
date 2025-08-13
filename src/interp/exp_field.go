@@ -39,5 +39,16 @@ func (e *MSEvaluator) evaluateFieldAssign(n *ast.FieldAssignmentNode) (MSVal, er
 		return nil, err
 	}
 
+	// get current val
+	currentVal, err := fieldable.Get(n.Field.VarName())
+
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := currentVal.(MSNothing) ; ok && currentVal.Nullable() {
+		value = currentVal.NullVal()
+	}
+
 	return fieldable.Set(n.Field.VarName(), value)
 }

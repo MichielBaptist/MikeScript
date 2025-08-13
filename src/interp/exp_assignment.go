@@ -17,6 +17,10 @@ func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentN
 	// nothing value if the target is nullable
 	currentVal, err := evaluator.evalVariable(node.Identifier)
 
+	if err != nil {
+		return nil, err
+	}
+
 	if _, ok := res.(MSNothing) ; ok && currentVal.Nullable() {
 		// Get the null value for currentval
 		res = currentVal.NullVal()

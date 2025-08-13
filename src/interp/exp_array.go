@@ -172,6 +172,17 @@ func (e *MSEvaluator) evaluateArrayAssignment(n *ast.ArrayAssignmentNodeS) (MSVa
 		return nil, err
 	}
 
+	// Get current value and check if nullable if value is nothing
+	currentVal, err := indexable.Get(idx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := val.(MSNothing) ; ok && currentVal.Nullable() {
+		val = currentVal.NullVal()
+	}
+
 	return indexable.Set(idx, val)
 
 }
