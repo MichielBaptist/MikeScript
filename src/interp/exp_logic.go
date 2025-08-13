@@ -16,7 +16,7 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 
 	// error check
 	if lerr != nil {
-		return MSNothing{}, lerr
+		return nil, lerr
 	}
 
 	// Expect boolean value
@@ -24,7 +24,7 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 
 	switch lt := lval.(type){
 	case MSBool:	leftb = lt.Val
-	default:			return MSNothing{}, &EvalError{invalidLogop(lval, node.Op.Lexeme)}
+	default:		return nil, &EvalError{invalidLogop(lval, node.Op.Lexeme)}
 	}
 
 	// short circuit evaluation
@@ -38,14 +38,14 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 
 	// error check
 	if rerr != nil {
-		return MSNothing{}, rerr
+		return nil, rerr
 	}
 
 	var rb bool
 
 	switch rt := rval.(type){
 	case MSBool:	rb = rt.Val
-	default:			return MSNothing{}, &EvalError{invalidLogop(lval, node.Op.Lexeme)}
+	default:		return nil, &EvalError{invalidLogop(lval, node.Op.Lexeme)}
 	}
 
 	return MSBool{Val: rb}, err

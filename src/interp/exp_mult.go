@@ -37,5 +37,5 @@ func evalMult(lval, rval MSVal) (MSVal, error) {
 		}
 	}
 
-	return MSNothing{}, &EvalError{invalidBinop(lval, rval, "*")}
+	return nil, &EvalError{invalidBinop(lval, rval, "*")}
 }

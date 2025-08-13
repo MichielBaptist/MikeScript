@@ -13,14 +13,14 @@ func (evaluator *MSEvaluator) evaluateUnaryExpression(node *ast.UnaryExpNodeS) (
 
 	// check if the evaluation was.Valid()
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// handle unary operators
 	switch node.Op.Type {
 	case token.MINUS:		return evaluateMinus(res)
 	case token.EXCLAMATION:	return evaluateExcl(res)
-	default: 				return MSNothing{}, &EvalError{unknownUnop(node.Op.Lexeme, res)}
+	default: 				return nil, &EvalError{unknownUnop(node.Op.Lexeme, res)}
 	}
 	
 }
@@ -30,9 +30,9 @@ func evaluateMinus(res MSVal) (MSVal, error) {
 	var err error
 
 	switch v := res.(type){
-	case MSInt:	return MSInt{Val: -v.Val}, err
+	case MSInt:		return MSInt{Val: -v.Val}, err
 	case MSFloat:	return MSFloat{Val: -v.Val}, err
-	default:			return MSNothing{}, &EvalError{unknownUnop(token.MINUS.String(), res)}
+	default:		return nil, &EvalError{unknownUnop(token.MINUS.String(), res)}
 	}
 }
 
@@ -42,7 +42,7 @@ func evaluateExcl(res MSVal) (MSVal, error) {
 
 	switch v := res.(type){
 	case MSBool:	return MSBool{Val: !v.Val}, err
-	default:			return MSNothing{}, &EvalError{unknownUnop(token.EXCLAMATION.String(), res)}
+	default:		return nil, &EvalError{unknownUnop(token.EXCLAMATION.String(), res)}
 	}
 }
 

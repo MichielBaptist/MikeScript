@@ -30,6 +30,10 @@ func (r MSTuple) Nullable() bool {
 	return false
 }
 
+func (r MSTuple) NullVal() MSVal {
+	return nil
+}
+
 // --------------------------------------------------------
 // implmeents indexable
 // --------------------------------------------------------

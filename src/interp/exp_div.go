@@ -27,12 +27,11 @@ func evalDiv(lval, rval MSVal) (MSVal, error) {
 	}
 
 	if !(numv && denv) {
-		// Type issue
-		return MSNothing{}, &EvalError{invalidBinop(lval, rval, "/")}
+		return nil, &EvalError{invalidBinop(lval, rval, "/")}
 	} 
 
 	if den == 0.0 {
-		return MSNothing{}, &EvalError{"Division by zero."}
+		return nil, &EvalError{"Division by zero."}
 	}
 
 	return MSFloat{Val: num / den}, err

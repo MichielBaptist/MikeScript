@@ -37,7 +37,7 @@ func evalCompare(lval, rval MSVal, op token.TokenType, fn func(float64, float64)
 	if !(lok && rok) {
 		// Can't convert to float
 		msg := invalidBinop(lval, rval, op.String())
-		return MSNothing{}, &EvalError{message: msg}
+		return nil, &EvalError{message: msg}
 	}
 
 	return MSBool{Val: fn(lf, rf)}, nil
@@ -90,13 +90,13 @@ func evalEq(lval, rval MSVal, op token.TokenType) (MSVal, error) {
 		}
 	}
 
-	return MSNothing{}, &EvalError{invalidBinop(lval, rval, "==")}
+	return nil, &EvalError{invalidBinop(lval, rval, "==")}
 }
 
 func evalNeq(_, _ MSVal, _ token.TokenType) (MSVal, error) {
-	return MSNothing{}, &EvalError{message: errNeq}
+	return nil, &EvalError{message: errNeq}
 }
 
 func evalGrGr(_, _ MSVal) (MSVal, error) {
-	return MSNothing{}, &EvalError{errGrGr}
+	return nil, &EvalError{errGrGr}
 }

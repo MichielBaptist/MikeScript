@@ -130,3 +130,7 @@ func (f MSFunction) Initialized() bool {
 func (r MSFunction) Nullable() bool {
 	return true
 }
+
+func (i MSFunction) NullVal() MSVal {
+	return MSFunctionFromType(i.Type().(*mstype.MSOperationTypeS), i.closure)
+}

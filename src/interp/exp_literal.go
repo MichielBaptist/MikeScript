@@ -15,8 +15,8 @@ func (evaluator *MSEvaluator) evaluateLiteralExpression(node *ast.LiteralExpNode
 	case token.TRUE:			return MSBool{Val: true}, nil
 	case token.FALSE:			return MSBool{Val: false}, nil
 	case token.NOTHING_TYPE:	return MSNothing{}, nil
-	case token.IDENTIFIER:		return MSNothing{}, &EvalError{fmt.Sprintf("Trying to evaluate identifier '%v' as a literal.", node.Tk.Lexeme)}
-	default:					return MSNothing{}, &EvalError{fmt.Sprintf("Literal type '%#v' is not defined.", node)}
+	case token.IDENTIFIER:		return nil, &EvalError{fmt.Sprintf("Trying to evaluate identifier '%v' as a literal.", node.Tk.Lexeme)}
+	default:					return nil, &EvalError{fmt.Sprintf("Literal type '%#v' is not defined.", node)}
 	}
 }
 
@@ -26,7 +26,7 @@ func evalIntLiteral(node *ast.LiteralExpNodeS) (MSVal, error) {
 
 	// Should never happen if parser works correctly.
 	if err != nil {
-		return MSNothing{}, &EvalError{fmt.Sprintf("Could not convert '%v' to 'int'", node.Tk.Lexeme)}
+		return nil, &EvalError{fmt.Sprintf("Could not convert '%v' to 'int'", node.Tk.Lexeme)}
 	}
 	
 	return MSInt{Val: val}, nil
@@ -37,7 +37,7 @@ func evalFloatLiteral(node *ast.LiteralExpNodeS) (MSVal, error) {
 	val, err := strconv.ParseFloat(node.Tk.Lexeme, 64)
 
 	if err != nil {
-		return MSNothing{}, &EvalError{fmt.Sprintf("Could not convert '%v' to 'int'", node.Tk.Lexeme)}
+		return nil, &EvalError{fmt.Sprintf("Could not convert '%v' to 'int'", node.Tk.Lexeme)}
 	}
 
 	return MSFloat{Val: val}, nil

@@ -21,27 +21,6 @@ func stringCut(s string, n int) string {
 	return s
 }
 
-// type EnvRow struct {
-// 	name 	string			// Name of the variable
-// 	value 	*MSVal			// Value of the variable (always an EvalResult)
-// }
-
-// func (er *EnvRow) String() string {
-// 	if er == nil {
-// 		return "ERROR"
-// 	}
-// 	return fmt.Sprintf("%v %v = %v", (*er.value).Type(), er.name, er.value)
-// }
-
-// func (er *EnvRow) rowRepr() string {
-// 	val := *er.value
-
-// 	c1 := stringCut(fmt.Sprintf("%v", val.Type()), typecol_size)
-// 	c2 := stringCut(er.name, namecol_size)
-// 	c3 := stringCut(val.String(), defcol_size)
-// 	return fmt.Sprintf("| %-*v | %-*v | %-*v |", typecol_size, c1, namecol_size, c2, defcol_size, c3)
-// }
-
 ////////////////////////////////////////
 // Environment & constructor
 ////////////////////////////////////////

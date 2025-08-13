@@ -15,3 +15,17 @@ s1.c >>= print;
 [10]int{} -> s1.a;
 1 -> s1.a[0];
 s1.a >>= print;
+
+type struct node {
+    int value;
+    node next;
+}
+
+var node n;
+
+function (test s) >> hello -> test {
+    =print_env;
+    return s;
+}
+
+//s1 >>= hello;

@@ -40,6 +40,10 @@ func (pf PrintEnvFunction) Nullable() bool {
 	return false
 }
 
+func (i PrintEnvFunction) NullVal() MSVal {
+	return nil
+}
+
 // --------------------------------------------------------
 // Implements FunctionResult
 // --------------------------------------------------------
@@ -50,7 +54,7 @@ func (pf PrintEnvFunction) Call(_evaluator *MSEvaluator) (MSVal, error) {
 }
 
 func (pf PrintEnvFunction) Bind(args []MSVal) (MSVal, error) {
-	return MSNothing{}, BindingError{msg: "Cannot bind print_env function."}
+	return nil, BindingError{msg: "Cannot bind print_env function."}
 }
 
 func (pf PrintEnvFunction) Arity() int {

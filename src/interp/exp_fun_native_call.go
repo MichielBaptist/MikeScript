@@ -13,7 +13,7 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 
 	if !f.initialized() {
 		err := EvalError{fmt.Sprintf("Cannot call uninitialized function '%s'", f.fname())}
-		return MSNothing{}, &err
+		return nil, &err
 	}
 
 	// Create a new environment with globals as base scope.
@@ -30,7 +30,7 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 	// Check if the block executed properly, if not,
 	// we cannot expect an EvalResult with RT_RETURN
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// Check if we can cast to MSReturn
@@ -40,7 +40,7 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 	// declared return type.
 	if !returnVal.Type().Eq(f.GetOutputType()) {
 		msg := fmt.Sprintf("Tried returning '%s' of type '%s', expected type '%s'", returnVal, returnVal.Type(), f.GetOutputType())
-		return MSNothing{}, &EvalError{msg}
+		return nil, &EvalError{msg}
 	}
 
 	return returnVal.Val, nil
@@ -53,7 +53,7 @@ func (f MSFunction) Arity() int {
 func (f MSFunction) Bind(args []MSVal) (MSVal, error) {
 
 	if !f.initialized() {
-		return MSNothing{}, BindingError{msg: fmt.Sprintf("Cannot bind uninitialized function '%s'", f.fname())}
+		return nil, BindingError{msg: fmt.Sprintf("Cannot bind uninitialized function '%s'", f.fname())}
 	}
 
 	// Add all the args to the function bindings
@@ -61,7 +61,7 @@ func (f MSFunction) Bind(args []MSVal) (MSVal, error) {
 
 	// Binding error
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	return *newf, nil

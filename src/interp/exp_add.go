@@ -38,7 +38,7 @@ func evalAdd(lval, rval MSVal) (MSVal, error) {
 		}
 	}
 
-	return MSNothing{}, &EvalError{invalidBinop(lval, rval, "+")}
+	return nil, &EvalError{invalidBinop(lval, rval, "+")}
 }
 
 func evalSub(_, _ MSVal) (MSVal, error) {
@@ -46,5 +46,5 @@ func evalSub(_, _ MSVal) (MSVal, error) {
 	// way in which the parser can generate a subtraction
 	// instead it will generate an addition with a negative unary
 	msg := "Subtraction should be replaced with addition and unary negation. If you see this error, the parser is broken."
-	return MSNothing{}, &EvalError{message: msg}
+	return nil, &EvalError{message: msg}
 }

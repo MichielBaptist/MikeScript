@@ -55,6 +55,10 @@ func (pf PrintFunction) Nullable() bool {
 	return false
 }
 
+func (i PrintFunction) NullVal() MSVal {
+	return nil
+}
+
 // --------------------------------------------------------
 // Implements FunctionResult
 // --------------------------------------------------------

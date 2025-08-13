@@ -18,7 +18,7 @@ func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
 	var err error = nil
 
 	// 1. Literal
-	if ok, tok := parser.match(token.NUMBER_INT, token.NUMBER_FLOAT, token.STRING, token.TRUE, token.FALSE); ok {
+	if ok, tok := parser.match(token.NUMBER_INT, token.NUMBER_FLOAT, token.STRING, token.TRUE, token.FALSE, token.NOTHING_TYPE); ok {
 		return &ast.LiteralExpNodeS{Tk: tok}, err
 	}
 

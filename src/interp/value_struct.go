@@ -26,6 +26,10 @@ func (r MSStruct) Nullable() bool {
 	return true
 }
 
+func (s MSStruct) NullVal() MSVal {
+	return MSStruct{Name: s.Name, Fields: nil, SType: s.SType}
+}
+
 func (r MSStruct) IsNil() bool {
 	return r.Fields == nil
 }
@@ -92,3 +96,4 @@ func (i MSStruct) ValidValue(field string, val MSVal) error {
 	}
 	return nil
 }
+

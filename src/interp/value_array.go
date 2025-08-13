@@ -29,6 +29,10 @@ func (r MSArray) Nullable() bool {
 	return false
 }
 
+func (i MSArray) NullVal() MSVal {
+	return nil
+}
+
 // --------------------------------------------------------
 // implmeents indexable
 // --------------------------------------------------------

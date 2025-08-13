@@ -13,7 +13,7 @@ func (e *MSEvaluator) evalArrayIndexExpression(n *ast.ArrayIndexNodeS) (MSVal, e
 	val, err := e.evaluateExpression(n.Target)
 
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// Check if the resulting value is indexable
@@ -21,14 +21,14 @@ func (e *MSEvaluator) evalArrayIndexExpression(n *ast.ArrayIndexNodeS) (MSVal, e
 
 	if !ok {
 		msg := fmt.Sprintf("Value '%s' of type '%s' is not indexable.", val, val.Type())
-		return MSNothing{}, &EvalError{message: msg}
+		return nil, &EvalError{message: msg}
 	}
 
 	// Evaluate index
 	idx, err := e.evaluateExpression(n.Index)
 
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	return indexable.Get(idx)
@@ -147,7 +147,7 @@ func (e *MSEvaluator) evaluateArrayAssignment(n *ast.ArrayAssignmentNodeS) (MSVa
 	target, err := e.evaluateExpression(n.Target)
 
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// Check if the resulting value is indexable
@@ -155,14 +155,14 @@ func (e *MSEvaluator) evaluateArrayAssignment(n *ast.ArrayAssignmentNodeS) (MSVa
 
 	if !ok {
 		msg := fmt.Sprintf("Value '%s' of type '%s' is not indexable.", target, target.Type())
-		return MSNothing{}, &EvalError{message: msg}
+		return nil, &EvalError{message: msg}
 	}
 
 	// Evaluate index
 	idx, err := e.evaluateExpression(n.Index)
 
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// Evaluate val

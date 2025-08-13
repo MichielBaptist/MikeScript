@@ -13,14 +13,14 @@ func (evaluator *MSEvaluator) evaluateBinaryExpression(node *ast.BinaryExpNodeS)
 
 	// quit on error
 	if lerr != nil {
-		return MSNothing{}, lerr
+		return nil, lerr
 	}
 
 	rval, rerr := evaluator.evaluateExpression(node.Right)
 
 	// quit on error
 	if rerr != nil {
-		return MSNothing{}, rerr
+		return nil, rerr
 	}
 
 	switch node.Op.Type {
@@ -37,7 +37,7 @@ func (evaluator *MSEvaluator) evaluateBinaryExpression(node *ast.BinaryExpNodeS)
 	case token.GREATER_GREATER: 	return evalGrGr(lval, rval)
 	case token.COMMA:				return evalTuple(lval, rval)
 	case token.PERCENT:				return evalMod(lval, rval)
-	default:						return MSNothing{}, &EvalError{unknownBinop(node)}
+	default:						return nil, &EvalError{unknownBinop(node)}
 	}
 }
 
@@ -66,11 +66,11 @@ func evalMod(lval, rval MSVal) (MSVal, error) {
 		switch r := rval.(type){
 		case MSInt:
 			if r.Val == 0 {
-				return MSNothing{}, &EvalError{message: "Division by zero."}
+				return nil, &EvalError{message: "Division by zero."}
 			}
 			return MSInt{Val: l.Val % r.Val}, err
 		}
 	}
 
-	return MSNothing{}, &EvalError{invalidBinop(lval, rval, "%")}
+	return nil, &EvalError{invalidBinop(lval, rval, "%")}
 }
