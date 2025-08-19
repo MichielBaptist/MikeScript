@@ -12,7 +12,6 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	//////////////////////////////////////////////////
 	fn, err := evaluator.evaluateExpression(node.Fun)
 
-	// Check for errors
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +19,6 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 	// Cast the value to FunctionResult (interface)
 	callable, ok := fn.(MSCallable)
 
-	// Cast to function, if not ok error
 	if !ok {
 		err = &EvalError{fmt.Sprintf("Function application is not implemented for type '%s'", fn)}
 		return nil, err
@@ -36,7 +34,6 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 		return nil, &BindingError{msg: err}
 	}
 
-	// First evaluate all arguments, keep track of any errors.
 	args := make([]MSVal, len(node.Args))
 	for i, arg := range node.Args {
 		arg, err := evaluator.evaluateExpression(arg)
@@ -57,7 +54,6 @@ func (evaluator *MSEvaluator) evaluateFunctionApplication(node *ast.FuncAppNodeS
 func (evaluator *MSEvaluator) evaluateFunctionCall(node *ast.FuncCallNodeS) (MSVal, error) {
 	fn, err := evaluator.evaluateExpression(node.Fun)
 
-	// Check for errors
 	if err != nil {
 		return nil, err
 	}

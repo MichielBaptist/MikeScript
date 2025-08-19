@@ -6,7 +6,6 @@ import (
 
 func (evaluator *MSEvaluator) executeReturnStatement(node *ast.ReturnNodeS) (MSVal, error) {
 	
-	// Evaluate return values (if exists)
 	var res MSVal
 	var err error
 
@@ -16,9 +15,8 @@ func (evaluator *MSEvaluator) executeReturnStatement(node *ast.ReturnNodeS) (MSV
 		res = MSNothing{}
 	}
 
-	// Check for errors in res
 	if err != nil {
-		return MSNothing{}, err
+		return nil, err
 	}
 
 	// wrap the result in a return EvalResult

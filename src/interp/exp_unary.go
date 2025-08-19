@@ -8,10 +8,8 @@ import (
 
 func (evaluator *MSEvaluator) evaluateUnaryExpression(node *ast.UnaryExpNodeS) (MSVal, error) {
 	
-	// evaluate the node
 	res, err := evaluator.evaluateExpression(node.Node)
 
-	// check if the evaluation was.Valid()
 	if err != nil {
 		return nil, err
 	}

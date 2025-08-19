@@ -9,10 +9,8 @@ import (
 
 func (parser *MSParser) parseWhile() (*ast.WhileNodeS, error) {
 
-	// 1. parse conditional expression
 	cond, err := parser.parseExpression()
 
-	// check for errors
 	if err != nil {
 		return &ast.WhileNodeS{}, err
 	}
@@ -30,7 +28,6 @@ func (parser *MSParser) parseWhile() (*ast.WhileNodeS, error) {
 		_ = []int{}[0] // force error
 	}
 
-	// Pack into a while node
 	return &ast.WhileNodeS{Condition: cond, Body: block}, err
 
 }

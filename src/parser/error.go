@@ -3,7 +3,6 @@ package parser
 import "fmt"
 
 type ParserError struct {
-	// Represents a parser error
 	msg  string
 	line int
 	col  int

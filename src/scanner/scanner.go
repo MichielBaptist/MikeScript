@@ -105,11 +105,10 @@ func (scanner *MSScanner) scanTokens() {
 
 func (scanner *MSScanner) nextToken() (token.Token, bool) {
 
-	// get current char and advance r to next character
 	c := scanner.advance()
 
-	var tok token.Token      	// nil token
-	var ok bool = true	// valid token
+	var tok token.Token
+	var ok bool = true
 
 	switch {
 
@@ -184,10 +183,8 @@ func (scanner *MSScanner) scanIdentifierOrKeyword() (bool, token.Token) {
 		scanner.advance()
 	}
 
-	// extract string
 	str := scanner.src[scanner.l:scanner.r]
 
-	// check if the string is a keyword
 	if tt, ok := token.Keywords[str]; ok {
 		return true, token.Token{Type: tt, Lexeme: str, Line: scanner.line, Col: scanner.col}
 	}
@@ -206,17 +203,14 @@ func (scanner *MSScanner) scanString() (bool, token.Token) {
 		scanner.advance()
 	}
 
-	// Check cause of loop exit, if from EOF we have an error
 	if scanner.atEnd() {
 		scanner.error("No matching \" found for string", scanner.line, scanner.col)
 		return false, token.Token{}
 	}
 	
-	// Found the closing quote, add the string token
 	str := scanner.src[scanner.l+1:scanner.r]
 	tok := token.Token{Type: token.STRING, Lexeme: str, Line: scanner.line, Col: scanner.col}
 
-	// advance past the closing quote
 	scanner.advance()
 
 	return true, tok

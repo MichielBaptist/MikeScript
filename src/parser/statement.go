@@ -6,12 +6,6 @@ import (
 )
 
 func (parser *MSParser) parseStatement() (ast.StmtNodeI, error){
-	// statement ->
-	// [0]: block
-	// [1]: if
-	// [2]: variable_declaration
-	// [3]: while
-	// [-]: expression
 
 	// FUNCDECL
 	if ok, _ := parser.match(token.FUNCTION); ok {

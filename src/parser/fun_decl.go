@@ -103,18 +103,13 @@ func (parser *MSParser) parseFunctionArgs() ([]ast.FuncParamS, error) {
 			return args, err
 		}
 
-		// add to args
 		args = append(args, ast.FuncParamS{Type: paramType, Iden: ident})
 
-		// Check if we see a ','. If so, we can continue the loop
-		// else we have to break the loop. We don't expect a ">>"
-		// in this function, it's up to the caller to expect it.
 		if ok, _ := parser.match(token.COMMA) ; !ok{
 			break
 		}
 	}
 
-	// We expect a closing paren
 	ok, tk := parser.match(token.RIGHT_PAREN)
 
 	if !ok {

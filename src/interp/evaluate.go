@@ -20,7 +20,6 @@ type MSEvaluator struct {
 
 func NewMSEvaluator() *MSEvaluator {
 
-	// Init gobal and local scope
 	env := NewEnvironment(nil)
 	glb := env
 
@@ -38,14 +37,12 @@ func NewMSEvaluator() *MSEvaluator {
 }
 
 func (evaluator *MSEvaluator) UpdateVLocals(vlocals map[*ast.VariableExpNodeS]int) {
-	// add all locals to current locals
 	for k, v := range vlocals {
 		evaluator.vlocals[k] = v
 	}
 }
 
 func (evaluator *MSEvaluator) UpdateTLocals(vlocals map[*mstype.MSNamedTypeS]int) {
-	// add all locals to current locals
 	for k, v := range vlocals {
 		evaluator.tlocals[k] = v
 	}
@@ -53,12 +50,9 @@ func (evaluator *MSEvaluator) UpdateTLocals(vlocals map[*mstype.MSNamedTypeS]int
 
 func (evaluator *MSEvaluator) Eval(ast *ast.Program) (MSVal, error) {
 
-	// set the ast
 	evaluator.ast = ast
 
-	// evaluate the ast
 	return evaluator.executeStatements(evaluator.ast)
-	
 }
 
 func (evaluator *MSEvaluator) Errors() []error {

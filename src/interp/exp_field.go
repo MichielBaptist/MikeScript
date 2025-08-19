@@ -32,14 +32,12 @@ func (e *MSEvaluator) evaluateFieldAssign(n *ast.FieldAssignmentNode) (MSVal, er
 	// cast to Fieldable
 	fieldable := target.(MSFieldable)
 
-	// eval val
 	value, err := e.evaluateExpression(n.Value)
 
 	if err != nil {
 		return nil, err
 	}
 
-	// get current val
 	currentVal, err := fieldable.Get(n.Field.VarName())
 
 	if err != nil {

@@ -42,7 +42,6 @@ func (pf PrintFunction) String() string {
 		return fs
 	}
 
-	// Convert all print args to string
 	strs := make([]string, len(pf.args))
 	for i, arg := range pf.args {
 		strs[i] = arg.String()
@@ -65,18 +64,13 @@ func (i PrintFunction) NullVal() MSVal {
 
 func (pf PrintFunction) Call(_evaluator *MSEvaluator) (MSVal, error) {
 
-	// Get all result values in a slice
-	// and convert them to strings
 	strs := make([]string, len(pf.args))
 	for i, arg := range pf.args {
 		strs[i] = arg.String()
 	}
 
-	// Print the joined strings, this is where
-	// the connection between mikesript and go is made.
 	fmt.Println(strings.Join(strs, ", "))
 
-	// Done without return value
 	return MSNothing{}, nil
 }
 

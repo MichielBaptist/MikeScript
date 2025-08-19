@@ -53,7 +53,6 @@ func (env *Environment) walkBack(depth int) *Environment {
 
 func (env *Environment) GetVar(name string, depth int) (MSVal, error) {
 
-	// Walk back depth environments
 	targetEnv := env.walkBack(depth)
 
 	// Checks at evaluation time if the variable is defined
@@ -66,12 +65,11 @@ func (env *Environment) GetVar(name string, depth int) (MSVal, error) {
 
 func (env *Environment) NewVar(name string, value MSVal) error {
 
-	// Check if already in env. We don't allow re-declaring variables
+	// We don't allow re-declaring variables
 	if val, ok := env.variables[name] ; ok {
 		return &EnvironmentError{fmt.Sprintf("Variable '%v' is already defined as '%v'", name, val)}
 	}
 
-	// Set variable
 	env.variables[name] = value
 
 	return nil
@@ -81,12 +79,10 @@ func (env *Environment) SetVar(name string, value MSVal, depth int) error {
 
 	targetEnv := env.walkBack(depth)
 
-	// If env does not contain the var, throw error
 	if _, ok := targetEnv.variables[name] ; !ok {
 		return varNotFound(name)
 	}
 
-	// Variable is defined, first check for type compatibility.
 	if err := targetEnv.compatibleType(name, value) ; err != nil {
 		return err
 	}
@@ -122,7 +118,6 @@ func (env *Environment) printEnv() int {
 		rows = append(rows, rowRepr(name, value))
 	}
 
-	// Print table
 	if depth == 0 {
 		fmt.Println(tblbar(depth))
 	}
@@ -145,7 +140,6 @@ func (env *Environment) compatibleType(name string, newValue MSVal) error {
 		return varNotFound(name)
 	}
 
-	// Crash on dereferencing nil, then there is an issue.
 	expectedType := oldValue.Type()
 	receivedType := newValue.Type()
 	ok = expectedType.Eq(receivedType)
@@ -202,12 +196,10 @@ func (env *Environment) GetType(name string, depth int) (mstype.MSType, error) {
 
 func (env *Environment) NewType(name string, t mstype.MSType) error {
 
-	// Check if already in env. We don't allow re-declaring variables
 	if typ, ok := env.types[name] ; ok {
 		return &EnvironmentError{fmt.Sprintf("Type '%v' is already defined as '%v'", name, typ)}
 	}
 
-	// Set variable
 	env.types[name] = t
 
 	return nil

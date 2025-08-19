@@ -83,7 +83,6 @@ func MSFunctionFromType(t *mstype.MSOperationTypeS, closure *Environment) *MSFun
 
 func (f MSFunction) Type() mstype.MSType {
 
-	// Get list of unbound types
 	ptypes := make([]mstype.MSType, len(f.unBoundParams))
 	for i, p := range f.unBoundParams {
 		ptypes[i] = p.Type
@@ -111,14 +110,12 @@ func (f MSFunction) String() string {
 
 	strs := []string{}
 
-	// Join strings
 	pss := strings.Join(ps, ", ")
 	if pss != "" {
 		strs = append(strs, pss)
 	}
 	strs = append(strs, ">>", f.fname(), "->", fmt.Sprintf("%v", f.returnType), "{...}")
 	
-	// bindings >> fname -> rt
 	return strings.Join(strs, " ")
 
 }

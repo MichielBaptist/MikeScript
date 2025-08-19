@@ -20,7 +20,6 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 	// a comma separated list of expressions or empty (nil)
 	left, err = parser.parseTuple()
 
-	// check for errors
 	if err != nil {
 		return left, err
 	}
@@ -34,7 +33,6 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 			token.GREATER_GREATER_EQ,	// >>= binding & call
 		)
 		
-		// Check if we matched
 		if !ok {
 			break
 		}
@@ -42,10 +40,8 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 		var right ast.ExpNodeI
 		var err error
 
-		// parse right
 		right, err = parser.parseTuple()
 
-		// stop on fail
 		if err != nil {
 			return left, err
 		}
@@ -89,7 +85,6 @@ func (parser *MSParser) parseFuncop() (ast.ExpNodeI, error) {
 			}
 		}
 
-		// Break loop if we see an error
 		if err != nil {
 			break
 		}

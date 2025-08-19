@@ -9,7 +9,6 @@ import (
 func (e *MSEvaluator) evalArrayIndexExpression(n *ast.ArrayIndexNodeS) (MSVal, error) {
 	// target[index]
 
-	// Evaluate the target first
 	val, err := e.evaluateExpression(n.Target)
 
 	if err != nil {
@@ -24,7 +23,6 @@ func (e *MSEvaluator) evalArrayIndexExpression(n *ast.ArrayIndexNodeS) (MSVal, e
 		return nil, &EvalError{message: msg}
 	}
 
-	// Evaluate index
 	idx, err := e.evaluateExpression(n.Index)
 
 	if err != nil {
@@ -103,7 +101,6 @@ func (e *MSEvaluator) evaluateArrayConstructorWithSize(n *ast.ArrayConstructorNo
 	var sizeInt MSInt	// Size in Int val
 	var err error		// err
 
-	// evaluate N
 	size, err = e.evaluateExpression(n.N)
 
 	if err != nil {
@@ -118,7 +115,6 @@ func (e *MSEvaluator) evaluateArrayConstructorWithSize(n *ast.ArrayConstructorNo
 		return nil, &EvalError{message: msg}
 	}
 
-	// Check if size is valid (positive)
 	if sizeInt.Val < 0 {
 		msg := fmt.Sprintf("Cannot initialize arrays of negative size, received '%d'", sizeInt.Val)
 		return nil, &EvalError{message: msg}
@@ -132,7 +128,6 @@ func (e *MSEvaluator) evaluateArrayConstructorWithSize(n *ast.ArrayConstructorNo
 		return nil, err
 	}
 
-	// create an array of proper size and init values
 	vals = make([]MSVal, sizeInt.Val)
 	for i := 0 ; i < sizeInt.Val ; i++ {
 		vals[i] = e.typeToVal(resolvedType, false)
@@ -143,7 +138,6 @@ func (e *MSEvaluator) evaluateArrayConstructorWithSize(n *ast.ArrayConstructorNo
 
 func (e *MSEvaluator) evaluateArrayAssignment(n *ast.ArrayAssignmentNodeS) (MSVal, error) {
 
-	// Evaluate the target first
 	target, err := e.evaluateExpression(n.Target)
 
 	if err != nil {
@@ -158,14 +152,12 @@ func (e *MSEvaluator) evaluateArrayAssignment(n *ast.ArrayAssignmentNodeS) (MSVa
 		return nil, &EvalError{message: msg}
 	}
 
-	// Evaluate index
 	idx, err := e.evaluateExpression(n.Index)
 
 	if err != nil {
 		return nil, err
 	}
 
-	// Evaluate val
 	val, err := e.evaluateExpression(n.Value)
 
 	if err != nil {

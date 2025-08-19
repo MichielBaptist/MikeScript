@@ -30,7 +30,6 @@ func (parser *MSParser) parseVarDeclaration() (*ast.VarDeclNodeS, error) {
 
 	// Case 2 & 3: ignore for now
 	
-	// We expect an identifier next so we parse it
 	ident, err := parser.parseIdentifier()
 
 	if err != nil {

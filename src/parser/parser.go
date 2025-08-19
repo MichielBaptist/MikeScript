@@ -145,10 +145,8 @@ func (parser *MSParser) synchronize() {
 func (parser *MSParser) Parse(tokens []token.Token) (*ast.Program, error) {
 	// Parses: START -> Program EOF
 
-	// parse block
 	ast, err := parser.parseProgram()
 
-	// If parsing failed, return the error
 	if err != nil {
 		return ast, err
 	}

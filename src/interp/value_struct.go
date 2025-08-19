@@ -63,17 +63,14 @@ func (s MSStruct) Set(field string, val MSVal) (MSVal, error) {
 		return nil, &EvalError{message: msg}
 	}
 
-	// checks same type
 	if err := s.ValidField(field); err != nil {
 		return nil, err
 	}
 
-	// type check aswell
 	if err := s.ValidValue(field, val); err != nil {
 		return nil, err
 	}
 
-	// set
 	s.Fields[field] = val
 
 	return val, nil

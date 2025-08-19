@@ -15,7 +15,6 @@ func (p *MSParser) parseStructDeclaration() (*ast.StructDeclarationNodeS, error)
 	var fname *ast.VariableExpNodeS		// field name placeholder
 	var err error
 
-	// make first
 	fields = make(map[*ast.VariableExpNodeS]mstype.MSType)
 
 	sname, err = p.parseIdentifier()
@@ -47,7 +46,6 @@ func (p *MSParser) parseStructDeclaration() (*ast.StructDeclarationNodeS, error)
 			return nil, err
 		}
 
-		// add to fields
 		fields[fname] = typ
 
 		// break ok no ';'

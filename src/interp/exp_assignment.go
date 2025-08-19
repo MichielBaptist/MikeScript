@@ -22,7 +22,6 @@ func (evaluator *MSEvaluator) evaluateAssignmentExpression(node *ast.AssignmentN
 	}
 
 	if _, ok := res.(MSNothing) ; ok && currentVal.Nullable() {
-		// Get the null value for currentval
 		res = currentVal.NullVal()
 	}
 
@@ -71,12 +70,10 @@ func (evaluator *MSEvaluator) evaluateDeclAssignExpression(node *ast.DeclAssignN
 		return nil, err
 	}
 
-	// set val, even if res contains error.
 	name := node.Identifier.Name.Lexeme
 	err = evaluator.env.NewVar(name, res)
 
 	if err != nil {
-		// Add errors to res errors
 		return nil, err
 	}
 

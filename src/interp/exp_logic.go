@@ -11,15 +11,12 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 
 	var err error
 
-	// Evaluate the left and right side of the expression
 	lval, lerr := evaluator.evaluateExpression(node.Left)
 
-	// error check
 	if lerr != nil {
 		return nil, lerr
 	}
 
-	// Expect boolean value
 	var leftb bool
 
 	switch lt := lval.(type){
@@ -30,13 +27,12 @@ func (evaluator *MSEvaluator) evaluateLogicalExpression(node *ast.LogicalExpNode
 	// short circuit evaluation
 	switch  {
 	case node.Op.Type == token.AMP_AMP && !leftb: return MSBool{Val: false}, err	// false && ...
-	case node.Op.Type == token.BAR_BAR &&  leftb: return MSBool{Val: true}, err	// true || ...
+	case node.Op.Type == token.BAR_BAR &&  leftb: return MSBool{Val: true}, err		// true || ...
 	}
 
 	// Means the first operand is inconclusive
 	rval, rerr := evaluator.evaluateExpression(node.Right)
 
-	// error check
 	if rerr != nil {
 		return nil, rerr
 	}

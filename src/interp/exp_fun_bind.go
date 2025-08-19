@@ -51,7 +51,6 @@ func (b *ParamBindingS) bind(val MSVal) (ParamBindingS, error) {
 		return *b, BindingError{msg: msg}
 	}
 
-	// Validate correct types
 	if !b.ValidBindingEvalResult(&val) {
 		vals := val.String()
 		typs := fmt.Sprintf("%v", val.Type())
@@ -61,10 +60,8 @@ func (b *ParamBindingS) bind(val MSVal) (ParamBindingS, error) {
 		return *b, BindingError{msg: msg}
 	}
 	
-	// Bind value
 	b.Value = val
 
-	// done
 	return *b, nil
 }
 

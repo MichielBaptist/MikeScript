@@ -40,7 +40,6 @@ func (r MSTuple) NullVal() MSVal {
 
 func (a MSTuple) Get(at MSVal) (MSVal, error) {
 
-	// early exit on bad index
 	if err := a.ValidIndex(at) ; err != nil {
 		return MSNothing{}, nil
 	}
@@ -53,12 +52,10 @@ func (a MSTuple) Get(at MSVal) (MSVal, error) {
 
 func (a MSTuple) Set(at, val MSVal) (MSVal, error) {
 
-	// early exit on bad index
 	if err := a.ValidIndex(at) ; err != nil {
 		return MSNothing{}, nil
 	}
 
-	// early exit on bad value
 	if err := a.ValidValue(val) ; err != nil {
 		return MSNothing{}, err
 	}
@@ -66,7 +63,6 @@ func (a MSTuple) Set(at, val MSVal) (MSVal, error) {
 	// Check if index is MSInt
 	idxInt := at.(MSInt)
 
-	// Check if the target type is valid
 	targetVal := a.Values[idxInt.Val]
 
 	if !targetVal.Type().Eq(val.Type()) {
@@ -74,7 +70,6 @@ func (a MSTuple) Set(at, val MSVal) (MSVal, error) {
 		return MSNothing{}, &EvalError{message: msg}
 	}
 
-	// Actually set the value
 	a.Values[idxInt.Val] = val
 
 	return val, nil
@@ -94,7 +89,6 @@ func (a MSTuple) ValidIndex(idx MSVal) error {
 		return &EvalError{message: msg}
 	}
 
-		// Check if the index is in range or not
 	if idxInt.Val < 0 || idxInt.Val >= len(a.Values) {
 		msg := fmt.Sprintf("Array index out of bounds: '%d', expected value in '[%d, %d]'", idxInt.Val, 0, len(a.Values))
 		return &EvalError{message: msg}

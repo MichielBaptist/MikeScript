@@ -15,8 +15,6 @@ func (parser *MSParser) parseBreak(tk token.Token) (*ast.BreakNodeS, error) {
 		return &ast.BreakNodeS{}, err
 	}
 
-	// Expect a semicolon. If not found, return an error
-	// set the error message to the expected token.
 	if ok, tok := parser.expect(token.SEMICOLON); !ok {
 		return &ast.BreakNodeS{}, parser.unexpectedToken(tok, token.SEMICOLON)
 	}
@@ -58,15 +56,12 @@ func (parser *MSParser) parseReturn(tk token.Token) (*ast.ReturnNodeS, error) {
 
 	if ok, _ := parser.expect(token.SEMICOLON) ; !ok {
 
-		// get return type
 		val, err = parser.parseExpression()
 
-		// on error stop
 		if err != nil {
 			return nil, err
 		}
 
-		// Need semicolon
 		if ok, tk := parser.expect(token.SEMICOLON) ; !ok {
 			return nil, parser.unexpectedToken(tk, token.SEMICOLON)
 		}

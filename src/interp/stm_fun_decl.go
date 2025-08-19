@@ -8,7 +8,6 @@ import (
 func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) (MSVal, error) {
 	var err error
 
-	// Resolve funcdecl node
 	resolvedNode, err := evaluator.resolveFunctionDeclaration(node)
 
 	if err != nil {
@@ -18,11 +17,10 @@ func (evaluator *MSEvaluator) executeFuncDeclStatement(node *ast.FuncDeclNodeS) 
 	// Wrap the decl with a callable
 	callable := NewMSFunction(resolvedNode, evaluator.env)
 
-	// Add EvalResult to current scope
+	// Add to current scope
 	fname := node.Fname.Name.Lexeme
 	err = evaluator.env.NewVar(fname, callable)
 
-	// Throw env error
 	if err != nil {
 		return nil, err
 	}

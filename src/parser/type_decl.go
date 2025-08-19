@@ -29,20 +29,17 @@ func (p *MSParser) parseTypeDeclaration() (ast.StmtNodeI, error) {
 }
 
 func (p *MSParser) parseTypedefStatement() (*ast.TypeDefStatementS, error) {
-	// parse type
 	t, err := p.parseType()
 
 	if err != nil {
 		return nil, err
 	}
 
-	// parse identifier
 	v, err := p.parseIdentifier()
 
 	if err != nil {
 		return nil, err
 	}
-
 
 	// expect ';'
 	if ok, tok := p.expect(token.SEMICOLON) ; !ok {

@@ -8,16 +8,12 @@ import (
 
 func (parser *MSParser) parseExpressionStatement() (*ast.ExStmtNodeS, error) {
 
-	// Parse the expression.
 	xpr, err := parser.parseExpression()
 
-	// Check for errors
 	if err != nil {
 		return &ast.ExStmtNodeS{Ex: xpr}, err
 	}
 
-	// Expect a semicolon. If not found, return an error
-	// set the error message to the expected token.
 	if ok, tok := parser.expect(token.SEMICOLON); !ok {
 		msg := fmt.Sprintf("Expected '%v' got '%v'", token.SEMICOLON, tok.Type.String())
 		err = parser.error(msg, tok.Line, tok.Col)
@@ -43,16 +39,13 @@ func (parser *MSParser) parseLor() (ast.ExpNodeI, error) {
 		// Match ||
 		ok, op := parser.match(token.BAR_BAR)
 
-		// No match
 		if !ok {
 			break
 		}
 
-		// Match
 		right, err := parser.parseLand()
 		land = &ast.LogicalExpNodeS{Left: land, Op: op, Right: right}
 
-		// check for errors
 		if err != nil {
 			return land, err
 		}
@@ -86,8 +79,6 @@ func (parser *MSParser) parseTuple() (ast.ExpNodeI, error) {
 	var err error
 	var exprs []ast.ExpNodeI
 	
-	// parse the first expression, we should always expect
-	// that this expression exists.
 	node, err = parser.parseEquality()
 
 	if err != nil {
@@ -134,17 +125,14 @@ func (parser *MSParser) parseEquality() (ast.ExpNodeI, error) {
 	// left to right
 	for {
 		if ok, op := parser.match(token.EQ_EQ, token.EXCLAMATION_EQ); ok {
-			// found next "==" or "!="
+
 			right, err := parser.parseComp()
 
-			// check if neq or eq
 			is_neq := op.Type == token.EXCLAMATION_EQ
 
-			// build binary node
 			eqop := token.Token{Type: token.EQ_EQ, Lexeme: "==", Col: op.Col, Line: op.Line}
 			node = &ast.BinaryExpNodeS{Left: node, Op: eqop, Right: right}
 
-			// If the operator was neq, we wrap the binary node
 			if is_neq {
 				neg := token.Token{Type: token.EXCLAMATION, Lexeme: "!", Col: op.Col, Line: op.Line}
 				node = &ast.UnaryExpNodeS{Op: neg, Node: node}
@@ -155,7 +143,6 @@ func (parser *MSParser) parseEquality() (ast.ExpNodeI, error) {
 			}
 
 		} else {
-			// Next token is not "==" or "!="
 			break
 		}
 	}

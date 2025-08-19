@@ -114,7 +114,6 @@ func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
 		return nil, p.unexpectedToken(tk, token.RIGHT_SQUARE)
 	}
 
-	// Parse type
 	atype, err = p.parseType()
 
 	fmt.Printf("Type: %+v\n", atype)

@@ -19,7 +19,6 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 	// Create a new environment with globals as base scope.
 	env := NewEnvironment(f.closure)
 
-	// push all bindings in the env
 	for _, bind := range f.boundParams {
 		env.NewVar(bind.strName(), bind.Value)
 	}
@@ -27,8 +26,6 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 	// Call the body using env
 	res, err := ev.executeBlock(f.fbody, env)
 
-	// Check if the block executed properly, if not,
-	// we cannot expect an EvalResult with RT_RETURN
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +33,6 @@ func (f MSFunction) Call(ev *MSEvaluator) (MSVal, error) {
 	// Check if we can cast to MSReturn
 	returnVal := res.(MSReturn)
 
-	// Type check the return value against the
-	// declared return type.
 	if !returnVal.Type().Eq(f.GetOutputType()) {
 		msg := fmt.Sprintf("Tried returning '%s' of type '%s', expected type '%s'", returnVal, returnVal.Type(), f.GetOutputType())
 		return nil, &EvalError{msg}
@@ -59,7 +54,6 @@ func (f MSFunction) Bind(args []MSVal) (MSVal, error) {
 	// Add all the args to the function bindings
 	newf, err := f.bindArgs(args)
 
-	// Binding error
 	if err != nil {
 		return nil, err
 	}
@@ -109,22 +103,16 @@ func (f *MSFunction) bindArgs(args []MSVal) (*MSFunction, error) {
 
 	for i, arg := range args {
 
-		// Get unbound param
 		up := newUnbound[i]
-
-		// bind
 		up, err := up.bind(arg)
 
-		// Bind can fail on type fault
 		if err != nil {
 			return nil, err
 		}
 
-		// Add to bound params
 		newBound = append(newBound, up)
 	}
 
-	// Remove the first len(args) from the unbound list
 	newUnbound = newUnbound[len(args):]
 
 	// Creates a new MSFunction struct containing the new bindings

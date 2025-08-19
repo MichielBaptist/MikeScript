@@ -9,31 +9,25 @@ func (evaluator *MSEvaluator) executeWhileStatement(node *ast.WhileNodeS) (MSVal
 
 	for {
 
-		// Evaluate expression
 		cond, err := evaluator.evaluateExpression(node.Condition)
 		if err != nil {
-			return MSNothing{}, err
+			return nil, err
 		}
 
-		// Cast to bool
 		bcond, ok := cond.(MSBool)
 
 		if !ok {
-			return MSNothing{}, &EvalError{fmt.Sprintf("Condition must be of type bool, got %v", cond.Type())}
+			return nil, &EvalError{fmt.Sprintf("Condition must be of type bool, got %v", cond.Type())}
 		}
 
-		// Here the condition should be a boolean
-		// If the condition is false, we break out of the loop
 		if !bcond.Val {
 			break
 		}
 
-		// Execute the body of the while loop
 		res, err := evaluator.executeBlock(node.Body, NewEnvironment(evaluator.env))
 
-		// Check if result has an error
 		if err != nil {
-			return MSNothing{}, err
+			return nil, err
 		}
 
 		// Check for break or return

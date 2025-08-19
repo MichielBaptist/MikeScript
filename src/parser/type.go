@@ -51,7 +51,6 @@ func (p *MSParser) parseArrayType() (mstype.MSType, error) {
 		return mstype.MS_NOTHING, p.unexpectedToken(tok, token.RIGHT_SQUARE)
 	}
 
-	// parse type
 	base, err := p.parseType()
 
 	if err != nil {
@@ -75,7 +74,6 @@ func (p *MSParser) parseCompositeOrFunctionType() (mstype.MSType, error) {
 		types, err = p.parseTypeList()
 	}
 
-	// Potential parse error
 	if err != nil {
 		return mstype.MS_NOTHING, err
 	}

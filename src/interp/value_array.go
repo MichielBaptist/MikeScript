@@ -39,7 +39,6 @@ func (i MSArray) NullVal() MSVal {
 
 func (a MSArray) Get(at MSVal) (MSVal, error) {
 
-	// early exit on bad index
 	if err := a.ValidIndex(at) ; err != nil {
 		return nil, err
 	}
@@ -52,21 +51,16 @@ func (a MSArray) Get(at MSVal) (MSVal, error) {
 
 func (a MSArray) Set(at, val MSVal) (MSVal, error) {
 
-	// early exit on bad index
 	if err := a.ValidIndex(at) ; err != nil {
 		return nil, err
 	}
 
-	// early exit on bad value
 	if err := a.ValidValue(val) ; err != nil {
 		return nil, err
 	}
 
-	// Check if index is MSInt
 	idxInt := at.(MSInt)
 
-
-	// Actually set the value
 	a.Values[idxInt.Val] = val
 
 	return val, nil
@@ -86,7 +80,6 @@ func (a MSArray) ValidIndex(idx MSVal) error {
 		return &EvalError{message: msg}
 	}
 
-		// Check if the index is in range or not
 	if idxInt.Val < 0 || idxInt.Val >= len(a.Values) {
 		msg := fmt.Sprintf("Array index out of bounds: '%d', expected value in '[%d, %d]'", idxInt.Val, 0, len(a.Values) - 1)
 		return &EvalError{message: msg}

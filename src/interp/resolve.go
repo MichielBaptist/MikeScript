@@ -99,7 +99,6 @@ func (e *MSEvaluator) resolveFunctionDeclaration(f *ast.FuncDeclNodeS) (*ast.Fun
 		Body: f.Body,
 	}
 
-	// Make new ast node with resolved params
 	return &resolvedFuncDecl, nil
 	
 }
@@ -112,7 +111,6 @@ func (e *MSEvaluator) resolveParamList(ps []ast.FuncParamS) ([]ast.FuncParamS, e
 	resolvedParams := make([]ast.FuncParamS, len(ps))
 	for i, p := range ps {
 
-		// resolve 
 		resolvedParam, err = e.resolveType(p.Type)
 
 		if err != nil {

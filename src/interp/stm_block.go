@@ -7,10 +7,8 @@ import (
 
 func (evaluator *MSEvaluator) executeBlock(node *ast.BlockNodeS, env *Environment) (MSVal, error) {
 
-	// Save current environment
 	previous := evaluator.env
 
-	// Set new environment
 	evaluator.env = env
 
 	// Pop the environment when we are done with block
