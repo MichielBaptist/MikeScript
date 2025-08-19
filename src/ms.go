@@ -53,12 +53,11 @@ type Runner interface {
 }
 
 type MSRunner struct {
-	prompter 	*bufio.Scanner			// prompter
-	scanner 	scanner.MSScanner		// lexer/scanner
-	parser 		parser.MSParser			// parser
-	resolver 	resolver.MSResolver		// resolver for locals
-	//typeResolver resolver.MSTypeResolver
-	evaluator 	interp.MSEvaluator		// evaluator
+	prompter 	*bufio.Scanner
+	scanner 	scanner.MSScanner
+	parser 		parser.MSParser
+	resolver 	resolver.MSResolver
+	evaluator 	interp.MSEvaluator
 	verbose 	bool
 }
 
@@ -80,7 +79,6 @@ func (r MSRunner) run(input string) int {
 	tokens := r.scanner.Scan(input)
 	scanTime := time.Since(startScan)
 
-	// print the tokens
 	scannerlog.log(fmt.Sprintf("Tokens (%v): %v", len(tokens), tokens))
 
 	if len(r.scanner.Errors) > 0 {
@@ -96,7 +94,6 @@ func (r MSRunner) run(input string) int {
 	
 	parserlog.log("---------------- Parser ---------------------")
 
-	// set the source code and tokens
 	r.parser.SetSrc(input)
 	r.parser.SetTokens(tokens)
 
@@ -143,13 +140,11 @@ func (r MSRunner) run(input string) int {
 		errorlog.log(err)
 	}
 
-	// print the current env
 	evallog.log("Environment:")
 	if r.verbose {
 		r.evaluator.PrintEnv()
 	}
 
-	// Print the result
 	fmt.Printf("Time to scan:           %v\n", scanTime)
 	fmt.Printf("Time to parse:          %v\n", parseTime)
 	fmt.Printf("Time to resolve:        %v\n", resolverTime)
@@ -191,16 +186,13 @@ func (r *MSRunner) prompt() (Command, string) {
 	fmt.Print(colorText("ms> ", RED))
 	ok := r.prompter.Scan()
 
-	// something went wrong??
 	if !ok {
 		fmt.Println("Something went wrong during prompting...")
 		return EXIT, "exit"
 	}
 
-	// Get text
 	txt := r.text()
 
-	// Check if the text is exit, if it is we return exit
 	if r.isExit(txt) {
 		return EXIT, txt
 	}
@@ -210,7 +202,6 @@ func (r *MSRunner) prompt() (Command, string) {
 		return LOAD, txt
 	}
 
-	// Not anything, normal command?
 	return RUN, txt
 }
 
@@ -219,7 +210,6 @@ func (r *MSRunner) text() string {
 }
 
 func (r *MSRunner) loadCommand(txt string) {
-	// Split the txt into paths
 	paths := strings.Split(txt, " ")
 
 	// loop all paths and load the src file
@@ -227,18 +217,15 @@ func (r *MSRunner) loadCommand(txt string) {
 
 		src, err := readMSFile(p)
 
-		// Something went wrong with reading the file.
 		if err != nil {
 			log.Println(colorText("Failed to load MikeScript file: ", RED), p)
 			continue
 		}
 
-		// Print source
 		fmt.Println("#############################################")
 		fmt.Println(src)
 		fmt.Println("#############################################")
 
-		// Loaded source correctly, so we exec.
 		r.run(src)
 	}
 }
@@ -289,7 +276,6 @@ func main() {
 	// Check if we have command line arguments
 	if len(os.Args) > 1 {
 
-		// read the file
 		file, err := os.Open(os.Args[1])
 		if err != nil {
 			fmt.Println("Error reading file: ", err)
@@ -297,7 +283,6 @@ func main() {
 		}
 		defer file.Close()
 
-		// read the entire file into a string
 		scanner := bufio.NewScanner(file)
 		lines := []string{}
 		for scanner.Scan() {
@@ -309,7 +294,6 @@ func main() {
 		fmt.Println(src)
 		fmt.Println("#############################################")
 
-		// feed the file to the runner
 		runner.run(src)
 
 	} else {
