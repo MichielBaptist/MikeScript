@@ -11,25 +11,3 @@ Need to "flatten" tuple structure and replace with a flat list.
 Evaltuple then needs to:
 1. evaluate all elements in the tuple
 2. Check all values, if they are starred (*) tuples then unpack
-
-2. indexing (very easy)
-1, 2, 3 => t1;
-
-t1[0] >>= print;
-t1[1] >>= print;
-t1[2] >>= print;
-
-Add a unary operator
-
-primary ->
-    postfix
-
-postfix ->
-    base postfix_tail*
-
-postfix_tail ->
-  | '[' expression ']'
-
-3. Add lists (easy I think)
-4. Add structs (not sure)
-5. Add lambdas if needed

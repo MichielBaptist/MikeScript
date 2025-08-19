@@ -1,18 +1,21 @@
-Expected an expression derived from the grammar:
+Grammar:
 program ->
     | declaration * EOF
 declaration ->
-	| TypeDecl ";"
+	| VarDecl ";"
+	| funcDecl
 	| statement
+	| TypeDecl
 statement ->
 	| ifStmt
 	| while
 	| block
-	| break ";"
-	| continue ";"
+	| 'break' ';'
+	| 'continue' ';'
+	| 'return' expression ';'
     | ExStmt
 ifStmt ->
-	| "if" expression ":" statement { "else" ":" statement } *
+	| "if" expression statement { "else" statement }?
 block ->
 	| "{" declaration * "}"
 ExStmt ->
@@ -22,9 +25,9 @@ expression ->
 land ->
 	| funccall { "&&" funccall }*
 funccall ->
-	| args { ('>>' | '->') equality }*
+	| args { ('>>' | '->' | '=>' | '>>=') args }*
 args ->
-	| {equality}* { ',' {equality}* }*
+	| equality { ',' {equality}* }*
 equality ->
 	| comp { ('==' | '!=') comp }*
 comp ->
@@ -34,125 +37,55 @@ term ->
 factor ->
 	| unary { ('*' | '/' | '%') unary }*
 unary ->
-	| ('-'| '!') unary
-	| primary
-TypeDecl ->
-	| 'int' IDENTIFIER
-	| 'float' IDENTIFIER
-	| 'string' IDENTIFIER
-	| 'bool' IDENTIFIER
+	| ('-'| '!' | '=') unary
+	| access
+access ->
+	| primary { '.' IDENTIFIER | '[' expression ']' }*
 primary ->
-	| varname
-	| STRING
-	| NUMBER
+	| constructor
+	| <STRING>
+	| <NUMBER>
 	| 'true'
 	| 'false'
-	| 'nil'
 	| '(' expression ')'
-	| TypeDecl
+constructor ->
+	| IDENTIFIER											// variable constructor
+	| IDENTIFIER '{' { IDENTIFIER ':' expression ',' }* '}'	// struct constructor
+	| '[]' type '{' {expression ','} * '}'						// array constructor
 varname ->
 	| IDENTIFIER
 	| '(' varname ')'
+VarDecl ->
+	| 'var' type IDENTIFIER
+TypeDecl ->
+	| 'type' type IDENTIFIER
+	| 'type' 'struct' IDENTIFIER '{' structFields '}'
+funcDecl -> 
+	| 'function' function
+function ->
+	| '(' params? ')' ">>" IDENTIFIER {"->" type}? block
+params ->
+	| param { ',' param }*
+param ->
+	| type IDENTIFIER
+structFields ->
+	| type IDENTIFIER
 
+type ->
+	| 'int'
+	| 'float'
+	| 'string'
+	| 'bool'
+	| IDENTIFIER
+	| compositeType
+	| operationType
+	| arrayType
+compositeType
+	| '(' typelist? ')'
+operationType
+	| '(' typelist? '->' type? ')'
+arrayType
+	| '[]' type 
+typelist ->
+	| type { ',' type }*
 
-function int a >> int f {
-	a + 1 >> return;
-}
-
-int x = 4 >> f;
-
-1 >> f >> f -> int x, int y;
-(1, 2) >> addOneBoth >> add -> x >> minOne -> int y;
-
-// lambdas
-function g  = \(int x, int y) >> x + y;
-
-OR 
-
-function g;
-\(int x, int y) >> {x + y} -> function g;
-
-1 >> g -> x -> y >> f -> z;
-
-1 >> f, 2 >> g;
-
-x[i] = 1;
-
-1 -> x[1];
-"hello" -> x["world"];
-
-dict<int, int> d;
-
-1 -> d[1];
-
-1 >> (2 >> f);
-equivalent to:
-2, 1 >> f;
-
-1, 2 >> g, f >> h -> x >>  ;
-
-h(g(1, 2), f(1, 2))
-
-1, 2, 3 >> f >> g;
-
-1 -> x, y, z;
-
-1 -> x -> y -> z;
-
-
-xif {
-	> exp1 {
-
-	}
-	> exp2 {
-
-	}
-}
-
-
-when {
-	| exp1 >> {
-
-	}
-	| exp2 >> {
-
-	}
-}
-
-when {
-	a {
-
-	};
-	not a {};
-	otherwise {}
-}
-
-true -> bool a;
-
-if a {
-	1 >> print;
-} else {
-	2 >> print;
-}
-
-arg1 >> isfinal && arg2 >> isfinal;
-
-if arg >> isfinal:
-	1 >> print;
-else:
-	2 >> print;
-
-if (arg >> isfinal) {
-	1 >> print;
-} else {
-	2 >> print;
-}
-
-xif:
-| arg >> isfinal: 1 >> print
-| otherwise: 2 >> print
-
-
-while (x + 1 -> x) < 10 {
-	x >> print;
-}
