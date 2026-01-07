@@ -23,8 +23,71 @@ func (parser *MSParser) parseExpressionStatement() (*ast.ExStmtNodeS, error) {
 }
 
 func (parser *MSParser) parseExpression() (ast.ExpNodeI, error) {
-	return parser.parseLor()
+	return parser.parseFuncop()
 }
+
+
+func (parser *MSParser) parseTuple() (ast.ExpNodeI, error) {
+	// parses tuple_elem (',' tuple_elem)*
+
+	var node ast.ExpNodeI
+	var err error
+	var exprs []ast.ExpNodeI
+
+	node, err = parser.parseTupleElem()
+
+	if err != nil {
+		return node, err
+	}
+
+	exprs = append(exprs, node)
+
+	for {
+		if ok, _ := parser.match(token.COMMA); ok {
+			// Keep parsing as long as we see commas
+			
+			right, err := parser.parseTupleElem()
+
+			if err != nil {
+				return node, err
+			}
+
+			exprs = append(exprs, right)
+
+		} else {
+			break
+		}
+	}
+
+	if len(exprs) == 1 {
+		return exprs[0], nil
+	} else {
+		return &ast.TupleNodeS{Expressions: exprs}, nil
+	}
+
+}
+
+
+func (parser *MSParser) parseTupleElem() (ast.ExpNodeI, error) {
+	// Parses "*"? equality
+
+	// Check for tuple unpacking
+	// starred, _ := parser.match(token.MULT);
+
+	node, err := parser.parseLor()
+
+	if err != nil {
+		return node, err
+	}
+
+	// // if starred, add starred wrapper
+	// if starred {
+	// 	node = &ast.StarredExpNodeS{Node: node}
+	// }
+
+	return node, nil
+}
+
 
 func (parser *MSParser) parseLor() (ast.ExpNodeI, error) {
 	land, ok := parser.parseLand()
@@ -55,13 +118,13 @@ func (parser *MSParser) parseLor() (ast.ExpNodeI, error) {
 }
 
 func (parser *MSParser) parseLand() (ast.ExpNodeI, error) {
-	comp, ok := parser.parseFuncop()
+	comp, ok := parser.parseEquality()
 	if ok != nil {
 		return comp, ok	
 	}
 	for {
 		if ok, op := parser.match(token.AMP_AMP); ok {
-			right, err := parser.parseFuncop()
+			right, err := parser.parseEquality()
 			comp = &ast.LogicalExpNodeS{Left: comp, Op: op, Right: right}
 			if err != nil {
 				return comp, err
@@ -73,44 +136,8 @@ func (parser *MSParser) parseLand() (ast.ExpNodeI, error) {
 	return comp, nil
 }
 
-func (parser *MSParser) parseTuple() (ast.ExpNodeI, error) {
 
-	var node ast.ExpNodeI
-	var err error
-	var exprs []ast.ExpNodeI
-	
-	node, err = parser.parseEquality()
 
-	if err != nil {
-		return node, err
-	}
-
-	exprs = append(exprs, node)
-
-	for {
-		if ok, _ := parser.match(token.COMMA); ok {
-			// Keep parsing as long as we see commas
-			
-			right, err := parser.parseEquality()
-
-			if err != nil {
-				return node, err
-			}
-
-			exprs = append(exprs, right)
-
-		} else {
-			break
-		}
-	}
-
-	if len(exprs) == 1 {
-		return exprs[0], nil
-	} else {
-		return &ast.TupleNodeS{Expressions: exprs}, nil
-	}
-
-}
 
 func (parser *MSParser) parseEquality() (ast.ExpNodeI, error) {
 	// 1. parse comparison

@@ -1,9 +1,7 @@
 package parser
 
 import (
-	"fmt"
 	"mikescript/src/ast"
-	"mikescript/src/mstype"
 	token "mikescript/src/token"
 )
 
@@ -90,15 +88,16 @@ func (p *MSParser) parseStructFieldAccess(target ast.ExpNodeI) (*ast.FieldAccess
 
 }
 
-func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
-	// exp? ']' type '{' {expression ','} * '}' --> array constructor
+func (p *MSParser) parseArrayExpression() (ast.ExpNodeI, error) {
+	// 1) exp? ']' type '{' {expression ','} * '}' --> array constructor
+	// or 
+	// 2) exp? '..' exp? ']'
 
-	var atype mstype.MSType
 	var n ast.ExpNodeI
 	var err error
 
-	// Check if there is an expression between '[' exp ']'
-	if ok, _ := p.lookahead(token.RIGHT_SQUARE) ; !ok {
+	// Check if there is an expression between '[' exp ']' or '[' '..'
+	if ok, _ := p.lookahead(token.RIGHT_SQUARE, token.DOT_DOT) ; !ok {
 		n, err = p.parseExpression()
 	}
 
@@ -106,17 +105,47 @@ func (p *MSParser) parseArrayConstructor() (ast.ExpNodeI, error) {
 		return nil, err
 	}
 
-	fmt.Printf("%v\n", n)
-	println(p.peek().Lexeme)
+	// Check for '..' or ']'
+	if ok, _ := p.match(token.DOT_DOT) ; ok {
+		return p.parseRangeConstructor(n)
+	} else if ok, _ := p.match(token.RIGHT_SQUARE) ; ok {
+		return p.parseArrayConstructor(n)
+	}
 
-	// Need ']'
+	return nil , err
+}
+
+func (p *MSParser) parseRangeConstructor(start ast.ExpNodeI) (ast.ExpNodeI, error) {
+	// parses:  exp? ']'
+
+	var to ast.ExpNodeI = nil
+	var err error
+
+	// expect an expression
+	to, err = p.parseExpression()
+	
+	// exit on error
+	if err != nil {
+		return nil, err
+	}
+
+	// Expect ']'
 	if ok, tk := p.match(token.RIGHT_SQUARE) ; !ok {
 		return nil, p.unexpectedToken(tk, token.RIGHT_SQUARE)
 	}
 
-	atype, err = p.parseType()
+	// If start is nil, we add a 0 start
+	if start == nil {
+		start = &ast.LiteralExpNodeS{Tk: token.Token{Type: token.NUMBER_INT, Lexeme: "0", Line: 0, Col: 0}}
+	}
 
-	fmt.Printf("Type: %+v\n", atype)
+	return &ast.RangeConstructorNodeS{From: start, To: to}, err
+}
+
+func (p *MSParser) parseArrayConstructor(n ast.ExpNodeI) (ast.ExpNodeI, error) {
+
+	// Need type
+	atype, err := p.parseType()
 
 	if err != nil {
 		return nil, err

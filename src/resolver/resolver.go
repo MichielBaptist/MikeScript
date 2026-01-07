@@ -111,6 +111,9 @@ func (r *MSResolver) resolveLocalType(t *mstype.MSNamedTypeS, name string) {
 		fmt.Printf(".   TYPE: %p %v --> %d\n", t, t, depth)
 	}
 	r.tlocals[t] = depth
+
+	// also add depth to named type
+	t.Depth = depth
 }
 
 func (r *MSResolver) findName(name string) (int, bool, bool) {
@@ -155,32 +158,61 @@ func (r *MSResolver) resolveStatement(stm ast.StmtNodeI) {
 	case *ast.TypeDefStatementS: 		r.resolveTypeDeclaration(st)
 	case *ast.StructDeclarationNodeS:	r.resolveStructDeclaration(st)
 	case *ast.BreakNodeS:				return 	// nothing to resolve
-	default:							_ = []int{}[0]
+	case *ast.ContinueNodeS:			return 	// nothing to resolve
+	default:							fmt.Printf("Resolving: %v\n", st); _ = []int{}[0]
 	}
 }
 
 func (r *MSResolver) resolveExpression(n ast.ExpNodeI) {
 	// fmt.Printf("%p // %#v\n", n, n)
 	switch ex := n.(type){
-	case *ast.AssignmentNodeS:			r.resolveAssignmentExpression(ex)
-	case *ast.DeclAssignNodeS:			r.resolveDeclAssignExpression(ex)
-	case *ast.FuncAppNodeS:				r.resolveFuncAppExpression(ex)
-	case *ast.FuncCallNodeS:			r.resolveExpression(ex.Fun)
-	case *ast.BinaryExpNodeS:			r.resolveBinaryExpression(ex)
-	case *ast.LogicalExpNodeS:			r.resolveLogicalExpression(ex)
-	case *ast.UnaryExpNodeS:			r.resolveExpression(ex.Node)
-	case *ast.TupleNodeS:				r.resolveExpressions(ex.Expressions)
-	case *ast.VariableExpNodeS:			r.resolveVariableExpression(ex)
-	case *ast.GroupExpNodeS:			r.resolveExpression(ex.Node)
-	case *ast.ArrayConstructorNodeS:	r.resolveArrayConstructor(ex)
-	case *ast.ArrayIndexNodeS:			r.resolveArrayIndex(ex)
-	case *ast.ArrayAssignmentNodeS:		r.resolveArrayAssignment(ex)
-	case *ast.FieldAccessNodeS:			r.resolveExpression(ex.Target)
-	case *ast.StructConstructorNodeS:	r.resolveStructConstructor(ex)
-	case *ast.FieldAssignmentNode:		r.resolveFieldAssignment(ex)
-	case *ast.LiteralExpNodeS:			return 	// nothing to resolve
-	default:							fmt.Printf("%v\n", ex) ; _ = []int{}[0]
+	case *ast.AssignmentNodeS:				r.resolveAssignmentExpression(ex)
+	case *ast.DeclAssignNodeS:				r.resolveDeclAssignExpression(ex)
+	case *ast.FuncAppNodeS:					r.resolveFuncAppExpression(ex)
+	case *ast.FuncCallNodeS:				r.resolveExpression(ex.Fun)
+	case *ast.BinaryExpNodeS:				r.resolveBinaryExpression(ex)
+	case *ast.LogicalExpNodeS:				r.resolveLogicalExpression(ex)
+	case *ast.UnaryExpNodeS:				r.resolveExpression(ex.Node)
+	case *ast.TupleNodeS:					r.resolveExpressions(ex.Expressions)
+	case *ast.VariableExpNodeS:				r.resolveVariableExpression(ex)
+	case *ast.GroupExpNodeS:				r.resolveExpression(ex.Node)
+	case *ast.ArrayConstructorNodeS:		r.resolveArrayConstructor(ex)
+	case *ast.ArrayIndexNodeS:				r.resolveArrayIndex(ex)
+	case *ast.ArrayAssignmentNodeS:			r.resolveArrayAssignment(ex)
+	case *ast.FieldAccessNodeS:				r.resolveExpression(ex.Target)
+	case *ast.StructConstructorNodeS:		r.resolveStructConstructor(ex)
+	case *ast.FieldAssignmentNode:			r.resolveFieldAssignment(ex)
+	case *ast.LiteralExpNodeS:				return 	// nothing to resolve
+	case *ast.IterableFuncCallNodeS:		r.resolveIterableFuncCallNode(ex)
+	case *ast.IterableFuncAppNodeS:			r.resolveIterableFuncApplication(ex)
+	case *ast.IterableFuncAppAndCallNodeS:	r.resolveIterableFuncAppAndCall(ex)
+	case *ast.RangeConstructorNodeS:		r.resolveRangeConstructor(ex)
+	case *ast.StarredExpNodeS:				r.resolveExpression(ex.Node)
+	default:								fmt.Printf("%v\n", ex) ; _ = []int{}[0]
 	}
+}
+
+func (r *MSResolver) resolveRangeConstructor(n *ast.RangeConstructorNodeS) {
+	if n.From != nil {
+		r.resolveExpression(n.From)
+	}
+	if n.To != nil {
+		r.resolveExpression(n.To)
+	}
+}
+
+func (r *MSResolver) resolveIterableFuncAppAndCall(n *ast.IterableFuncAppAndCallNodeS) {
+	r.resolveExpression(n.Fun)
+	r.resolveExpression(n.Args)
+}
+
+func (r *MSResolver) resolveIterableFuncApplication(n *ast.IterableFuncAppNodeS) {
+	r.resolveExpression(n.Fun)
+	r.resolveExpression(n.Args)
+}
+
+func (r *MSResolver) resolveIterableFuncCallNode(n *ast.IterableFuncCallNodeS) {
+	r.resolveExpression(n.Fun)
 }
 
 func (r *MSResolver) resolveType(n mstype.MSType) {

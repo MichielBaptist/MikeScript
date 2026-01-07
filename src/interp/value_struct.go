@@ -87,6 +87,19 @@ func (i MSStruct) ValidValue(field string, val MSVal) error {
 	if err := i.ValidField(field); err != nil {
 		return err
 	}
+
+	// Check if the field is nullable
+	// if the value is MSNothing, we allow it
+	_, isNothing := val.(MSNothing)
+	
+	if i.Fields[field].Nullable() && isNothing {
+		return nil
+	}
+
+	if !i.Fields[field].Nullable() && isNothing {
+		return fmt.Errorf("field %q of type %q is not nullable.", field, i.Fields[field].Type())
+	}
+
 	if !val.Type().Eq(i.Fields[field].Type()) {
 		return fmt.Errorf("field %q expects type %q, got %q",
 			field, i.Fields[field].Type(), val.Type())

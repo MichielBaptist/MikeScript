@@ -52,3 +52,8 @@ func (evaluator *MSEvaluator) evaluateGroupExpression(node *ast.GroupExpNodeS) (
 func unknownUnop(lexeme string, tt MSVal) string {
 	return fmt.Sprintf("Operator '%v' is not defined for type '%v'", lexeme, tt.Type())
 }
+
+func (evaluator *MSEvaluator) evaluateStarredExpression(node *ast.StarredExpNodeS) (MSVal, error) {
+	// Gets ignored in this context
+	return evaluator.evaluateExpression(node.Node)
+}

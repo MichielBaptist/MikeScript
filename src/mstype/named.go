@@ -2,12 +2,12 @@ package mstype
 
 type MSNamedTypeS struct {
 	Name string
-	Ref MSType 		// is nil if not resolved
+	Depth int			// scope depth where defined, used to compare named types
 }
 
 func (t *MSNamedTypeS) Eq(o MSType) bool {
 	switch other := o.(type) {
-	case *MSNamedTypeS:		return other.Name == t.Name
+	case *MSNamedTypeS:		return other.Name == t.Name && other.Depth == t.Depth
 	default:				return false
 	}
 }

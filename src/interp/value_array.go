@@ -95,3 +95,19 @@ func (a MSArray) ValidValue(val MSVal) error {
 	}
 	return nil
 }
+
+// --------------------------------------------------------
+// implmeents iterable
+// --------------------------------------------------------
+
+func (a MSArray) Elems() ([]MSVal, error) {
+	return a.Values, nil
+}
+
+func (a MSArray) From(vals []MSVal) (MSVal, error) {
+	return MSArray{Values: vals, VType: a.VType}, nil
+}
+
+func (a MSArray) Len() (MSVal, error) {
+	return MSInt{Val: len(a.Values)}, nil
+}

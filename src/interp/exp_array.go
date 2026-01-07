@@ -66,12 +66,12 @@ func (e *MSEvaluator) evaluateArrayConstructorWithInitializer(n *ast.ArrayConstr
 	var err error		// err
 
 	// Resolve the base type
-	// resolvedType, err := e.resolveType(n.Type)
+	//resolvedType, err := e.resolveType(n.Type)
 	resolvedType := n.Type
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
 
 	for _, v := range n.Vals {
 		val, err = e.evaluateExpression(v)
@@ -121,12 +121,12 @@ func (e *MSEvaluator) evaluateArrayConstructorWithSize(n *ast.ArrayConstructorNo
 	}
 
 	// resolve the type first
-	resolvedType, err := e.resolveType(n.Type)
-	//resolvedType := n.Type
+	//resolvedType, err := e.resolveType(n.Type)
+	resolvedType := n.Type
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	vals = make([]MSVal, sizeInt.Val)
 	for i := 0 ; i < sizeInt.Val ; i++ {

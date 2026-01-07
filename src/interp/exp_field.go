@@ -44,7 +44,7 @@ func (e *MSEvaluator) evaluateFieldAssign(n *ast.FieldAssignmentNode) (MSVal, er
 		return nil, err
 	}
 
-	if _, ok := currentVal.(MSNothing) ; ok && currentVal.Nullable() {
+	if _, ok := value.(MSNothing) ; ok && currentVal.Nullable() {
 		value = currentVal.NullVal()
 	}
 

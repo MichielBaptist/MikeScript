@@ -27,6 +27,7 @@ func NewMSEvaluator() *MSEvaluator {
 	glb.NewVar("print", MSBuiltinPrint())
 	glb.NewVar("print_env", MSBuiltinPrintEnv())
 	glb.NewVar("rand", MSBuiltinRand())
+	glb.NewVar("len", MSBuiltinLen())
 
 	return &MSEvaluator{
 		env: env,

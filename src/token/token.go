@@ -16,8 +16,8 @@ const(
 	RIGHT_PAREN						// ) 
 	LEFT_BRACE						// { 
 	RIGHT_BRACE						// } 
-	LEFT_SQUARE						// [ UNUSED
-	RIGHT_SQUARE					// ] UNUSED
+	LEFT_SQUARE						// [ 
+	RIGHT_SQUARE					// ] 
 	COMMA							// , 
 	DOT								// . 
 	PLUS							// + 
@@ -40,14 +40,19 @@ const(
 	DOT_DOT							// .. UNUSED
 	LESS_EQ							// <=
 	GREATER_EQ						// >=
-	GREATER_GREATER					// >> (function application)
-	GREATER_GREATER_EQ				// >>= (function application && call)
+	GREATER_GREATER					// >> (function bind)
+	DOT_GREATER_GREATER				// .>> (mapped function bind)
+	MULT_GREATER_GREATER			// *>> (unpack && bind)
+	GREATER_GREATER_EQ				// >>= (function bind && call)
+	DOT_GREATER_GREATER_EQ			// .>>= (mapped function bind && call)
+	MULT_GREATER_GREATER_EQ			// *>>= (unpack && bind && call)
 	LESS_LESS						// <<
 	MINUS_GREAT						// -> (assignment)
 	EQ_GREATER						// => (decl & assignment)
 	LESS_MINUS						// <- UNUSED
 	AMP_AMP							// &&
 	BAR_BAR							// ||
+	DOT_EQ 							// .=
 
 	// Literals
 	IDENTIFIER						// Identifier (x, y, z, f, etc)
@@ -108,6 +113,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	GREATER: ">",
 	BAR: "|",
 	EQ: "=",
+	DOT_EQ: ".=",
 	EXCLAMATION_EQ: "!=",
 	EQ_EQ: "==",
 	INT_DIV: "//",
@@ -115,16 +121,20 @@ var stmp map[TokenType]string = map[TokenType]string{
 	LESS_EQ: "<=",
 	GREATER_EQ: ">=",
 	GREATER_GREATER: ">>",
+	MULT_GREATER_GREATER: "*>>",
 	GREATER_GREATER_EQ: ">>=",
+	DOT_GREATER_GREATER: ".>>",
+	DOT_GREATER_GREATER_EQ: ".>>=",
+	MULT_GREATER_GREATER_EQ: "*>>=",
 	MINUS_GREAT: "->",
 	EQ_GREATER: "=>",
 	LESS_LESS: "<<",
 	AMP_AMP: "&&",
 	BAR_BAR: "||",
-	IDENTIFIER: "IDENTIFIER",
-	STRING: "STRING",
-	NUMBER_INT: "int",
-	NUMBER_FLOAT: "float",
+	IDENTIFIER: "ID",
+	STRING: "l_str",
+	NUMBER_INT: "l_int",
+	NUMBER_FLOAT: "l_float",
 	FALSE: "false",
 	TRUE: "true",
 	XIF: "xif",
@@ -136,10 +146,10 @@ var stmp map[TokenType]string = map[TokenType]string{
 	FUNCTION: "function",
 	RETURN: "return",
 	PRINT: "print",
-	INT_TYPE: "int",
-	FLOAT_TYPE: "float",
-	STRING_TYPE: "string",
-	BOOLEAN_TYPE: "bool",
+	INT_TYPE: "t_int",
+	FLOAT_TYPE: "t_float",
+	STRING_TYPE: "t_str",
+	BOOLEAN_TYPE: "t_bool",
 	EOF: "EOF",
 	UNKNOWN: "UNKNOWN",
 	CONTINUE: "continue",

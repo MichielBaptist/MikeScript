@@ -6,11 +6,13 @@ import (
 )
 
 type AssignmentNodeS struct {
+	// exp '->' IDENTIFIER ';' 
 	Identifier *VariableExpNodeS
 	Exp        ExpNodeI
 }
 
 type DeclAssignNodeS struct {
+	// exp '=>' IDENTIFIER ';'
 	Identifier 	*VariableExpNodeS
 	Exp 		ExpNodeI
 }
@@ -21,8 +23,26 @@ type FuncAppNodeS struct {
 	Fun		ExpNodeI
 }
 
-// = exp
+// exp, exp, ... .>> exp
+type IterableFuncAppNodeS struct {
+	Args 	ExpNodeI
+	Fun		ExpNodeI
+}
+
+// exp, exp, ... .>>= exp
+type IterableFuncAppAndCallNodeS struct {
+	Args 	ExpNodeI
+	Fun		ExpNodeI
+}
+
+// '=' exp
 type FuncCallNodeS struct {
+	Fun ExpNodeI
+	Op token.Token
+}
+
+// .= exp
+type IterableFuncCallNodeS struct {
 	Fun ExpNodeI
 	Op token.Token
 }
@@ -74,6 +94,11 @@ type ArrayConstructorNodeS struct {
 	N ExpNodeI
 }
 
+type RangeConstructorNodeS struct {
+	From ExpNodeI // expects to be evaluate to int
+	To ExpNodeI // expects to be evaluate to int
+}
+
 type ArrayAssignmentNodeS struct {
 	Target ExpNodeI
 	Index ExpNodeI
@@ -96,6 +121,10 @@ type FieldAssignmentNode struct {
 	Value ExpNodeI
 }
 
+type StarredExpNodeS struct {
+	Node ExpNodeI
+}
+
 // forces possible structs for ExpNode
 // pointer to these structs implement expression
 func (*AssignmentNodeS) expressionPlaceholder() {}
@@ -115,6 +144,11 @@ func (*TupleNodeS) expressionPlaceholder() {}
 func (*StructConstructorNodeS) expressionPlaceholder() {}
 func (*FieldAccessNodeS) expressionPlaceholder() {}
 func (*FieldAssignmentNode) expressionPlaceholder() {}
+func (*IterableFuncCallNodeS) expressionPlaceholder() {}
+func (*IterableFuncAppNodeS) expressionPlaceholder() {}
+func (*IterableFuncAppAndCallNodeS) expressionPlaceholder() {}
+func (*RangeConstructorNodeS) expressionPlaceholder() {}
+func (*StarredExpNodeS) expressionPlaceholder() {}
 
 func (ve *VariableExpNodeS) VarName() string {
 

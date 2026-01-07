@@ -127,7 +127,7 @@ func (scanner *MSScanner) nextToken() (token.Token, bool) {
 	case c == ']': tok = token.Token{Type: token.RIGHT_SQUARE, Lexeme: "]", Line: scanner.line, Col: scanner.col}
 	case c == ',': tok = token.Token{Type: token.COMMA, Lexeme: ",", Line: scanner.line, Col: scanner.col}
 	case c == '+': tok = token.Token{Type: token.PLUS, Lexeme: "+", Line: scanner.line, Col: scanner.col}
-	case c == '*': tok = token.Token{Type: token.MULT, Lexeme: "*", Line: scanner.line, Col: scanner.col}
+	case c == '*': ok, tok = scanner.scanStarToken()
 	case c == ';': tok = token.Token{Type: token.SEMICOLON, Lexeme: ";", Line: scanner.line, Col: scanner.col}
 	case c == ':': tok = token.Token{Type: token.COLON, Lexeme: ":", Line: scanner.line, Col: scanner.col}
 	case c == '%': tok = token.Token{Type: token.PERCENT, Lexeme: "%", Line: scanner.line, Col: scanner.col}
@@ -162,7 +162,8 @@ func (scanner *MSScanner) nextToken() (token.Token, bool) {
 	// handle numbers
 	case c == '.' && scanner.advanceIfAtr('.'):	tok = token.Token{Type: token.DOT_DOT, Lexeme: "..", Line: scanner.line, Col: scanner.col}
 	case c == '.' && scanner.atrIsDigit():		ok, tok = scanner.scanNumber()
-	case c == '.':								tok = token.Token{Type: token.DOT, Lexeme: ".", Line: scanner.line, Col: scanner.col}
+	case c == '.' && scanner.advanceIfAtr('='): tok = token.Token{Type: token.DOT_EQ, Lexeme: ".=", Line: scanner.line, Col: scanner.col}
+	case c == '.': 								ok, tok = scanner.scanDotToken()
 	case utils.IsDigit(c):							ok, tok = scanner.scanNumber()
 	// handle identifiers
 	case utils.IsAlpha(c):							ok, tok = scanner.scanIdentifierOrKeyword()
@@ -175,6 +176,58 @@ func (scanner *MSScanner) nextToken() (token.Token, bool) {
 	scanner.l = scanner.r
 
 	return tok, ok
+}
+
+func (scanner *MSScanner) scanDotToken() (bool, token.Token) {
+
+	// We know current character is '.'
+	// 
+	// . possibilities: ">>", nothing
+
+	// check for .>> or .>>= 
+	if scanner.advanceIfAtr('>') {
+		if scanner.advanceIfAtr('>') {
+			if scanner.advanceIfAtr('=') {
+				// .>>=
+				return true, token.Token{Type: token.DOT_GREATER_GREATER_EQ, Lexeme: ".>>=", Line: scanner.line, Col: scanner.col}
+			} else {
+				// .>>
+				return true, token.Token{Type: token.DOT_GREATER_GREATER, Lexeme: ".>>", Line: scanner.line, Col: scanner.col}
+			}
+		} else {
+			// not possible
+			return false, token.Token{}
+		}
+	} else {
+		// .
+		return true, token.Token{Type: token.DOT, Lexeme: ".", Line: scanner.line, Col: scanner.col}
+	}
+}
+
+func (scanner *MSScanner) scanStarToken() (bool, token.Token) {
+
+	// We know current character is '*'
+	// 
+	// * possibilities: ">>", ">>=", nothing
+
+	// check for *>> or *>>= 
+	if scanner.advanceIfAtr('>') {
+		if scanner.advanceIfAtr('>') {
+			if scanner.advanceIfAtr('=') {
+				// *>>=
+				return true, token.Token{Type: token.MULT_GREATER_GREATER_EQ, Lexeme: "*>>=", Line: scanner.line, Col: scanner.col}
+			} else {
+				// *>>
+				return true, token.Token{Type: token.MULT_GREATER_GREATER, Lexeme: "*>>", Line: scanner.line, Col: scanner.col}
+			}
+		} else {
+			// not possible
+			return false, token.Token{}
+		}
+	} else {
+		// *
+		return true, token.Token{Type: token.MULT, Lexeme: "*", Line: scanner.line, Col: scanner.col}
+	}
 }
 
 func (scanner *MSScanner) scanIdentifierOrKeyword() (bool, token.Token) {

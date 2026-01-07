@@ -14,6 +14,7 @@ func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
 	// 3. IDENTIFIER '{' ... '}'
 	// 4. '(' expr ')'
 	// 5. '[' exp ']' type '{' exp ? {',' exp}* '}'
+	// 6. 'some<' exp '>'
 
 	var err error = nil
 
@@ -35,7 +36,7 @@ func (parser *MSParser) parsePrimary() (ast.ExpNodeI, error) {
 
 	// 5. '[' exp ']' type '{' exp ? {',' exp}* '}'
 	if ok, _ := parser.match(token.LEFT_SQUARE) ; ok {
-		return parser.parseArrayConstructor()
+		return parser.parseArrayExpression()
 	}
 
 	// If we reach this point, we couldn't match any

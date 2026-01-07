@@ -8,7 +8,7 @@ import (
 
 func (parser *MSParser) parseUnary() (ast.ExpNodeI, error) {
 
-	if ok, op := parser.match(token.MINUS, token.EXCLAMATION, token.EQ); ok {
+	if ok, op := parser.match(token.MINUS, token.EXCLAMATION, token.EQ, token.DOT_EQ, token.MULT); ok {
 		right, err := parser.parseUnary()
 
 		if err != nil {
@@ -18,10 +18,13 @@ func (parser *MSParser) parseUnary() (ast.ExpNodeI, error) {
 		// Still make a distinction between unary and function calls
 		// though they are the same "priority", namely the highest
 
-		if op.Type == token.EQ {
-			return &ast.FuncCallNodeS{Op: op, Fun: right}, nil
-		} else {
-			return &ast.UnaryExpNodeS{Op: op, Node: right}, nil
+		// Note: .= a, b, c; means =a, =b, =c
+
+		switch op.Type {
+		case token.EQ: 		return &ast.FuncCallNodeS{Op: op, Fun: right}, nil
+		case token.DOT_EQ:	return &ast.IterableFuncCallNodeS{Op: op, Fun: right}, nil
+		case token.MULT:	return &ast.StarredExpNodeS{Node: right}, nil
+		default: 			return &ast.UnaryExpNodeS{Op: op, Node: right}, nil
 		}
 	}
 

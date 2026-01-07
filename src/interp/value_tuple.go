@@ -100,3 +100,19 @@ func (a MSTuple) ValidIndex(idx MSVal) error {
 func (a MSTuple) ValidValue(val MSVal) error {
 	return nil
 }
+
+// --------------------------------------------------------
+// implmeents iterable
+// --------------------------------------------------------
+
+func (a MSTuple) Elems() ([]MSVal, error) {
+	return a.Values, nil
+}
+
+func (a MSTuple) From(vals []MSVal) (MSVal, error) {
+	return MSTuple{Values: vals}, nil
+}
+
+func (a MSTuple) Len() (MSVal, error) {
+	return MSInt{Val: len(a.Values)}, nil
+}
