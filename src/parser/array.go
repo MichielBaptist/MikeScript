@@ -158,7 +158,6 @@ func (p *MSParser) parseArrayConstructor(n ast.ExpNodeI) (ast.ExpNodeI, error) {
 
 	// check for empty constructor
 	if ok, _ := p.match(token.RIGHT_BRACE) ; ok {
-		println("Closing brace found, empty initializer")
 		vals := make([]ast.ExpNodeI, 0)
 		return &ast.ArrayConstructorNodeS{Type: atype, Vals: vals, N: n}, nil
 	}

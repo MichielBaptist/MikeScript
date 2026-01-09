@@ -65,12 +65,13 @@ type MSRunner struct {
 func (r MSRunner) run(input string) int {
 
 	// loggers
-	scannerlog := colorLogger{c: GRAY, enable: false}
-	parserlog := colorLogger{c: GRAY, enable: false}
-	evallog := colorLogger{c: BLUE, enable: false}
+	debug := false
+	scannerlog := colorLogger{c: GRAY, enable: debug}
+	parserlog := colorLogger{c: GRAY, enable: debug}
+	evallog := colorLogger{c: BLUE, enable: true}
 	errorlog := colorLogger{c: RED, enable: true}
-	resolverlog := colorLogger{c: GREEN, enable: true}
-
+	resolverlog := colorLogger{c: GREEN, enable: debug}
+	timerlog := colorLogger{c: YELLOW, enable: debug}
 	//////////////////////////////////////////////////////
 	scannerlog.log("--------------- Scanner ---------------------")
 
@@ -79,7 +80,10 @@ func (r MSRunner) run(input string) int {
 	tokens := r.scanner.Scan(input)
 	scanTime := time.Since(startScan)
 
-	scannerlog.log(fmt.Sprintf("Tokens (%v): %v", len(tokens), tokens))
+	scannerlog.log(fmt.Sprintf("Tokens (%v)", len(tokens)))
+	for i, tk := range tokens {
+		scannerlog.log(fmt.Sprintf(". [ %-3v ]: %-5v %-10v", i, tk.Type, tk.Lexeme))
+	}
 
 	if len(r.scanner.Errors) > 0 {
 		errorlog.log(fmt.Sprintf("Scanner errors (%v): \n", len(r.scanner.Errors)))
@@ -129,7 +133,7 @@ func (r MSRunner) run(input string) int {
 	typeResolverTime := time.Since(startTypeResolve)
 
 	//////////////////////////////////////////////////////
-	evallog.log("--------------- Evaluator ---------------------")
+	//evallog.log("--------------- Evaluator ---------------------")
 	startEval := time.Now()
 	r.evaluator.UpdateVLocals(vlocals)
 	r.evaluator.UpdateTLocals(tlocals)
@@ -139,18 +143,20 @@ func (r MSRunner) run(input string) int {
 	if err != nil {
 		errorlog.log(err)
 	}
-
-	evallog.log("Environment:")
-	if r.verbose {
+	
+	if debug {
+		evallog.log("Environment:")
 		r.evaluator.PrintEnv()
 	}
 
-	fmt.Printf("Time to scan:           %v\n", scanTime)
-	fmt.Printf("Time to parse:          %v\n", parseTime)
-	fmt.Printf("Time to resolve:        %v\n", resolverTime)
-	fmt.Printf("Time to resolve types:  %v\n", typeResolverTime)
-	fmt.Printf("Time to eval:           %v\n", evalTime)
-	fmt.Println(eval)
+	timerlog.log(fmt.Sprintf("Time to scan:           %v\n", scanTime))
+	timerlog.log(fmt.Sprintf("Time to parse:          %v\n", parseTime))
+	timerlog.log(fmt.Sprintf("Time to resolve:        %v\n", resolverTime))
+	timerlog.log(fmt.Sprintf("Time to resolve types:  %v\n", typeResolverTime))
+	timerlog.log(fmt.Sprintf("Time to eval:           %v\n", evalTime))
+
+	// Print eval result
+	evallog.log(fmt.Sprintf("%v\n", eval))
 
 	return 0
 }

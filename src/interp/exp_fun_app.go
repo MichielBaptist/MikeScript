@@ -163,6 +163,8 @@ func (evaluator *MSEvaluator) evaluateIterableFunctionAppAndCall(node *ast.Itera
 		vals[i] = val
 	}
 
+
+
 	// Return new iterable from bound functions
 	return iter.From(vals)
 }
@@ -189,8 +191,6 @@ func (evaluator *MSEvaluator) evaluateFunctionCall(node *ast.FuncCallNodeS) (MSV
 func (evaluator *MSEvaluator) evaluateIterableFunctionCall(node *ast.IterableFuncCallNodeS) (MSVal, error) {
 	fns, err := evaluator.evaluateExpression(node.Fun)
 
-	println("HELLO")
-
 	if err != nil {
 		return nil, err
 	}
@@ -199,8 +199,6 @@ func (evaluator *MSEvaluator) evaluateIterableFunctionCall(node *ast.IterableFun
 	// iterable, we should just call the function as
 	// a single element. If it is an array or tuple
 	iter, ok := fns.(MSIterable)
-
-	fmt.Printf("%v\n", fns)
 
 	if ok {
 		// is an iterable
@@ -217,7 +215,6 @@ func (evaluator *MSEvaluator) evaluateIterableFunctionCall(node *ast.IterableFun
 			callable, ok := fn.(MSCallable)
 
 			if !ok {
-				println("fn:", fn)
 				err = &EvalError{fmt.Sprintf("Function call is not implemented for type '%s'", fn)}
 				return nil, err
 			}

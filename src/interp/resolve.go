@@ -17,7 +17,6 @@ func (e *MSEvaluator) resolveType(t mstype.MSType) (mstype.MSType, error) {
 	}
 }
 
-
 func (e *MSEvaluator) resolveTypes(ts []mstype.MSType) ([]mstype.MSType, error) {
 	resolved := make([]mstype.MSType, len(ts))
 	for i, t := range ts {
@@ -100,7 +99,7 @@ func (e *MSEvaluator) resolveFunctionDeclaration(f *ast.FuncDeclNodeS) (*ast.Fun
 	}
 
 	return &resolvedFuncDecl, nil
-	
+
 }
 
 func (e *MSEvaluator) resolveParamList(ps []ast.FuncParamS) ([]ast.FuncParamS, error) {

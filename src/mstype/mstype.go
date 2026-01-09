@@ -58,7 +58,7 @@ func (res ResultType) String() string {
 ////////////////////////////////////////////////////////////
 type MSType interface {
 	Eq(other MSType) bool	// compare types
-	//String() string			// show type
+	String() string			// show type
 	Nullable() bool			// Can values of this type be <nil>?
 }
 

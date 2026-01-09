@@ -1,5 +1,7 @@
 package mstype
 
+import "fmt"
+
 type MSNamedTypeS struct {
 	Name string
 	Depth int			// scope depth where defined, used to compare named types
@@ -12,9 +14,9 @@ func (t *MSNamedTypeS) Eq(o MSType) bool {
 	}
 }
 
-// func (t *MSNamedTypeS) String() string {
-// 	return fmt.Sprintf("%v{%v}", t.Name, t.Ref)
-// }
+func (t *MSNamedTypeS) String() string {
+	return fmt.Sprintf("%v", t.Name)
+}
 
 func (t *MSNamedTypeS) Nullable() bool {
 	return false

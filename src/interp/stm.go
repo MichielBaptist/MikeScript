@@ -20,6 +20,7 @@ func (evaluator *MSEvaluator) executeStatement(node ast.StmtNodeI) (MSVal, error
 	case *ast.ReturnNodeS: 				return evaluator.executeReturnStatement(node)
 	case *ast.TypeDefStatementS:		return evaluator.executeTypeDeclaration(node)
 	case *ast.StructDeclarationNodeS:	return evaluator.executeStructDeclaration(node)
+	case *ast.ForNodeS:					return evaluator.executeForStatement(node)
 	default:							return MSNothing{}, &EvalError{fmt.Sprintf("Unknown statement type: %v", node)}
 	}
 }

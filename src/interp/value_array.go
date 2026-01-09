@@ -105,7 +105,18 @@ func (a MSArray) Elems() ([]MSVal, error) {
 }
 
 func (a MSArray) From(vals []MSVal) (MSVal, error) {
-	return MSArray{Values: vals, VType: a.VType}, nil
+
+	// Determine array type:
+	// - if produces any elements, use first element type
+	// - if no elements, use original iterable element type
+	var elemType mstype.MSType
+	if len(vals) > 0 {
+		elemType = vals[0].Type()
+	} else {
+		elemType = a.VType
+	}
+
+	return MSArray{Values: vals, VType: elemType}, nil
 }
 
 func (a MSArray) Len() (MSVal, error) {

@@ -31,3 +31,4 @@ func (evaluator *MSEvaluator) evaluateExpression(node ast.ExpNodeI) (MSVal, erro
 	default:								return nil, &EvalError{fmt.Sprintf("Unknown expression type: '%#v'", node)}
 	}
 }
+

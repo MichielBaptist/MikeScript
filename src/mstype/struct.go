@@ -1,5 +1,7 @@
 package mstype
 
+import "fmt"
+
 type MSStructTypeS struct {
 	Name string
 	Fields map[string]MSType
@@ -31,9 +33,9 @@ func (t *MSStructTypeS) Eq(o MSType) bool {
 	return true
 }
 
-// func (t *MSStructTypeS) String() string {
-// 	return fmt.Sprintf("%v{%v}", t.Name, t.Fields)
-// }
+func (t *MSStructTypeS) String() string {
+	return fmt.Sprintf("%v{%v}", t.Name, t.Fields)
+}
 
 func (t *MSStructTypeS) Nullable() bool {
 	return true

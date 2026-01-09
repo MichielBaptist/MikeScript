@@ -3,6 +3,7 @@ package interp
 import (
 	"fmt"
 	"mikescript/src/mstype"
+	"strings"
 )
 
 type MSStruct struct {
@@ -19,7 +20,14 @@ func (i MSStruct) String() string {
 	if i.IsNil() {
 		return "nothing"
 	}
-	return fmt.Sprintf("%v{%v}", i.Name, i.Fields)
+
+	fieldss := make([]string, 0, len(i.Fields))
+	for name, val := range i.Fields {
+		fieldss = append(fieldss, fmt.Sprintf("%s: %s", name, val.String()))
+	}
+	// join
+	fieldsStr := strings.Join(fieldss, ", ")
+	return fmt.Sprintf("%v{%v}", i.Name, fieldsStr)
 }
 
 func (r MSStruct) Nullable() bool {

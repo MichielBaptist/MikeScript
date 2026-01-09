@@ -7,7 +7,6 @@ import (
 )
 
 func (e *MSEvaluator) evaluateRangeConstructor(node *ast.RangeConstructorNodeS) (MSVal, error) {
-	println(node.From == nil, node.To == nil)
 
 	fromVal, err := e.evaluateExpression(node.From)
 
@@ -43,6 +42,6 @@ func (e *MSEvaluator) evaluateRangeConstructor(node *ast.RangeConstructorNodeS) 
 		vals[i] = MSInt{Val: fromInt.Val + i}
 	}
 
-	return MSArray{Values: vals, VType: &mstype.MSArrayType{Type: mstype.MS_INT}}, nil
+	return MSArray{Values: vals, VType: mstype.MS_INT}, nil
 
 }

@@ -23,6 +23,10 @@ func (parser *MSParser) parseStatement() (ast.StmtNodeI, error){
 	if ok, _ := parser.match(token.WHILE); ok {
 		return parser.parseWhile()
 	}
+	//FOR
+	if ok, _ := parser.match(token.FOR); ok {
+		return parser.parseFor()
+	}
 	// VARIABLE DECLARATION
 	if ok, _ := parser.match(token.VAR); ok {
 		return parser.parseVarDeclaration()

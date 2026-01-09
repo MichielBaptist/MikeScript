@@ -11,9 +11,9 @@ func (t *MSSimpleTypeS) Eq(o MSType) bool {
 	}
 }
 
-// func (t *MSSimpleTypeS) String() string {
-// 	return t.Rt.String()
-// }
+func (t *MSSimpleTypeS) String() string {
+	return t.Rt.String()
+}
 
 func (t *MSSimpleTypeS) Nullable() bool {
 	return false

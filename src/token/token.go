@@ -48,6 +48,7 @@ const(
 	MULT_GREATER_GREATER_EQ			// *>>= (unpack && bind && call)
 	LESS_LESS						// <<
 	MINUS_GREAT						// -> (assignment)
+	DOT_MINUS_GREAT					// .-> (for loop separator)
 	EQ_GREATER						// => (decl & assignment)
 	LESS_MINUS						// <- UNUSED
 	AMP_AMP							// &&
@@ -67,7 +68,7 @@ const(
 	ELSE 							// else
 	XIF 							// xif UNUSED
 	OTHERWISE 						// otherwise UNUSED
-	FOR 							// for UNUSED
+	FOR 							// for
 	WHILE 							// while
 	FUNCTION 						// function
 	RETURN 							// return
@@ -127,6 +128,7 @@ var stmp map[TokenType]string = map[TokenType]string{
 	DOT_GREATER_GREATER_EQ: ".>>=",
 	MULT_GREATER_GREATER_EQ: "*>>=",
 	MINUS_GREAT: "->",
+	DOT_MINUS_GREAT: ".->",
 	EQ_GREATER: "=>",
 	LESS_LESS: "<<",
 	AMP_AMP: "&&",

@@ -33,6 +33,12 @@ type WhileNodeS struct {
 	Body 		*BlockNodeS
 }
 
+type ForNodeS struct {
+	Iterable	ExpNodeI
+	LoopVar		*VariableExpNodeS
+	Body		*BlockNodeS
+}
+
 type ContinueNodeS struct {
 	Tk token.Token
 }
@@ -69,6 +75,7 @@ func (*VarDeclNodeS) statmentPlaceholder() {}
 func (*ExStmtNodeS) statmentPlaceholder() {}
 func (*IfNodeS) statmentPlaceholder() {}
 func (*WhileNodeS) statmentPlaceholder() {}
+func (*ForNodeS) statmentPlaceholder() {}
 func (*ContinueNodeS) statmentPlaceholder() {}
 func (*BreakNodeS) statmentPlaceholder() {}
 func (*FuncDeclNodeS) statmentPlaceholder() {}

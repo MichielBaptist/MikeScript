@@ -66,8 +66,8 @@ func (e *MSEvaluator) evaluateArrayConstructorWithInitializer(n *ast.ArrayConstr
 	var err error		// err
 
 	// Resolve the base type
-	//resolvedType, err := e.resolveType(n.Type)
-	resolvedType := n.Type
+	resolvedType, err := e.resolveType(n.Type)
+	// resolvedType := n.Type
 
 	if err != nil {
 		return nil, err
@@ -121,8 +121,8 @@ func (e *MSEvaluator) evaluateArrayConstructorWithSize(n *ast.ArrayConstructorNo
 	}
 
 	// resolve the type first
-	//resolvedType, err := e.resolveType(n.Type)
-	resolvedType := n.Type
+	resolvedType, err := e.resolveType(n.Type)
+	// resolvedType := n.Type
 
 	// if err != nil {
 	// 	return nil, err

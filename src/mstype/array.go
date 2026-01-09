@@ -1,5 +1,7 @@
 package mstype
 
+import "fmt"
+
 type MSArrayType struct {
 	Type MSType
 }
@@ -11,9 +13,9 @@ func (t *MSArrayType) Eq(o MSType) bool {
 	}
 }
 
-// func (t *MSArrayType) String() string {
-// 	return fmt.Sprintf("[]%s", t.Type.String())
-// }
+func (t *MSArrayType) String() string {
+	return fmt.Sprintf("[]%s", t.Type.String())
+}
 
 func (t *MSArrayType) Nullable() bool {
 	return false

@@ -35,8 +35,10 @@ func (evaluator *MSEvaluator) evaluateBinaryExpression(node *ast.BinaryExpNodeS)
 	case token.COMMA:				return evalTuple(lval, rval)
 	case token.PERCENT:				return evalMod(lval, rval)
 	default:						return nil, &EvalError{unknownBinop(node)}
+
 	}
 }
+
 
 func invalidBinop(left, right MSVal, op string) string {
 	return fmt.Sprintf("Operator '%v' is not defined for types '%v' and '%v'", op, left, right)

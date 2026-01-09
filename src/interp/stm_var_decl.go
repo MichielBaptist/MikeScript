@@ -11,21 +11,20 @@ func (evaluator *MSEvaluator) executeDeclarationStatement(node *ast.VarDeclNodeS
 
 	// First resolve the type, in case the type is
 	// a named type.
-	// typ, err := evaluator.resolveType(node.Vartype)
+	typ, err := evaluator.resolveType(node.Vartype)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
 
 	// Get the default value for the type
-	val := evaluator.typeToVal(node.Vartype, false)
-
+	val := evaluator.typeToVal(typ, false)
 	if val == nil {
 		_ = []int{}[0]
 	}
 
 	// Declare variable in env
-	err := evaluator.env.NewVar(node.VarName(), val)
+	err = evaluator.env.NewVar(node.VarName(), val)
 
 	return MSNothing{}, err
 }

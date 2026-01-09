@@ -45,6 +45,7 @@ func (r *MSResolver) currentScope() *scope {
 }
 
 func (r *MSResolver) enterScope() {
+	//println("Entering scope", len(r.scopes))
 	r.scopes = append(r.scopes, newScope())
 }
 
@@ -56,7 +57,7 @@ func (r *MSResolver) declare(name string) {
 	// If there is a current scope, we set the
 	// name to false (declared but not yet init)
 
-	fmt.Printf(".   Setting: scopes[%d][%s] --> false\n", len(r.scopes) - 1, name)
+	//fmt.Printf(".   Setting: scopes[%d][%s] --> false\n", len(r.scopes) - 1, name)
 	if current := r.currentScope() ; current != nil {
 
 		if _, ok := (*current)[name] ; ok {
@@ -72,7 +73,7 @@ func (r *MSResolver) define(name string) {
 	// If there is a current scope, we set the
 	// name to false (declared but not yet init)
 
-	fmt.Printf(".   Setting: scopes[%d][%s] --> true\n", len(r.scopes) -1, name)
+	//fmt.Printf(".   Setting: scopes[%d][%s] --> true\n", len(r.scopes) -1, name)
 	if current := r.currentScope() ; current != nil {
 		(*current)[name] = true
 	}
@@ -84,14 +85,14 @@ func (r *MSResolver) resolveLocalVariable(v *ast.VariableExpNodeS, name string) 
 
 	// Found nowhere in scopes
 	if !found {
-		fmt.Printf(".   VARI: %p %v --> Global\n", v, v)
+		//fmt.Printf(".   VARI: %p %v --> Global\n", v, v)
 		return
 	}
 
 	if _, ok := r.vlocals[v] ; ok {
 		println("Tried assigning already existing expression in the local map...")
 	} else {
-		fmt.Printf(".   VARI: %p %v --> %d\n", v, v, depth)
+		//fmt.Printf(".   VARI: %p %v --> %d\n", v, v, depth)
 	}
 	r.vlocals[v] = depth
 }
@@ -101,14 +102,14 @@ func (r *MSResolver) resolveLocalType(t *mstype.MSNamedTypeS, name string) {
 	depth, found, _ := r.findName(name)
 
 	if !found {
-		fmt.Printf(".   TYPE: %p %v --> Global\n", t, t)
+		//fmt.Printf(".   TYPE: %p %v --> Global\n", t, t)
 		return
 	}
 
 	if _, ok := r.tlocals[t] ; ok{
 		println("Tried assigning already existing expression in the local map...")
 	} else {
-		fmt.Printf(".   TYPE: %p %v --> %d\n", t, t, depth)
+		//fmt.Printf(".   TYPE: %p %v --> %d\n", t, t, depth)
 	}
 	r.tlocals[t] = depth
 
@@ -153,6 +154,7 @@ func (r *MSResolver) resolveStatement(stm ast.StmtNodeI) {
 	case *ast.ExStmtNodeS:				r.resolveExpression(st.Ex)
 	case *ast.IfNodeS:					r.resolveIfNode(st)
 	case *ast.WhileNodeS:				r.resolveWhileNode(st)
+	case *ast.ForNodeS:					r.resolveForNode(st)
 	case *ast.ReturnNodeS:				r.resolveExpression(st.Node)
 	case *ast.FuncDeclNodeS:			r.resolveFuncDeclaration(st)
 	case *ast.TypeDefStatementS: 		r.resolveTypeDeclaration(st)
@@ -300,6 +302,15 @@ func (r *MSResolver) resolveIfNode(n *ast.IfNodeS) {
 func (r *MSResolver) resolveWhileNode(n *ast.WhileNodeS) {
 	r.resolveExpression(n.Condition)
 	r.resolveStatement(n.Body)
+}
+
+func (r *MSResolver) resolveForNode(n *ast.ForNodeS) {
+	r.resolveExpression(n.Iterable)
+	r.enterScope()
+	r.declare(n.LoopVar.VarName())
+	r.define(n.LoopVar.VarName())
+	r.resolveStatements(n.Body.Statements)
+	r.leaveScope()
 }
 
 func (r *MSResolver) resolveExpressions(es []ast.ExpNodeI) {

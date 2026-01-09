@@ -1,5 +1,10 @@
 package mstype
 
+import (
+	"fmt"
+	"strings"
+)
+
 type MSOperationTypeS struct {
 	Left []MSType	// param types
 	Right MSType 	// output types
@@ -23,13 +28,13 @@ func (t *MSOperationTypeS) Eq(o MSType) bool {
 	return false
 }
 
-// func (t *MSOperationTypeS) String() string{
-// 	lefts := []string{}
-// 	for _, l := range t.Left {
-// 		lefts = append(lefts, l.String())
-// 	}
-// 	return fmt.Sprintf("(%s -> %s)", strings.Join(lefts, ", "), t.Right.String())
-// }
+func (t *MSOperationTypeS) String() string{
+	lefts := []string{}
+	for _, l := range t.Left {
+		lefts = append(lefts, l.String())
+	}
+	return fmt.Sprintf("(%s -> %s)", strings.Join(lefts, ", "), t.Right.String())
+}
 
 func (t *MSOperationTypeS) Nullable() bool {
 	return true

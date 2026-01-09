@@ -198,6 +198,14 @@ func (scanner *MSScanner) scanDotToken() (bool, token.Token) {
 			// not possible
 			return false, token.Token{}
 		}
+	} else if scanner.advanceIfAtr('-') {
+		if scanner.advanceIfAtr('>') {
+			// .->
+			return true, token.Token{Type: token.DOT_MINUS_GREAT, Lexeme: ".->", Line: scanner.line, Col: scanner.col}
+		} else {
+			// not possible
+			return false, token.Token{}
+		}
 	} else {
 		// .
 		return true, token.Token{Type: token.DOT, Lexeme: ".", Line: scanner.line, Col: scanner.col}
