@@ -1,13 +1,19 @@
-Features:
+Structural pattern matching:
 
-1. tuple unpacking (very difficult)
+type enum {
+    node(int),
+    nodeExp(int, int),
+}
 
-1, 2, 3 => t1;
-"hello", "world" => t2;
+node >>= match {
+    nodeExp(x, y) => x +y,
+    node(z) => z * 2,
+}
 
-*t1, *t2 >>= f;
 
-Need to "flatten" tuple structure and replace with a flat list.
-Evaltuple then needs to:
-1. evaluate all elements in the tuple
-2. Check all values, if they are starred (*) tuples then unpack
+
+Generic types for functions:
+
+function<T> (T x, T y) >> f -> int {
+    return x + y;
+}

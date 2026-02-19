@@ -3,11 +3,14 @@ type (int, int) point;
 type []point point_array;
 
 function (point p) >> translate -> point {
-    return (1, 2);
+    return (p[0] + 1, p[1] + 2);
 }
 
 // expects: (1, 2)
-(0, 0) >>= translate >>= print;
+(0, 0) 
+>>= translate
+=> p 
+>>= print;
 
 []point{(1, 2), (3, 4)} => my_points;
 my_points[0] >>= print;

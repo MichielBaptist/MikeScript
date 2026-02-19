@@ -23,9 +23,3 @@ type struct node {
 
 var node n;
 
-function (test s) >> hello -> test {
-    =print_env;
-    return s;
-}
-
-//s1 >>= hello;

@@ -1,12 +1,12 @@
 Grammar:
 program ->
-    | declaration * EOF
-declaration ->
+    | statements EOF
+statements ->
+	| statement *
+statement ->
 	| VarDecl ";"
 	| funcDecl
-	| statement
 	| TypeDecl
-statement ->
 	| ifStmt
 	| while
 	| block
@@ -15,19 +15,23 @@ statement ->
 	| 'return' expression ';'
     | ExStmt
 ifStmt ->
-	| "if" expression statement { "else" statement }?
+	| "if" expression block
+	| "if" expression block "else" block
 block ->
-	| "{" declaration * "}"
+	| "{" statements "}"
 ExStmt ->
 	| expression ';'
 expression ->
+	| args { funcopp args }*
+args ->
 	| land { "||" land }*
 land ->
-	| funccall { "&&" funccall }*
-funccall ->
-	| args { ('>>' | '->' | '=>' | '>>=') args }*
-args ->
-	| equality { ',' {equality}* }*
+	| equality { "&&" equality }*
+funcopp ->
+	| '.' funcopp_op
+	| funcopp_op
+funcopp_op ->
+	| '>>' | '->' | '=>' | '>>='
 equality ->
 	| comp { ('==' | '!=') comp }*
 comp ->
@@ -51,7 +55,8 @@ primary ->
 constructor ->
 	| IDENTIFIER											// variable constructor
 	| IDENTIFIER '{' { IDENTIFIER ':' expression ',' }* '}'	// struct constructor
-	| '[]' type '{' {expression ','} * '}'						// array constructor
+	| '[' expression ']' type '{' {expression ','} * '}'	// array constructor
+	| '[' expression? '..' expression? ']'					// range constructor
 varname ->
 	| IDENTIFIER
 	| '(' varname ')'
